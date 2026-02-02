@@ -40,11 +40,27 @@ public class EnhancedLeaderboardService {
         LocalDate endDate = dates[1];
 
         List<Map<String, Object>> rankings;
+        boolean fromSnapshot = false;
 
-        if (categoryName == null || categoryName.equals("overall")) {
-            rankings = getOverallLeaderboard(startDate, endDate, period);
+        // Try to read from snapshots first
+        String periodType = period.toUpperCase();
+        List<LeaderboardSnapshot> snapshots = snapshotRepository.findByPeriodAndCategory(
+                periodType,
+                (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                startDate,
+                endDate);
+
+        if (!snapshots.isEmpty()) {
+            // Use precomputed snapshots
+            rankings = convertSnapshotsToRankings(snapshots);
+            fromSnapshot = true;
         } else {
-            rankings = getCategoryLeaderboard(categoryName, startDate, endDate, period);
+            // Fallback to on-demand computation
+            if (categoryName == null || categoryName.equals("overall")) {
+                rankings = getOverallLeaderboard(startDate, endDate, period);
+            } else {
+                rankings = getCategoryLeaderboard(categoryName, startDate, endDate, period);
+            }
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -53,8 +69,32 @@ public class EnhancedLeaderboardService {
         response.put("categoryName", categoryName);
         response.put("startDate", startDate.toString());
         response.put("endDate", endDate.toString());
+        response.put("fromSnapshot", fromSnapshot);
+        response.put("computedOnDemand", !fromSnapshot);
 
         return response;
+    }
+
+    /**
+     * Convert snapshot entities to frontend-compatible format
+     */
+    private List<Map<String, Object>> convertSnapshotsToRankings(List<LeaderboardSnapshot> snapshots) {
+        List<Map<String, Object>> rankings = new ArrayList<>();
+
+        for (LeaderboardSnapshot snapshot : snapshots) {
+            Map<String, Object> ranking = new HashMap<>();
+            ranking.put("rank", snapshot.getRankPosition());
+            ranking.put("userId", snapshot.getUser().getId());
+            ranking.put("username", snapshot.getUser().getUsername());
+            ranking.put("score", Math.round(snapshot.getScore() * 100.0) / 100.0); // Round to 2 decimals
+            ranking.put("points", snapshot.getRawPoints());
+            ranking.put("daysActive", snapshot.getDaysActive());
+            ranking.put("currentStreak", snapshot.getCurrentStreak());
+            ranking.put("movement", snapshot.getRankMovement() != null ? snapshot.getRankMovement() : 0);
+            rankings.add(ranking);
+        }
+
+        return rankings;
     }
 
     private List<Map<String, Object>> getCategoryLeaderboard(
@@ -207,19 +247,6 @@ public class EnhancedLeaderboardService {
             entry.put("streak", userData.maxStreak);
             entry.put("daysActive", userData.daysActive);
 
-            // Get rank movement
-            Integer previousRank = getPreviousRank(
-                    userData.user.getId(), categoryName, period, startDate, endDate);
-
-            if (previousRank != null) {
-                int movement = previousRank - rank; // Positive = moved up
-                entry.put("rankMovement", movement);
-                entry.put("previousRank", previousRank);
-            } else {
-                entry.put("rankMovement", 0);
-                entry.put("isNew", true);
-            }
-
             rankings.add(entry);
 
             // Save current snapshot for future comparisons
@@ -258,22 +285,6 @@ public class EnhancedLeaderboardService {
         }
 
         return true; // Default to visible
-    }
-
-    private Integer getPreviousRank(
-            Long userId, String categoryName, String period, LocalDate startDate, LocalDate endDate) {
-
-        Optional<LeaderboardSnapshot> snapshotOpt;
-
-        if (categoryName == null) {
-            snapshotOpt = snapshotRepository.findPreviousOverallRank(
-                    userId, period, startDate, endDate);
-        } else {
-            snapshotOpt = snapshotRepository.findPreviousRank(
-                    userId, categoryName, period, startDate, endDate);
-        }
-
-        return snapshotOpt.map(LeaderboardSnapshot::getRankPosition).orElse(null);
     }
 
     private void saveSnapshot(
@@ -332,6 +343,55 @@ public class EnhancedLeaderboardService {
     }
 
     public Map<String, Object> getUserRankContext(Long userId, String categoryName, String period) {
+        LocalDate[] dates = getPeriodDates(period);
+        LocalDate startDate = dates[0];
+        LocalDate endDate = dates[1];
+
+        Map<String, Object> context = new HashMap<>();
+
+        // Try snapshot first
+        String periodType = period.toUpperCase();
+        Optional<LeaderboardSnapshot> mySnapshotOpt = snapshotRepository.findUserRank(
+                userId,
+                periodType,
+                (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                startDate,
+                endDate);
+
+        if (mySnapshotOpt.isPresent()) {
+            // Use snapshot data
+            LeaderboardSnapshot mySnapshot = mySnapshotOpt.get();
+            int myRank = mySnapshot.getRankPosition();
+
+            // Get surrounding ranks
+            List<LeaderboardSnapshot> surroundingSnapshots = snapshotRepository.findRankRange(
+                    periodType,
+                    (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                    startDate,
+                    endDate,
+                    Math.max(1, myRank - 1),
+                    myRank + 1);
+
+            for (LeaderboardSnapshot snapshot : surroundingSnapshots) {
+                Map<String, Object> rankData = new HashMap<>();
+                rankData.put("rank", snapshot.getRankPosition());
+                rankData.put("username", snapshot.getUser().getUsername());
+                rankData.put("score", Math.round(snapshot.getScore() * 100.0) / 100.0);
+
+                if (snapshot.getRankPosition() == myRank - 1) {
+                    context.put("aboveMe", rankData);
+                } else if (snapshot.getRankPosition() == myRank) {
+                    context.put("myRank", rankData);
+                } else if (snapshot.getRankPosition() == myRank + 1) {
+                    context.put("belowMe", rankData);
+                }
+            }
+
+            context.put("fromSnapshot", true);
+            return context;
+        }
+
+        // Fallback to original on-demand logic
         Map<String, Object> leaderboard = getLeaderboard(categoryName, period);
         List<Map<String, Object>> rankings = (List<Map<String, Object>>) leaderboard.get("rankings");
 
@@ -348,25 +408,23 @@ public class EnhancedLeaderboardService {
             }
         }
 
-        Map<String, Object> context = new HashMap<>();
+        // On-demand fallback computation
+        context = new HashMap<>();
 
         if (userEntry != null) {
             context.put("myRank", userEntry);
 
-            // Add users immediately above and below
             if (userIndex > 0) {
                 context.put("aboveMe", rankings.get(userIndex - 1));
             }
             if (userIndex < rankings.size() - 1) {
                 context.put("belowMe", rankings.get(userIndex + 1));
             }
-
-            context.put("totalParticipants", rankings.size());
         } else {
             context.put("notRanked", true);
-            context.put("reason", "No public goals or activity in this period");
         }
 
+        context.put("fromSnapshot", false);
         return context;
     }
 }

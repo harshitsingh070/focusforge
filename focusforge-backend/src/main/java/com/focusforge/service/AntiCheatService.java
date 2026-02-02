@@ -23,7 +23,7 @@ public class AntiCheatService {
     @Autowired
     private SuspiciousActivityRepository suspiciousActivityRepository;
 
-    @Autowired
+    @Autowired(required = false)
     private StringRedisTemplate redisTemplate;
 
     @Value("${gamification.max-minutes-per-entry}")
@@ -38,7 +38,7 @@ public class AntiCheatService {
     public boolean validateActivity(Long userId, int minutesSpent) {
         // Check unrealistic single entry
         if (minutesSpent > maxMinutesPerEntry) {
-            log.warn("Suspicious activity: User {} entered {} minutes (max allowed: {})", 
+            log.warn("Suspicious activity: User {} entered {} minutes (max allowed: {})",
                     userId, minutesSpent, maxMinutesPerEntry);
             return false;
         }
@@ -46,27 +46,34 @@ public class AntiCheatService {
         // Check daily total
         Integer todayTotal = activityLogRepository.getTotalMinutesForDate(userId, LocalDate.now());
         int currentTotal = todayTotal != null ? todayTotal : 0;
-        
+
         if ((currentTotal + minutesSpent) > maxMinutesPerDay) {
-            log.warn("Daily limit exceeded for user {}: current {}, adding {}", 
+            log.warn("Daily limit exceeded for user {}: current {}, adding {}",
                     userId, currentTotal, minutesSpent);
             return false;
         }
 
-        // Rate limiting check
-        String key = RATE_LIMIT_KEY + userId;
-        String count = redisTemplate.opsForValue().get(key);
-        
-        if (count != null && Integer.parseInt(count) >= MAX_LOGS_PER_HOUR) {
-            log.warn("Rate limit exceeded for user {}", userId);
-            return false;
-        }
+        // Rate limiting check (only if Redis is available)
+        if (redisTemplate != null) {
+            try {
+                String key = RATE_LIMIT_KEY + userId;
+                String count = redisTemplate.opsForValue().get(key);
 
-        // Increment rate limiter
-        if (count == null) {
-            redisTemplate.opsForValue().set(key, "1", 1, TimeUnit.HOURS);
-        } else {
-            redisTemplate.opsForValue().increment(key);
+                if (count != null && Integer.parseInt(count) >= MAX_LOGS_PER_HOUR) {
+                    log.warn("Rate limit exceeded for user {}", userId);
+                    return false;
+                }
+
+                // Increment rate limiter
+                if (count == null) {
+                    redisTemplate.opsForValue().set(key, "1", 1, TimeUnit.HOURS);
+                } else {
+                    redisTemplate.opsForValue().increment(key);
+                }
+            } catch (Exception e) {
+                log.warn("Redis not available for rate limiting: {}", e.getMessage());
+                // Continue without rate limiting
+            }
         }
 
         return true;
@@ -78,7 +85,7 @@ public class AntiCheatService {
         flag.setActivityType(type);
         flag.setDetails("{\"details\":\"" + details + "\"}");
         flag.setSeverity("high");
-        
+
         suspiciousActivityRepository.save(flag);
         log.warn("Flagged suspicious activity: {} for user {}", type, user.getId());
     }
