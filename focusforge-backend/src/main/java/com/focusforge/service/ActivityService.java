@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -45,6 +46,12 @@ public class ActivityService {
     @Autowired
     private AntiCheatService antiCheatService;
 
+    @Autowired
+    private LeaderboardAggregationService leaderboardAggregationService;
+
+    @Autowired
+    private BadgeEvaluationService badgeEvaluationService;
+
     @Transactional
     public ActivityResponse logActivity(ActivityRequest request, Long userId) {
         // Validate goal ownership
@@ -52,7 +59,8 @@ public class ActivityService {
                 .orElseThrow(() -> new ResourceNotFoundException("Goal not found or access denied"));
 
         // Check for duplicate
-        if (activityLogRepository.findByUserIdAndGoalIdAndLogDate(userId, request.getGoalId(), request.getLogDate()).isPresent()) {
+        if (activityLogRepository.findByUserIdAndGoalIdAndLogDate(userId, request.getGoalId(), request.getLogDate())
+                .isPresent()) {
             throw new BadRequestException("Activity already logged for this goal on this date");
         }
 
@@ -70,25 +78,37 @@ public class ActivityService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Save activity
-        ActivityLog log = new ActivityLog();
-        log.setUser(user);
-        log.setGoal(goal);
-        log.setLogDate(request.getLogDate());
-        log.setMinutesSpent(request.getMinutesSpent());
-        log.setNotes(request.getNotes());
-        activityLogRepository.save(log);
+        ActivityLog activityLog = new ActivityLog();
+        activityLog.setUser(user);
+        activityLog.setGoal(goal);
+        activityLog.setLogDate(request.getLogDate());
+        activityLog.setMinutesSpent(request.getMinutesSpent());
+        activityLog.setNotes(request.getNotes());
+        activityLogRepository.save(activityLog);
 
         // Update streak
         Streak streak = streakService.updateStreak(goal, request.getLogDate());
 
         // Calculate points
-        int points = gamificationService.calculateAndAwardPoints(user, goal, 
+        int points = gamificationService.calculateAndAwardPoints(user, goal,
                 request.getMinutesSpent(), streak.getCurrentStreak());
 
         boolean isSuspicious = !antiCheatService.validateActivity(userId, request.getMinutesSpent());
 
+        // Evaluate badges after activity, points, and streak are updated
+        try {
+            List<com.focusforge.model.Badge> newlyEarnedBadges = badgeEvaluationService.evaluateAndAwardBadges(userId);
+            if (!newlyEarnedBadges.isEmpty()) {
+                log.info("User {} earned {} badge(s) from this activity", userId, newlyEarnedBadges.size());
+                newlyEarnedBadges.forEach(badge -> log.debug("  - {}", badge.getName()));
+            }
+        } catch (Exception e) {
+            log.error("Badge evaluation failed for user {}: {}", userId, e.getMessage(), e);
+            // Don't fail activity logging if badge evaluation fails
+        }
+
         return ActivityResponse.builder()
-                .id(log.getId())
+                .id(activityLog.getId())
                 .goalId(goal.getId())
                 .goalTitle(goal.getTitle())
                 .logDate(request.getLogDate())

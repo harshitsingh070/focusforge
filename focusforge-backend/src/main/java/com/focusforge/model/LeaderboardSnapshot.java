@@ -44,13 +44,14 @@ public class LeaderboardSnapshot {
     @Column(name = "snapshot_date", nullable = false)
     private LocalDate snapshotDate;
 
-    // Additional metadata for display
-    @Transient
+    // Activity metrics - now persisted to database
+    @Column(name = "days_active")
     private Integer daysActive;
 
-    @Transient
+    @Column(name = "current_streak")
     private Integer currentStreak;
 
+    // Only rank_movement stays transient (calculated on-the-fly)
     @Transient
     private Integer rankMovement;
 }

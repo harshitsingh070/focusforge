@@ -57,7 +57,9 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/debug/**", "/leaderboard/trigger-aggregation").permitAll()
+                        .requestMatchers("/auth/**", "/debug/**", "/leaderboard/trigger-aggregation",
+                                "/badges/backfill")
+                        .permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated());
 

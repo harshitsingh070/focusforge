@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface LeaderboardSnapshotRepository extends JpaRepository<LeaderboardSnapshot, Long> {
@@ -27,14 +26,15 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
                         @Param("periodStart") LocalDate periodStart,
                         @Param("periodEnd") LocalDate periodEnd);
 
-        // Find user's rank in specific period/category
+        // Find user's rank entries in specific period/category (ordered for deterministic selection)
         @Query("SELECT ls FROM LeaderboardSnapshot ls WHERE " +
                         "ls.user.id = :userId " +
                         "AND ls.periodType = :periodType " +
                         "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
                         "AND ls.periodStart = :periodStart " +
-                        "AND ls.periodEnd = :periodEnd")
-        Optional<LeaderboardSnapshot> findUserRank(
+                        "AND ls.periodEnd = :periodEnd " +
+                        "ORDER BY ls.rankPosition ASC, ls.id ASC")
+        List<LeaderboardSnapshot> findUserRanks(
                         @Param("userId") Long userId,
                         @Param("periodType") String periodType,
                         @Param("categoryName") String categoryName,
@@ -56,6 +56,17 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
                         @Param("periodEnd") LocalDate periodEnd,
                         @Param("minRank") Integer minRank,
                         @Param("maxRank") Integer maxRank);
+
+        @Query("SELECT COUNT(ls) FROM LeaderboardSnapshot ls WHERE " +
+                        "ls.periodType = :periodType " +
+                        "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
+                        "AND ls.periodStart = :periodStart " +
+                        "AND ls.periodEnd = :periodEnd")
+        Long countParticipants(
+                        @Param("periodType") String periodType,
+                        @Param("categoryName") String categoryName,
+                        @Param("periodStart") LocalDate periodStart,
+                        @Param("periodEnd") LocalDate periodEnd);
 
         // Cleanup old snapshots (before a certain date)
         @Modifying

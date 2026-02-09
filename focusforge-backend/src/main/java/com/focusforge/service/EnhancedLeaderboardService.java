@@ -4,16 +4,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.focusforge.model.*;
 import com.focusforge.repository.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class EnhancedLeaderboardService {
 
     @Autowired
@@ -35,6 +35,8 @@ public class EnhancedLeaderboardService {
     private LeaderboardSnapshotRepository snapshotRepository;
 
     public Map<String, Object> getLeaderboard(String categoryName, String period) {
+        log.debug("getLeaderboard called with category: {}, period: {}", categoryName, period);
+
         LocalDate[] dates = getPeriodDates(period);
         LocalDate startDate = dates[0];
         LocalDate endDate = dates[1];
@@ -44,17 +46,25 @@ public class EnhancedLeaderboardService {
 
         // Try to read from snapshots first
         String periodType = period.toUpperCase();
+        String normalizedCategory = (categoryName == null || categoryName.equals("overall")) ? null : categoryName;
+
+        log.debug("Querying snapshots for periodType: {}, category: {}, dates: {} to {}",
+                periodType, normalizedCategory, startDate, endDate);
+
         List<LeaderboardSnapshot> snapshots = snapshotRepository.findByPeriodAndCategory(
                 periodType,
-                (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                normalizedCategory,
                 startDate,
                 endDate);
+
+        log.debug("Found {} snapshots for category: {}", snapshots.size(), normalizedCategory);
 
         if (!snapshots.isEmpty()) {
             // Use precomputed snapshots
             rankings = convertSnapshotsToRankings(snapshots);
             fromSnapshot = true;
         } else {
+            log.warn("No snapshots found, falling back to on-demand computation for category: {}", categoryName);
             // Fallback to on-demand computation
             if (categoryName == null || categoryName.equals("overall")) {
                 rankings = getOverallLeaderboard(startDate, endDate, period);
@@ -79,22 +89,32 @@ public class EnhancedLeaderboardService {
      * Convert snapshot entities to frontend-compatible format
      */
     private List<Map<String, Object>> convertSnapshotsToRankings(List<LeaderboardSnapshot> snapshots) {
-        List<Map<String, Object>> rankings = new ArrayList<>();
+        // Protect frontend from historical duplicate snapshots by keeping the best-rank row per user.
+        Map<Long, LeaderboardSnapshot> uniqueByUser = new LinkedHashMap<>();
 
-        for (LeaderboardSnapshot snapshot : snapshots) {
-            Map<String, Object> ranking = new HashMap<>();
-            ranking.put("rank", snapshot.getRankPosition());
-            ranking.put("userId", snapshot.getUser().getId());
-            ranking.put("username", snapshot.getUser().getUsername());
-            ranking.put("score", Math.round(snapshot.getScore() * 100.0) / 100.0); // Round to 2 decimals
-            ranking.put("points", snapshot.getRawPoints());
-            ranking.put("daysActive", snapshot.getDaysActive());
-            ranking.put("currentStreak", snapshot.getCurrentStreak());
-            ranking.put("movement", snapshot.getRankMovement() != null ? snapshot.getRankMovement() : 0);
-            rankings.add(ranking);
-        }
+        snapshots.stream()
+                .sorted(Comparator
+                        .comparing(LeaderboardSnapshot::getRankPosition, Comparator.nullsLast(Integer::compareTo))
+                        .thenComparing(LeaderboardSnapshot::getId, Comparator.nullsLast(Long::compareTo)))
+                .forEach(snapshot -> uniqueByUser.putIfAbsent(snapshot.getUser().getId(), snapshot));
 
-        return rankings;
+        return uniqueByUser.values().stream()
+                .map(this::toRankingEntry)
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> toRankingEntry(LeaderboardSnapshot snapshot) {
+        Map<String, Object> ranking = new HashMap<>();
+        ranking.put("rank", snapshot.getRankPosition());
+        ranking.put("userId", snapshot.getUser().getId());
+        ranking.put("username", snapshot.getUser().getUsername());
+        ranking.put("score", Math.round(snapshot.getScore() * 100.0) / 100.0);
+        ranking.put("rawPoints", snapshot.getRawPoints() != null ? snapshot.getRawPoints() : 0);
+        ranking.put("daysActive", snapshot.getDaysActive() != null ? snapshot.getDaysActive() : 0);
+        ranking.put("streak", snapshot.getCurrentStreak() != null ? snapshot.getCurrentStreak() : 0);
+        ranking.put("rankMovement", snapshot.getRankMovement() != null ? snapshot.getRankMovement() : 0);
+        ranking.put("isNew", false);
+        return ranking;
     }
 
     private List<Map<String, Object>> getCategoryLeaderboard(
@@ -102,20 +122,28 @@ public class EnhancedLeaderboardService {
 
         // Get all users with public goals in this category
         List<Goal> publicGoals = goalRepository.findPublicGoalsByCategory(categoryName);
+        Map<Long, List<Goal>> goalsByUser = publicGoals.stream()
+                .collect(Collectors.groupingBy(g -> g.getUser().getId()));
 
         Map<Long, UserLeaderboardData> userDataMap = new HashMap<>();
 
-        for (Goal goal : publicGoals) {
-            User user = goal.getUser();
+        for (Map.Entry<Long, List<Goal>> goalEntry : goalsByUser.entrySet()) {
+            Long userId = goalEntry.getKey();
+            List<Goal> userCategoryGoals = goalEntry.getValue();
+            User user = userCategoryGoals.get(0).getUser();
 
             // Check privacy settings - skip if user opted out
             if (!isUserEligibleForLeaderboard(user)) {
                 continue;
             }
 
+            List<Long> goalIds = userCategoryGoals.stream()
+                    .map(Goal::getId)
+                    .collect(Collectors.toList());
+
             // Check activity requirement
             List<ActivityLog> userActivities = activityLogRepository
-                    .findByUserIdAndLogDateBetween(user.getId(), startDate, endDate);
+                    .findByUserIdAndGoalIdInAndLogDateBetween(userId, goalIds, startDate, endDate);
 
             if (userActivities.isEmpty()) {
                 continue; // No activity in period
@@ -123,26 +151,32 @@ public class EnhancedLeaderboardService {
 
             // Get or create user data
             UserLeaderboardData userData = userDataMap.computeIfAbsent(
-                    user.getId(),
+                    userId,
                     k -> new UserLeaderboardData(user));
 
-            // Calculate raw points for this goal
-            Integer goalPoints = pointLedgerRepository.getPointsForDateRange(
-                    user.getId(), startDate, endDate);
-            userData.rawPoints += (goalPoints != null ? goalPoints : 0);
+            // Calculate raw points for this user's category goals only
+            Integer goalPoints = pointLedgerRepository.getPointsForGoalsAndDateRange(
+                    userId, goalIds, startDate, endDate);
+            userData.rawPoints = (goalPoints != null ? goalPoints : 0);
 
             // Calculate consistency bonus
             long daysActive = userActivities.stream()
                     .map(ActivityLog::getLogDate)
                     .distinct()
                     .count();
-            userData.daysActive = Math.max(userData.daysActive, (int) daysActive);
+            userData.daysActive = (int) daysActive;
 
             // Get streak bonus
-            Optional<Streak> streakOpt = streakRepository.findByGoalId(goal.getId());
-            if (streakOpt.isPresent()) {
-                userData.maxStreak = Math.max(userData.maxStreak, streakOpt.get().getCurrentStreak());
-            }
+            userData.maxStreak = userCategoryGoals.stream()
+                    .map(Goal::getId)
+                    .map(streakRepository::findByGoalId)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .map(Streak::getCurrentStreak)
+                    .filter(Objects::nonNull)
+                    .mapToInt(Integer::intValue)
+                    .max()
+                    .orElse(0);
         }
 
         // Normalize scores within category
@@ -166,9 +200,13 @@ public class EnhancedLeaderboardService {
                 continue;
             }
 
+            List<Long> goalIds = userPublicGoals.stream()
+                    .map(Goal::getId)
+                    .collect(Collectors.toList());
+
             // Check activity requirement
             List<ActivityLog> userActivities = activityLogRepository
-                    .findByUserIdAndLogDateBetween(user.getId(), startDate, endDate);
+                    .findByUserIdAndGoalIdInAndLogDateBetween(user.getId(), goalIds, startDate, endDate);
 
             if (userActivities.isEmpty()) {
                 continue;
@@ -176,9 +214,9 @@ public class EnhancedLeaderboardService {
 
             UserLeaderboardData userData = new UserLeaderboardData(user);
 
-            // Get total points
-            Integer totalPoints = pointLedgerRepository.getPointsForDateRange(
-                    user.getId(), startDate, endDate);
+            // Get total points from public goals in scope
+            Integer totalPoints = pointLedgerRepository.getPointsForGoalsAndDateRange(
+                    user.getId(), goalIds, startDate, endDate);
             userData.rawPoints = (totalPoints != null ? totalPoints : 0);
 
             // Calculate consistency
@@ -249,10 +287,6 @@ public class EnhancedLeaderboardService {
 
             rankings.add(entry);
 
-            // Save current snapshot for future comparisons
-            saveSnapshot(userData.user.getId(), categoryName, period, startDate, endDate, rank,
-                    userData.normalizedScore, userData.rawPoints);
-
             rank++;
         }
 
@@ -287,37 +321,16 @@ public class EnhancedLeaderboardService {
         return true; // Default to visible
     }
 
-    private void saveSnapshot(
-            Long userId, String categoryName, String period,
-            LocalDate startDate, LocalDate endDate,
-            int rank, double score, int rawPoints) {
-
-        LeaderboardSnapshot snapshot = new LeaderboardSnapshot();
-        snapshot.setUser(userRepository.findById(userId).orElse(null));
-        snapshot.setCategoryName(categoryName);
-        snapshot.setPeriodType(period);
-        snapshot.setPeriodStart(startDate);
-        snapshot.setPeriodEnd(endDate);
-        snapshot.setRankPosition(rank);
-        snapshot.setScore(score);
-        snapshot.setRawPoints(rawPoints);
-        snapshot.setSnapshotDate(LocalDate.now());
-
-        snapshotRepository.save(snapshot);
-    }
-
     private LocalDate[] getPeriodDates(String period) {
         LocalDate endDate = LocalDate.now();
         LocalDate startDate;
 
         switch (period.toUpperCase()) {
             case "WEEKLY":
-                startDate = endDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-                endDate = startDate.plusDays(6);
+                startDate = endDate.minusDays(7);
                 break;
             case "MONTHLY":
-                startDate = endDate.withDayOfMonth(1);
-                endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+                startDate = endDate.minusDays(30);
                 break;
             case "ALL_TIME":
                 startDate = LocalDate.of(2020, 1, 1); // Platform start
@@ -351,42 +364,45 @@ public class EnhancedLeaderboardService {
 
         // Try snapshot first
         String periodType = period.toUpperCase();
-        Optional<LeaderboardSnapshot> mySnapshotOpt = snapshotRepository.findUserRank(
+        String normalizedCategory = (categoryName == null || categoryName.equals("overall")) ? null : categoryName;
+
+        List<LeaderboardSnapshot> mySnapshots = snapshotRepository.findUserRanks(
                 userId,
                 periodType,
-                (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                normalizedCategory,
                 startDate,
                 endDate);
 
-        if (mySnapshotOpt.isPresent()) {
+        if (!mySnapshots.isEmpty()) {
             // Use snapshot data
-            LeaderboardSnapshot mySnapshot = mySnapshotOpt.get();
+            LeaderboardSnapshot mySnapshot = mySnapshots.get(0);
             int myRank = mySnapshot.getRankPosition();
 
             // Get surrounding ranks
             List<LeaderboardSnapshot> surroundingSnapshots = snapshotRepository.findRankRange(
                     periodType,
-                    (categoryName == null || categoryName.equals("overall")) ? null : categoryName,
+                    normalizedCategory,
                     startDate,
                     endDate,
                     Math.max(1, myRank - 1),
                     myRank + 1);
 
-            for (LeaderboardSnapshot snapshot : surroundingSnapshots) {
-                Map<String, Object> rankData = new HashMap<>();
-                rankData.put("rank", snapshot.getRankPosition());
-                rankData.put("username", snapshot.getUser().getUsername());
-                rankData.put("score", Math.round(snapshot.getScore() * 100.0) / 100.0);
-
-                if (snapshot.getRankPosition() == myRank - 1) {
+            List<Map<String, Object>> surroundingEntries = convertSnapshotsToRankings(surroundingSnapshots);
+            for (Map<String, Object> rankData : surroundingEntries) {
+                int rank = ((Number) rankData.get("rank")).intValue();
+                if (rank == myRank - 1) {
                     context.put("aboveMe", rankData);
-                } else if (snapshot.getRankPosition() == myRank) {
+                } else if (rank == myRank) {
                     context.put("myRank", rankData);
-                } else if (snapshot.getRankPosition() == myRank + 1) {
+                } else if (rank == myRank + 1) {
                     context.put("belowMe", rankData);
                 }
             }
 
+            context.put("notRanked", false);
+            context.put("totalParticipants", Optional
+                    .ofNullable(snapshotRepository.countParticipants(periodType, normalizedCategory, startDate, endDate))
+                    .orElse(0L));
             context.put("fromSnapshot", true);
             return context;
         }
@@ -401,7 +417,8 @@ public class EnhancedLeaderboardService {
 
         for (int i = 0; i < rankings.size(); i++) {
             Map<String, Object> entry = rankings.get(i);
-            if (entry.get("userId").equals(userId)) {
+            Object entryUserId = entry.get("userId");
+            if (entryUserId instanceof Number && ((Number) entryUserId).longValue() == userId) {
                 userIndex = i;
                 userEntry = entry;
                 break;
@@ -420,8 +437,11 @@ public class EnhancedLeaderboardService {
             if (userIndex < rankings.size() - 1) {
                 context.put("belowMe", rankings.get(userIndex + 1));
             }
+            context.put("notRanked", false);
+            context.put("totalParticipants", rankings.size());
         } else {
             context.put("notRanked", true);
+            context.put("reason", "Log activity on public goals and enable leaderboard sharing to appear here.");
         }
 
         context.put("fromSnapshot", false);

@@ -32,6 +32,15 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
     @Query("SELECT COUNT(al) FROM ActivityLog al WHERE al.user.id = :userId AND al.logDate = :date")
     Long countByUserIdAndDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
+    List<ActivityLog> findByUserIdAndGoalIdInAndLogDateBetween(Long userId, List<Long> goalIds, LocalDate startDate,
+            LocalDate endDate);
+
+    @Query("SELECT COUNT(DISTINCT al.logDate) FROM ActivityLog al WHERE al.user.id = :userId")
+    Long countDistinctActiveDaysByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT al.logDate FROM ActivityLog al WHERE al.user.id = :userId ORDER BY al.logDate")
+    List<LocalDate> findDistinctLogDatesByUserIdOrderByLogDate(@Param("userId") Long userId);
+
     // Analytics queries
     List<ActivityLog> findByUserIdAndLogDate(Long userId, LocalDate logDate);
 

@@ -9,5 +9,8 @@ import java.util.List;
 @Repository
 public interface UserBadgeRepository extends JpaRepository<UserBadge, Long> {
     List<UserBadge> findByUserIdOrderByAwardedAtDesc(Long userId);
+
+    List<UserBadge> findByUserId(Long userId);
+
     boolean existsByUserIdAndBadgeId(Long userId, Long badgeId);
 }

@@ -23,6 +23,10 @@ public interface PointLedgerRepository extends JpaRepository<PointLedger, Long> 
         Integer getPointsForDateRange(@Param("userId") Long userId, @Param("start") LocalDate start,
                         @Param("end") LocalDate end);
 
+        @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl WHERE pl.user.id = :userId AND pl.goal.id IN :goalIds AND pl.referenceDate BETWEEN :start AND :end")
+        Integer getPointsForGoalsAndDateRange(@Param("userId") Long userId, @Param("goalIds") List<Long> goalIds,
+                        @Param("start") LocalDate start, @Param("end") LocalDate end);
+
         // Leaderboard queries
         @Query("SELECT pl.user.id, pl.user.username, SUM(pl.points) " +
                         "FROM PointLedger pl " +

@@ -4,6 +4,7 @@ import com.focusforge.model.*;
 import com.focusforge.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +52,20 @@ public class LeaderboardAggregationService {
         snapshotRepository.deleteOldSnapshots(cutoff);
 
         log.info("Leaderboard snapshot aggregation completed");
+    }
+
+    /**
+     * Scheduled automatic aggregation - runs every hour
+     * This ensures leaderboard stays up-to-date without manual triggers
+     */
+    @Scheduled(cron = "0 0 * * * *") // Every hour at minute 0
+    public void scheduledAggregation() {
+        log.info("Running scheduled leaderboard aggregation...");
+        try {
+            computeAndStoreAllSnapshots();
+        } catch (Exception e) {
+            log.error("Scheduled aggregation failed: {}", e.getMessage(), e);
+        }
     }
 
     /**
@@ -131,6 +146,9 @@ public class LeaderboardAggregationService {
         for (Map.Entry<Long, List<Goal>> entry : goalsByUser.entrySet()) {
             Long userId = entry.getKey();
             User user = entry.getValue().get(0).getUser();
+            List<Long> goalIds = entry.getValue().stream()
+                    .map(Goal::getId)
+                    .collect(Collectors.toList());
 
             // Check privacy settings
             if (!isUserEligible(user)) {
@@ -139,7 +157,7 @@ public class LeaderboardAggregationService {
 
             // Get activity data
             List<ActivityLog> activities = activityLogRepository
-                    .findByUserIdAndLogDateBetween(userId, startDate, endDate);
+                    .findByUserIdAndGoalIdInAndLogDateBetween(userId, goalIds, startDate, endDate);
 
             if (activities.isEmpty()) {
                 continue; // No activity this period
@@ -154,7 +172,7 @@ public class LeaderboardAggregationService {
                     .count();
 
             // Get points
-            Integer points = pointLedgerRepository.getPointsForDateRange(userId, startDate, endDate);
+            Integer points = pointLedgerRepository.getPointsForGoalsAndDateRange(userId, goalIds, startDate, endDate);
             metric.points = (points != null ? points : 0);
 
             // Get max streak

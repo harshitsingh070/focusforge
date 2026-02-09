@@ -1,7 +1,9 @@
 package com.focusforge.service;
 
-import com.focusforge.model.*;
-import com.focusforge.repository.*;
+import com.focusforge.model.Goal;
+import com.focusforge.model.PointLedger;
+import com.focusforge.model.User;
+import com.focusforge.repository.PointLedgerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -17,12 +18,6 @@ public class GamificationService {
 
     @Autowired
     private PointLedgerRepository pointLedgerRepository;
-
-    @Autowired
-    private BadgeRepository badgeRepository;
-
-    @Autowired
-    private UserBadgeRepository userBadgeRepository;
 
     @Autowired
     private AntiCheatService antiCheatService;
@@ -70,52 +65,7 @@ public class GamificationService {
 
         log.info("Awarded {} points to user {} for goal {}", finalPoints, user.getId(), goal.getId());
 
-        // Check and award badges
-        checkAndAwardBadges(user, goal, streakCount);
-
         return finalPoints;
-    }
-
-    @Transactional
-    protected void checkAndAwardBadges(User user, Goal goal, int currentStreak) {
-        // Check streak badges
-        List<Badge> streakBadges = badgeRepository.findByCriteriaTypeAndThresholdLessThanEqual("STREAK", currentStreak);
-        for (Badge badge : streakBadges) {
-            if (!userBadgeRepository.existsByUserIdAndBadgeId(user.getId(), badge.getId())) {
-                awardBadge(user, badge, goal);
-            }
-        }
-
-        // Check points badges
-        Integer totalPoints = pointLedgerRepository.getTotalPointsByUserId(user.getId());
-        if (totalPoints != null && totalPoints > 0) {
-            List<Badge> pointBadges = badgeRepository.findByCriteriaTypeAndThresholdLessThanEqual("POINTS", totalPoints);
-            for (Badge badge : pointBadges) {
-                if (!userBadgeRepository.existsByUserIdAndBadgeId(user.getId(), badge.getId())) {
-                    awardBadge(user, badge, null);
-                }
-            }
-        }
-    }
-
-    private void awardBadge(User user, Badge badge, Goal relatedGoal) {
-        UserBadge assignment = new UserBadge();
-        assignment.setUser(user);
-        assignment.setBadge(badge);
-        assignment.setRelatedGoal(relatedGoal);
-        userBadgeRepository.save(assignment);
-
-        // Award bonus points for badge
-        if (badge.getPointsBonus() > 0) {
-            PointLedger bonusEntry = new PointLedger();
-            bonusEntry.setUser(user);
-            bonusEntry.setPoints(badge.getPointsBonus());
-            bonusEntry.setReason("BADGE_BONUS:" + badge.getName());
-            bonusEntry.setReferenceDate(LocalDate.now());
-            pointLedgerRepository.save(bonusEntry);
-        }
-
-        log.info("Awarded badge {} to user {}", badge.getName(), user.getId());
     }
 
     public Integer getTotalPoints(Long userId) {
