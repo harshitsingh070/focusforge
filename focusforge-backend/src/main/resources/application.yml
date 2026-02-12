@@ -8,9 +8,9 @@ spring:
     name: focusforge
 
   datasource:
-    url: jdbc:postgresql://localhost:5712/focusforge
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://localhost:5712/focusforge}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -19,8 +19,8 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${HIBERNATE_DDL_AUTO:validate}
+    show-sql: ${SHOW_SQL:false}
     open-in-view: false
 
   flyway:
@@ -58,7 +58,18 @@ gamification:
 activity:
   max-past-days: 30
 
+badges:
+  longest-streak-cache-ttl-hours: ${BADGE_STREAK_CACHE_TTL_HOURS:1}
+
 logging:
   level:
     com.focusforge: DEBUG
     org.springframework.security: DEBUG
+
+resilience4j:
+  ratelimiter:
+    instances:
+      auth:
+        limit-for-period: ${AUTH_RATE_LIMIT:5}
+        limit-refresh-period: ${AUTH_RATE_REFRESH_PERIOD:1m}
+        timeout-duration: 0s

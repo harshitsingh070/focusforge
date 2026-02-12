@@ -6,11 +6,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +53,12 @@ public class BadgeEvaluationService {
     @Autowired(required = false)
     private NotificationService notificationService;
 
+    @Autowired(required = false)
+    private StringRedisTemplate redisTemplate;
+
+    @Value("${badges.longest-streak-cache-ttl-hours:1}")
+    private long longestStreakCacheTtlHours;
+
     /**
      * Evaluate all badges for a user and award any newly earned ones.
      * Returns list of newly earned badges (for notification purposes).
@@ -70,10 +79,7 @@ public class BadgeEvaluationService {
         Map<String, BadgeMetrics> categoryMetricsCache = new HashMap<>();
 
         List<Badge> allBadges = badgeRepository.findAll();
-        Set<Long> earnedBadgeIds = userBadgeRepository.findByUserId(userId)
-                .stream()
-                .map(ub -> ub.getBadge().getId())
-                .collect(Collectors.toSet());
+        Set<Long> earnedBadgeIds = userBadgeRepository.findEarnedBadgeIdsByUserId(userId);
 
         List<Badge> unearnedBadges = allBadges.stream()
                 .filter(b -> !earnedBadgeIds.contains(b.getId()))
@@ -301,7 +307,7 @@ public class BadgeEvaluationService {
         List<Streak> userStreaks = streakRepository.findByGoalUserIdOrderByCurrentStreakDesc(userId);
         List<LocalDate> activeDates = activityLogRepository.findDistinctLogDatesByUserIdOrderByLogDate(userId);
         long distinctDays = activeDates.size();
-        int longestConsecutiveStreak = calculateLongestConsecutiveStreak(activeDates);
+        int longestConsecutiveStreak = resolveLongestConsecutiveStreak(userId, null, activeDates);
 
         return new BadgeMetrics(totalPoints, userStreaks, distinctDays, longestConsecutiveStreak);
     }
@@ -316,7 +322,7 @@ public class BadgeEvaluationService {
                 userId,
                 categoryName);
         long distinctDays = activeDates.size();
-        int longestConsecutiveStreak = calculateLongestConsecutiveStreak(activeDates);
+        int longestConsecutiveStreak = resolveLongestConsecutiveStreak(userId, categoryName, activeDates);
 
         return new BadgeMetrics(totalPoints, userStreaks, distinctDays, longestConsecutiveStreak);
     }
@@ -363,6 +369,44 @@ public class BadgeEvaluationService {
         }
 
         return Math.max(longestStreak, currentStreak);
+    }
+
+    private int resolveLongestConsecutiveStreak(Long userId, String categoryName, List<LocalDate> activeDates) {
+        String cacheKey = buildLongestStreakCacheKey(userId, categoryName);
+
+        if (redisTemplate != null) {
+            try {
+                String cached = redisTemplate.opsForValue().get(cacheKey);
+                if (cached != null) {
+                    return Integer.parseInt(cached);
+                }
+            } catch (Exception e) {
+                log.warn("Unable to read longest streak from Redis for key {}: {}", cacheKey, e.getMessage());
+            }
+        }
+
+        int calculated = calculateLongestConsecutiveStreak(activeDates);
+
+        if (redisTemplate != null) {
+            try {
+                redisTemplate.opsForValue().set(
+                        cacheKey,
+                        String.valueOf(calculated),
+                        longestStreakCacheTtlHours,
+                        TimeUnit.HOURS);
+            } catch (Exception e) {
+                log.warn("Unable to write longest streak to Redis for key {}: {}", cacheKey, e.getMessage());
+            }
+        }
+
+        return calculated;
+    }
+
+    private String buildLongestStreakCacheKey(Long userId, String categoryName) {
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            return "badge:streak:user:" + userId + ":global";
+        }
+        return "badge:streak:user:" + userId + ":category:" + categoryName.trim().toLowerCase(Locale.ROOT);
     }
 
     /**
