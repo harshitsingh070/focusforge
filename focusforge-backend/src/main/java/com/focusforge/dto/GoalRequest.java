@@ -23,8 +23,8 @@ public class GoalRequest {
     private Integer difficulty;
 
     @NotNull(message = "Daily minimum minutes is required")
-    @Min(value = 1, message = "Daily minimum must be at least 1 minute")
-    @Max(value = 1440, message = "Daily minimum cannot exceed 1440 minutes")
+    @Min(value = 10, message = "Daily minimum must be at least 10 minutes")
+    @Max(value = 600, message = "Daily minimum cannot exceed 600 minutes")
     private Integer dailyMinimumMinutes;
 
     @NotNull(message = "Start date is required")

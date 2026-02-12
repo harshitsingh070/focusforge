@@ -13,14 +13,39 @@ import java.util.List;
 public interface PointLedgerRepository extends JpaRepository<PointLedger, Long> {
         List<PointLedger> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+        boolean existsByUserIdAndReason(Long userId, String reason);
+
         @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl WHERE pl.user.id = :userId")
         Integer getTotalPointsByUserId(@Param("userId") Long userId);
+
+        @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl " +
+                        "JOIN pl.goal g " +
+                        "JOIN g.category c " +
+                        "WHERE pl.user.id = :userId AND c.name = :categoryName")
+        Integer getTotalPointsByUserIdAndCategory(@Param("userId") Long userId,
+                        @Param("categoryName") String categoryName);
 
         @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl WHERE pl.user.id = :userId AND pl.referenceDate = :date")
         Integer getPointsForDate(@Param("userId") Long userId, @Param("date") LocalDate date);
 
+        @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl " +
+                        "WHERE pl.user.id = :userId AND pl.referenceDate = :date AND pl.reason = 'ACTIVITY_COMPLETION'")
+        Integer getActivityPointsForDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
         @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl WHERE pl.user.id = :userId AND pl.referenceDate BETWEEN :start AND :end")
         Integer getPointsForDateRange(@Param("userId") Long userId, @Param("start") LocalDate start,
+                        @Param("end") LocalDate end);
+
+        @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl " +
+                        "JOIN pl.goal g " +
+                        "JOIN g.category c " +
+                        "WHERE pl.user.id = :userId " +
+                        "AND c.name = :categoryName " +
+                        "AND pl.referenceDate BETWEEN :start AND :end")
+        Integer getPointsForUserCategoryAndDateRange(
+                        @Param("userId") Long userId,
+                        @Param("categoryName") String categoryName,
+                        @Param("start") LocalDate start,
                         @Param("end") LocalDate end);
 
         @Query("SELECT COALESCE(SUM(pl.points), 0) FROM PointLedger pl WHERE pl.user.id = :userId AND pl.goal.id IN :goalIds AND pl.referenceDate BETWEEN :start AND :end")

@@ -15,6 +15,12 @@ import java.util.Optional;
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
     Optional<ActivityLog> findByUserIdAndGoalIdAndLogDate(Long userId, Long goalId, LocalDate logDate);
 
+    List<ActivityLog> findTop5ByUserIdAndGoalIdOrderByLogDateDescCreatedAtDesc(Long userId, Long goalId);
+
+    List<ActivityLog> findByGoalIdOrderByLogDateAsc(Long goalId);
+
+    List<ActivityLog> findByUserIdAndGoalIdOrderByLogDateDesc(Long userId, Long goalId);
+
     List<ActivityLog> findByUserIdAndLogDateBetweenOrderByLogDateDesc(Long userId, LocalDate start, LocalDate end);
 
     @Query("SELECT al FROM ActivityLog al WHERE al.user.id = :userId ORDER BY al.logDate DESC, al.createdAt DESC")
@@ -38,8 +44,23 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> 
     @Query("SELECT COUNT(DISTINCT al.logDate) FROM ActivityLog al WHERE al.user.id = :userId")
     Long countDistinctActiveDaysByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COUNT(DISTINCT al.logDate) FROM ActivityLog al " +
+            "JOIN al.goal g " +
+            "JOIN g.category c " +
+            "WHERE al.user.id = :userId AND c.name = :categoryName")
+    Long countDistinctActiveDaysByUserIdAndCategory(@Param("userId") Long userId,
+            @Param("categoryName") String categoryName);
+
     @Query("SELECT DISTINCT al.logDate FROM ActivityLog al WHERE al.user.id = :userId ORDER BY al.logDate")
     List<LocalDate> findDistinctLogDatesByUserIdOrderByLogDate(@Param("userId") Long userId);
+
+    @Query("SELECT DISTINCT al.logDate FROM ActivityLog al " +
+            "JOIN al.goal g " +
+            "JOIN g.category c " +
+            "WHERE al.user.id = :userId AND c.name = :categoryName " +
+            "ORDER BY al.logDate")
+    List<LocalDate> findDistinctLogDatesByUserIdAndCategoryOrderByLogDate(@Param("userId") Long userId,
+            @Param("categoryName") String categoryName);
 
     // Analytics queries
     List<ActivityLog> findByUserIdAndLogDate(Long userId, LocalDate logDate);

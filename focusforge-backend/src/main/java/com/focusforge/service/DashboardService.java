@@ -15,6 +15,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -63,14 +64,15 @@ public class DashboardService {
         List<DashboardDTO.GoalProgressDTO> goalProgress = goals.stream().map(goal -> {
             Streak streak = streakRepository.findByGoalId(goal.getId()).orElse(null);
             int currentStreak = streak != null ? streak.getCurrentStreak() : 0;
-            
-            // Check today's progress
-            Integer todayMinutes = activityLogRepository.getTotalMinutesForDate(userId, LocalDate.now());
-            int todayProgress = todayMinutes != null ? todayMinutes : 0;
-            
-            // Check if completed today
-            boolean completedToday = activityLogRepository.findByUserIdAndGoalIdAndLogDate(
-                    userId, goal.getId(), LocalDate.now()).isPresent();
+
+            // Today's progress must be per-goal, not total user minutes across all goals.
+            Optional<ActivityLog> todaysGoalLog = activityLogRepository.findByUserIdAndGoalIdAndLogDate(
+                    userId, goal.getId(), LocalDate.now());
+            int todayProgress = todaysGoalLog.map(logEntry -> {
+                Integer minutes = logEntry.getMinutesSpent();
+                return minutes != null ? minutes : 0;
+            }).orElse(0);
+            boolean completedToday = todaysGoalLog.isPresent();
             
             // Check if at risk (streak > 0 but no activity yesterday)
             boolean atRisk = false;
@@ -182,7 +184,7 @@ public class DashboardService {
         long atRisk = goals.stream().filter(DashboardDTO.GoalProgressDTO::isAtRisk).count();
         
         if (completedToday == goals.size() && goals.size() > 0) {
-            return "Perfect day! All goals completed. 🔥";
+            return "Perfect day! All goals completed.";
         } else if (atRisk > 0) {
             return String.format("%d goal(s) at risk of losing streak!", atRisk);
         } else if (completedToday > 0) {
@@ -195,3 +197,4 @@ public class DashboardService {
     @Autowired
     private GamificationService gamificationService;
 }
+

@@ -1,5 +1,7 @@
 package com.focusforge.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.focusforge.model.*;
 import com.focusforge.repository.*;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class LeaderboardAggregationService {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private GoalRepository goalRepository;
@@ -32,6 +35,28 @@ public class LeaderboardAggregationService {
     private LeaderboardSnapshotRepository snapshotRepository;
 
     private static final String[] CATEGORIES = { "Coding", "Health", "Reading", "Academics", "Career Skills" };
+
+    /**
+     * Refresh only affected scopes after a new activity is logged.
+     * Recomputes overall + the activity category for WEEKLY, MONTHLY, and ALL_TIME.
+     */
+    @Transactional
+    public void refreshSnapshotsForActivity(String categoryName, LocalDate referenceDate) {
+        LocalDate effectiveDate = referenceDate != null ? referenceDate : LocalDate.now();
+        String normalizedCategory = normalizeKnownCategory(categoryName);
+
+        for (String periodType : List.of("WEEKLY", "MONTHLY", "ALL_TIME")) {
+            LocalDate[] period = getPeriodBoundaries(periodType, effectiveDate);
+            LocalDate startDate = period[0];
+            LocalDate endDate = period[1];
+
+            computeCategorySnapshot(null, startDate, endDate, periodType, effectiveDate);
+
+            if (normalizedCategory != null) {
+                computeCategorySnapshot(normalizedCategory, startDate, endDate, periodType, effectiveDate);
+            }
+        }
+    }
 
     /**
      * Main entry point - computes and stores snapshots for all periods
@@ -307,6 +332,20 @@ public class LeaderboardAggregationService {
         return new LocalDate[] { startDate, endDate };
     }
 
+    private String normalizeKnownCategory(String categoryName) {
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            return null;
+        }
+
+        String trimmed = categoryName.trim();
+        for (String knownCategory : CATEGORIES) {
+            if (knownCategory.equalsIgnoreCase(trimmed)) {
+                return knownCategory;
+            }
+        }
+
+        return trimmed;
+    }
     /**
      * Check if user is eligible for leaderboards (privacy check)
      */
@@ -316,9 +355,22 @@ public class LeaderboardAggregationService {
             return true;
         }
 
-        // Simple JSON check (could use ObjectMapper for robustness)
-        return privacyJson.contains("\"showLeaderboard\":true") ||
-                privacyJson.contains("\"showLeaderboard\": true");
+        try {
+            Map<String, Object> privacySettings = OBJECT_MAPPER.readValue(
+                    privacyJson,
+                    new TypeReference<Map<String, Object>>() {
+                    });
+
+            Object showLeaderboard = privacySettings.get("showLeaderboard");
+            if (showLeaderboard instanceof Boolean) {
+                return (Boolean) showLeaderboard;
+            }
+        } catch (Exception ex) {
+            log.warn("Failed to parse privacy settings for user {}. Defaulting to visible.",
+                    user.getId(), ex);
+        }
+
+        return true;
     }
 
     // Helper classes for intermediate data

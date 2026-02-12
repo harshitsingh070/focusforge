@@ -28,6 +28,9 @@ public class Badge {
     @Column(name = "evaluation_scope")
     private String evaluationScope = "GLOBAL"; // GLOBAL, PER_GOAL, PER_CATEGORY
 
+    @Column(name = "target_category")
+    private String targetCategory; // Used when evaluationScope is PER_CATEGORY
+
     @Column(name = "icon_url")
     private String iconUrl;
 

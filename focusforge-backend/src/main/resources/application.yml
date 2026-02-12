@@ -46,9 +46,17 @@ jwt:
   expiration: 86400000
 
 gamification:
-  daily-point-cap: 1000
-  max-minutes-per-entry: 480
+  daily-point-cap: 100
+  base-points: 10
+  time-bonus-threshold-minutes: 20
+  time-bonus-step-minutes: 10
+  weekly-consistency-min-days: 5
+  weekly-consistency-bonus: 50
+  max-minutes-per-entry: 600
   max-minutes-per-day: 960
+
+activity:
+  max-past-days: 30
 
 logging:
   level:

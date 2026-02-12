@@ -17,6 +17,21 @@ public interface StreakRepository extends JpaRepository<Streak, Long> {
     @Query("SELECT COALESCE(MAX(s.currentStreak), 0) FROM Streak s WHERE s.goal.user.id = :userId")
     Integer findMaxCurrentStreakByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT COALESCE(MAX(s.currentStreak), 0) FROM Streak s " +
+            "JOIN s.goal g " +
+            "JOIN g.category c " +
+            "WHERE g.user.id = :userId AND c.name = :categoryName")
+    Integer findMaxCurrentStreakByUserIdAndCategory(@Param("userId") Long userId,
+            @Param("categoryName") String categoryName);
+
     @Query("SELECT s FROM Streak s JOIN FETCH s.goal g WHERE g.user.id = :userId ORDER BY s.currentStreak DESC")
     List<Streak> findByGoalUserIdOrderByCurrentStreakDesc(@Param("userId") Long userId);
+
+    @Query("SELECT s FROM Streak s " +
+            "JOIN FETCH s.goal g " +
+            "JOIN FETCH g.category c " +
+            "WHERE g.user.id = :userId AND c.name = :categoryName " +
+            "ORDER BY s.currentStreak DESC")
+    List<Streak> findByGoalUserIdAndCategoryOrderByCurrentStreakDesc(@Param("userId") Long userId,
+            @Param("categoryName") String categoryName);
 }

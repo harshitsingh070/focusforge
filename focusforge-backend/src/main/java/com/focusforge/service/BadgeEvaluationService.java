@@ -47,18 +47,28 @@ public class BadgeEvaluationService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired(required = false)
+    private NotificationService notificationService;
+
     /**
      * Evaluate all badges for a user and award any newly earned ones.
      * Returns list of newly earned badges (for notification purposes).
      */
     @Transactional
     public List<Badge> evaluateAndAwardBadges(Long userId) {
+        return evaluateAndAwardBadgesDetailed(userId).stream()
+                .map(BadgeAward::getBadge)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<BadgeAward> evaluateAndAwardBadgesDetailed(Long userId) {
         log.debug("Evaluating badges for user: {}", userId);
 
-        List<Badge> newlyEarnedBadges = new ArrayList<>();
-        BadgeMetrics metrics = loadBadgeMetrics(userId);
+        List<BadgeAward> newlyEarnedBadges = new ArrayList<>();
+        BadgeMetrics globalMetrics = loadBadgeMetrics(userId);
+        Map<String, BadgeMetrics> categoryMetricsCache = new HashMap<>();
 
-        // Get all badges user doesn't have yet
         List<Badge> allBadges = badgeRepository.findAll();
         Set<Long> earnedBadgeIds = userBadgeRepository.findByUserId(userId)
                 .stream()
@@ -71,15 +81,20 @@ public class BadgeEvaluationService {
 
         log.debug("User {} has {} unearned badges to evaluate", userId, unearnedBadges.size());
 
-        // Evaluate each unearned badge
         for (Badge badge : unearnedBadges) {
-            BadgeEvaluationResult result = evaluateBadge(badge, metrics);
-
-            if (result.isEarned()) {
-                awardBadge(userId, badge, result.getReason(), result.getRelatedGoalId());
-                newlyEarnedBadges.add(badge);
-                log.info("Badge earned: {} by user {}, reason: {}", badge.getName(), userId, result.getReason());
+            BadgeEvaluationResult result = evaluateBadge(badge, userId, globalMetrics, categoryMetricsCache);
+            if (!result.isEarned()) {
+                continue;
             }
+
+            boolean awarded = awardBadge(userId, badge, result.getReason(), result.getRelatedGoalId());
+            if (!awarded) {
+                continue;
+            }
+
+            BadgeAward award = new BadgeAward(badge, result.getReason(), result.getRelatedGoalId());
+            newlyEarnedBadges.add(award);
+            log.info("Badge earned: {} by user {}, reason: {}", badge.getName(), userId, result.getReason());
         }
 
         if (!newlyEarnedBadges.isEmpty()) {
@@ -127,16 +142,36 @@ public class BadgeEvaluationService {
     /**
      * Evaluate a single badge for a user.
      */
-    private BadgeEvaluationResult evaluateBadge(Badge badge, BadgeMetrics metrics) {
+    private BadgeEvaluationResult evaluateBadge(
+            Badge badge,
+            Long userId,
+            BadgeMetrics globalMetrics,
+            Map<String, BadgeMetrics> categoryMetricsCache) {
+        String scope = normalizeScope(badge.getEvaluationScope());
+        String targetCategory = normalizeTargetCategory(badge.getTargetCategory());
+
+        BadgeMetrics scopedMetrics = globalMetrics;
+        if ("PER_CATEGORY".equals(scope)) {
+            if (targetCategory == null) {
+                log.warn("Skipping PER_CATEGORY badge '{}' because targetCategory is missing", badge.getName());
+                return BadgeEvaluationResult.notEarned();
+            }
+
+            String cacheKey = targetCategory.toLowerCase(Locale.ROOT);
+            scopedMetrics = categoryMetricsCache.computeIfAbsent(
+                    cacheKey,
+                    key -> loadCategoryBadgeMetrics(userId, targetCategory));
+        }
+
         switch (badge.getCriteriaType()) {
             case "POINTS":
-                return evaluatePointsBadge(badge, metrics);
+                return evaluatePointsBadge(badge, scopedMetrics, scope, targetCategory);
             case "STREAK":
-                return evaluateStreakBadge(badge, metrics);
+                return evaluateStreakBadge(badge, scopedMetrics, scope, targetCategory);
             case "DAYS_ACTIVE":
-                return evaluateDaysActiveBadge(badge, metrics);
+                return evaluateDaysActiveBadge(badge, scopedMetrics, scope, targetCategory);
             case "CONSISTENCY":
-                return evaluateConsistencyBadge(badge, metrics);
+                return evaluateConsistencyBadge(badge, scopedMetrics, scope, targetCategory);
             default:
                 log.warn("Unknown criteria type: {} for badge: {}", badge.getCriteriaType(), badge.getName());
                 return BadgeEvaluationResult.notEarned();
@@ -146,11 +181,17 @@ public class BadgeEvaluationService {
     /**
      * Evaluate POINTS-based badges (e.g., "Century Club" - 100 points)
      */
-    private BadgeEvaluationResult evaluatePointsBadge(Badge badge, BadgeMetrics metrics) {
+    private BadgeEvaluationResult evaluatePointsBadge(
+            Badge badge,
+            BadgeMetrics metrics,
+            String scope,
+            String targetCategory) {
         int totalPoints = metrics.getTotalPoints();
 
         if (totalPoints >= badge.getThreshold()) {
-            String reason = String.format("Reached %d total points", totalPoints);
+            String reason = "PER_CATEGORY".equals(scope)
+                    ? String.format("Reached %d total points in %s", totalPoints, targetCategory)
+                    : String.format("Reached %d total points", totalPoints);
             return BadgeEvaluationResult.earned(reason, null);
         }
 
@@ -160,10 +201,14 @@ public class BadgeEvaluationService {
     /**
      * Evaluate STREAK-based badges (e.g., "Week Warrior" - 7 day streak)
      */
-    private BadgeEvaluationResult evaluateStreakBadge(Badge badge, BadgeMetrics metrics) {
+    private BadgeEvaluationResult evaluateStreakBadge(
+            Badge badge,
+            BadgeMetrics metrics,
+            String scope,
+            String targetCategory) {
         List<Streak> streaks = metrics.getUserStreaks();
 
-        if ("PER_GOAL".equals(badge.getEvaluationScope())) {
+        if ("PER_GOAL".equals(scope) || "ANY_GOAL".equals(scope)) {
             // Check if ANY goal has streak >= threshold
             Optional<Streak> bestStreak = streaks.stream()
                     .filter(s -> s.getCurrentStreak() != null && s.getCurrentStreak() >= badge.getThreshold())
@@ -174,6 +219,18 @@ public class BadgeEvaluationService {
                 String goalTitle = streak.getGoal().getTitle();
                 String reason = String.format("Maintained %d-day streak on %s goal",
                         streak.getCurrentStreak(), goalTitle);
+                return BadgeEvaluationResult.earned(reason, streak.getGoal().getId());
+            }
+        } else if ("PER_CATEGORY".equals(scope)) {
+            Optional<Streak> bestStreak = streaks.stream()
+                    .filter(s -> s.getCurrentStreak() != null && s.getCurrentStreak() >= badge.getThreshold())
+                    .max(Comparator.comparingInt(Streak::getCurrentStreak));
+
+            if (bestStreak.isPresent()) {
+                Streak streak = bestStreak.get();
+                String goalTitle = streak.getGoal().getTitle();
+                String reason = String.format("Maintained %d-day streak in %s (%s goal)",
+                        streak.getCurrentStreak(), targetCategory, goalTitle);
                 return BadgeEvaluationResult.earned(reason, streak.getGoal().getId());
             }
         } else {
@@ -197,11 +254,17 @@ public class BadgeEvaluationService {
     /**
      * Evaluate DAYS_ACTIVE badges (e.g., "30 Day Challenge" - active for 30 days)
      */
-    private BadgeEvaluationResult evaluateDaysActiveBadge(Badge badge, BadgeMetrics metrics) {
+    private BadgeEvaluationResult evaluateDaysActiveBadge(
+            Badge badge,
+            BadgeMetrics metrics,
+            String scope,
+            String targetCategory) {
         long distinctDays = metrics.getDistinctDays();
 
         if (distinctDays >= badge.getThreshold()) {
-            String reason = String.format("Logged activity on %d different days", distinctDays);
+            String reason = "PER_CATEGORY".equals(scope)
+                    ? String.format("Logged activity on %d different days in %s", distinctDays, targetCategory)
+                    : String.format("Logged activity on %d different days", distinctDays);
             return BadgeEvaluationResult.earned(reason, null);
         }
 
@@ -212,14 +275,21 @@ public class BadgeEvaluationService {
      * Evaluate CONSISTENCY badges (e.g., "Consistency King" - 30 consecutive days
      * with activity)
      */
-    private BadgeEvaluationResult evaluateConsistencyBadge(Badge badge, BadgeMetrics metrics) {
+    private BadgeEvaluationResult evaluateConsistencyBadge(
+            Badge badge,
+            BadgeMetrics metrics,
+            String scope,
+            String targetCategory) {
         int longestConsecutiveStreak = metrics.getLongestConsecutiveStreak();
         if (longestConsecutiveStreak <= 0) {
             return BadgeEvaluationResult.notEarned();
         }
 
         if (longestConsecutiveStreak >= badge.getThreshold()) {
-            String reason = String.format("Logged activity for %d consecutive days", longestConsecutiveStreak);
+            String reason = "PER_CATEGORY".equals(scope)
+                    ? String.format("Logged activity in %s for %d consecutive days", targetCategory,
+                            longestConsecutiveStreak)
+                    : String.format("Logged activity for %d consecutive days", longestConsecutiveStreak);
             return BadgeEvaluationResult.earned(reason, null);
         }
 
@@ -234,6 +304,45 @@ public class BadgeEvaluationService {
         int longestConsecutiveStreak = calculateLongestConsecutiveStreak(activeDates);
 
         return new BadgeMetrics(totalPoints, userStreaks, distinctDays, longestConsecutiveStreak);
+    }
+
+    private BadgeMetrics loadCategoryBadgeMetrics(Long userId, String categoryName) {
+        int totalPoints = Optional.ofNullable(pointLedgerRepository.getTotalPointsByUserIdAndCategory(userId, categoryName))
+                .orElse(0);
+        List<Streak> userStreaks = streakRepository.findByGoalUserIdAndCategoryOrderByCurrentStreakDesc(
+                userId,
+                categoryName);
+        List<LocalDate> activeDates = activityLogRepository.findDistinctLogDatesByUserIdAndCategoryOrderByLogDate(
+                userId,
+                categoryName);
+        long distinctDays = activeDates.size();
+        int longestConsecutiveStreak = calculateLongestConsecutiveStreak(activeDates);
+
+        return new BadgeMetrics(totalPoints, userStreaks, distinctDays, longestConsecutiveStreak);
+    }
+
+    private String normalizeScope(String scope) {
+        if (scope == null || scope.trim().isEmpty()) {
+            return "GLOBAL";
+        }
+
+        String normalized = scope.trim().toUpperCase(Locale.ROOT);
+        if ("ANY_GOAL".equals(normalized)) {
+            return "PER_GOAL";
+        }
+        if ("CATEGORY".equals(normalized)) {
+            return "PER_CATEGORY";
+        }
+        return normalized;
+    }
+
+    private String normalizeTargetCategory(String targetCategory) {
+        if (targetCategory == null) {
+            return null;
+        }
+
+        String trimmed = targetCategory.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private int calculateLongestConsecutiveStreak(List<LocalDate> activeDates) {
@@ -259,9 +368,9 @@ public class BadgeEvaluationService {
     /**
      * Award a badge to a user.
      */
-    private void awardBadge(Long userId, Badge badge, String reason, Long relatedGoalId) {
+    private boolean awardBadge(Long userId, Badge badge, String reason, Long relatedGoalId) {
         if (userBadgeRepository.existsByUserIdAndBadgeId(userId, badge.getId())) {
-            return;
+            return false;
         }
 
         User user = userRepository.findById(userId)
@@ -278,6 +387,16 @@ public class BadgeEvaluationService {
 
         userBadgeRepository.save(userBadge);
 
+        if (notificationService != null) {
+            notificationService.createNotification(
+                    userId,
+                    "BADGE_EARNED",
+                    "New badge unlocked",
+                    String.format("🎉 You unlocked %s", badge.getName()),
+                    String.format("{\"badgeId\":%d}", badge.getId()),
+                    null);
+        }
+
         // Award bonus points if specified
         if (badge.getPointsBonus() != null && badge.getPointsBonus() > 0) {
             PointLedger bonusPoints = new PointLedger();
@@ -289,6 +408,8 @@ public class BadgeEvaluationService {
 
             log.debug("Awarded {} bonus points for badge: {}", badge.getPointsBonus(), badge.getName());
         }
+
+        return true;
     }
 
     @Data
@@ -298,6 +419,14 @@ public class BadgeEvaluationService {
         private List<Streak> userStreaks;
         private long distinctDays;
         private int longestConsecutiveStreak;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class BadgeAward {
+        private Badge badge;
+        private String reason;
+        private Long relatedGoalId;
     }
 
     /**

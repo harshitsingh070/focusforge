@@ -39,7 +39,7 @@ public class User {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "privacy_settings")
-    private String privacySettings = "{\"publicProfile\": false, \"shareAnalytics\": false}";
+    private String privacySettings = "{\"publicProfile\": false, \"shareAnalytics\": false, \"showLeaderboard\": true}";
 
     // Getters and Setters
     public Long getId() {
@@ -106,3 +106,4 @@ public class User {
         this.privacySettings = privacySettings;
     }
 }
+

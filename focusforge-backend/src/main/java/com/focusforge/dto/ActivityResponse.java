@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,4 +21,5 @@ public class ActivityResponse {
     private String notes;
     private boolean suspicious;
     private String message;
+    private List<BadgeAwardDTO> newlyEarnedBadges;
 }

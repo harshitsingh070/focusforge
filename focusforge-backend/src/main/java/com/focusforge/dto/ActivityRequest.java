@@ -1,5 +1,7 @@
 package com.focusforge.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.focusforge.config.FlexibleLocalDateDeserializer;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
@@ -8,11 +10,12 @@ public class ActivityRequest {
     private Long goalId;
 
     @NotNull(message = "Date is required")
+    @JsonDeserialize(using = FlexibleLocalDateDeserializer.class)
     private LocalDate logDate;
 
     @NotNull(message = "Minutes spent is required")
-    @Min(value = 1, message = "Must spend at least 1 minute")
-    @Max(value = 480, message = "Cannot exceed 8 hours per entry")
+    @Min(value = 10, message = "Must spend at least 10 minutes")
+    @Max(value = 600, message = "Cannot exceed 600 minutes per entry")
     private Integer minutesSpent;
 
     @Size(max = 500, message = "Notes must be less than 500 characters")
