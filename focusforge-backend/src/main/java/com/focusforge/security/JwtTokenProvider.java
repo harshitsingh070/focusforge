@@ -1,5 +1,6 @@
 package com.focusforge.security;
 
+import com.focusforge.model.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,20 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(Long.toString(userPrincipal.getId()))
                 .claim("email", userPrincipal.getEmail())
-                .claim("username", userPrincipal.getUsername())
+                .claim("username", userPrincipal.getUsernameField())
+                .issuedAt(new Date())
+                .expiration(expiryDate)
+                .signWith(getSigningKey(), Jwts.SIG.HS512)
+                .compact();
+    }
+
+    public String generateTokenFromUser(User user) {
+        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .subject(Long.toString(user.getId()))
+                .claim("email", user.getEmail())
+                .claim("username", user.getUsername())
                 .issuedAt(new Date())
                 .expiration(expiryDate)
                 .signWith(getSigningKey(), Jwts.SIG.HS512)

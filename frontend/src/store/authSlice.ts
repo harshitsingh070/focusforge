@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { authAPI, extractApiErrorMessage } from '../services/api';
 
 interface AuthUser {
@@ -169,6 +169,21 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    updateAuthUser: (state, action: PayloadAction<Partial<AuthUser>>) => {
+      if (!state.user) {
+        state.user = {};
+      }
+
+      state.user = {
+        ...state.user,
+        ...action.payload,
+      };
+    },
+    setAuthToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+      state.isAuthenticated = true;
+      localStorage.setItem('token', action.payload);
+    },
     logout: (state) => {
       localStorage.removeItem('token');
       state.token = null;
@@ -232,5 +247,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { updateAuthUser, setAuthToken, logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

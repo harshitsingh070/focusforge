@@ -17,6 +17,38 @@
     --brand-500: #0f766e;
     --brand-600: #0a5f59;
     --brand-700: #094c47;
+    --motion-duration: 220ms;
+    --motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-offset: 8px;
+    --motion-scale: 1.02;
+  }
+
+  :root.theme-light {
+    --bg-start: #f7faf8;
+    --bg-end: #f2f7f5;
+    --surface: #ffffff;
+    --surface-strong: #f9fffd;
+    --ink-900: #0f1c1a;
+    --ink-700: #2a3e3b;
+    --ink-500: #5f7773;
+    --line: #d7e6e2;
+    --brand-500: #0f766e;
+    --brand-600: #0a5f59;
+    --brand-700: #094c47;
+  }
+
+  :root.theme-dark {
+    --bg-start: #e9eef7;
+    --bg-end: #dfe7f4;
+    --surface: #f7f9fd;
+    --surface-strong: #eff4fb;
+    --ink-900: #101827;
+    --ink-700: #253047;
+    --ink-500: #52607a;
+    --line: #c4d2e8;
+    --brand-500: #1d4ed8;
+    --brand-600: #1e40af;
+    --brand-700: #1e3a8a;
   }
 
   body {
@@ -43,11 +75,47 @@
   * {
     box-sizing: border-box;
   }
+
+  @keyframes page-entry {
+    from {
+      opacity: 0;
+      transform: translateY(var(--motion-offset));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes loading-indicator-entry {
+    from {
+      opacity: 0;
+      transform: translateY(var(--motion-offset)) scale(1);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(var(--motion-scale));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
   .page-shell {
     @apply min-h-screen;
+    opacity: 0;
+    transform: translateY(var(--motion-offset));
+    animation: page-entry var(--motion-duration) var(--motion-easing) forwards;
   }
 
   .page-container {
@@ -68,12 +136,16 @@
   }
 
   .card {
-    @apply rounded-2xl border p-4 transition-all duration-300 sm:p-6;
+    @apply rounded-2xl border p-4 sm:p-6;
     border-color: var(--line);
     background: linear-gradient(180deg, var(--surface), var(--surface-strong));
     box-shadow:
       0 8px 30px rgba(10, 95, 89, 0.08),
       0 1px 0 rgba(255, 255, 255, 0.65) inset;
+    transition:
+      transform var(--motion-duration) var(--motion-easing),
+      box-shadow var(--motion-duration) var(--motion-easing),
+      border-color var(--motion-duration) var(--motion-easing);
   }
 
   .soft-card {
@@ -84,9 +156,13 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200;
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white;
     background: linear-gradient(140deg, var(--brand-500), var(--brand-700));
     box-shadow: 0 8px 20px rgba(10, 95, 89, 0.28);
+    transition:
+      transform var(--motion-duration) var(--motion-easing),
+      box-shadow var(--motion-duration) var(--motion-easing),
+      filter var(--motion-duration) var(--motion-easing);
   }
 
   .btn-primary:disabled {
@@ -95,10 +171,16 @@
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all duration-200;
+    @apply inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold;
     border-color: var(--line);
     color: var(--ink-700);
     background: rgba(255, 255, 255, 0.85);
+    transition:
+      transform var(--motion-duration) var(--motion-easing),
+      border-color var(--motion-duration) var(--motion-easing),
+      background-color var(--motion-duration) var(--motion-easing),
+      color var(--motion-duration) var(--motion-easing),
+      box-shadow var(--motion-duration) var(--motion-easing);
   }
 
   .btn-secondary:disabled {
@@ -106,8 +188,12 @@
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold transition-colors;
+    @apply inline-flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold;
     color: var(--ink-700);
+    transition:
+      transform var(--motion-duration) var(--motion-easing),
+      background-color var(--motion-duration) var(--motion-easing),
+      color var(--motion-duration) var(--motion-easing);
   }
 
   .btn-ghost:hover {
@@ -116,10 +202,14 @@
   }
 
   .input-field {
-    @apply w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200;
+    @apply w-full rounded-xl border px-4 py-3 text-sm outline-none;
     border-color: var(--line);
     color: var(--ink-900);
     background: rgba(255, 255, 255, 0.95);
+    transition:
+      border-color var(--motion-duration) var(--motion-easing),
+      box-shadow var(--motion-duration) var(--motion-easing),
+      background-color var(--motion-duration) var(--motion-easing);
   }
 
   .input-field:focus {
@@ -181,6 +271,26 @@
     @apply border-t;
     border-color: #e4eeeb;
   }
+
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover {
+      transform: translateY(calc(var(--motion-offset) * -1)) scale(var(--motion-scale));
+      box-shadow:
+        0 18px 36px rgba(10, 95, 89, 0.14),
+        0 1px 0 rgba(255, 255, 255, 0.65) inset;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(calc(var(--motion-offset) * -1)) scale(var(--motion-scale));
+      box-shadow: 0 14px 28px rgba(10, 95, 89, 0.34);
+      filter: brightness(1.02);
+    }
+
+    .btn-secondary:hover:not(:disabled),
+    .btn-ghost:hover:not(:disabled) {
+      transform: translateY(calc(var(--motion-offset) * -1)) scale(var(--motion-scale));
+    }
+  }
 }
 
 @layer utilities {
@@ -195,5 +305,41 @@
   .scrollbar-soft {
     scrollbar-width: thin;
     scrollbar-color: #b2cac4 transparent;
+  }
+
+  .transition,
+  .transition-all,
+  .transition-colors,
+  .transition-opacity,
+  .transition-shadow,
+  .transition-transform {
+    transition-duration: var(--motion-duration) !important;
+    transition-timing-function: var(--motion-easing) !important;
+  }
+
+  .transition-all {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform !important;
+  }
+
+  .duration-75,
+  .duration-100,
+  .duration-150,
+  .duration-200,
+  .duration-300,
+  .duration-500,
+  .duration-700,
+  .duration-1000 {
+    transition-duration: var(--motion-duration) !important;
+  }
+
+  .ease-linear,
+  .ease-in,
+  .ease-out,
+  .ease-in-out {
+    transition-timing-function: var(--motion-easing) !important;
+  }
+
+  .animate-spin {
+    animation: loading-indicator-entry var(--motion-duration) var(--motion-easing) 1 forwards !important;
   }
 }

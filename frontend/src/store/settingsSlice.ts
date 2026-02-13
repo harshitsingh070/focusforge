@@ -1,11 +1,16 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axios from 'axios';
 import { extractApiErrorMessage, settingsAPI } from '../services/api';
+import { applyTheme } from '../utils/theme';
 import {
+  ChangePasswordPayload,
   PrivacySettings,
   ProfileSettingsData,
   SettingsPayload,
   UserPreferences,
 } from '../types';
+import { setAuthToken, updateAuthUser } from './authSlice';
+import { updatePreferences as updateNotificationPreferences } from './notificationsSlice';
 
 interface SettingsState {
   privacy: PrivacySettings;
@@ -15,12 +20,17 @@ interface SettingsState {
   loading: boolean;
   error: string | null;
   updateSuccess: boolean;
+  passwordLoading: boolean;
+  passwordError: string | null;
+  passwordUpdateSuccess: boolean;
+  passwordMessage: string | null;
 }
 
 interface SettingsResponse {
   privacy: PrivacySettings;
   preferences: UserPreferences;
   profile: ProfileSettingsData;
+  token?: string;
 }
 
 const SETTINGS_PREFERENCES_KEY = 'focusforge.userPreferences';
@@ -56,6 +66,9 @@ const safeJsonParse = <T>(raw: string | null, fallback: T): T => {
     return fallback;
   }
 };
+
+const isEndpointMissingError = (error: unknown): boolean =>
+  axios.isAxiosError(error) && error.response?.status === 404;
 
 const normalizePrivacySettings = (value: unknown): PrivacySettings => {
   const candidate = (value || {}) as Partial<PrivacySettings>;
@@ -128,25 +141,62 @@ const initialState: SettingsState = {
   loading: false,
   error: null,
   updateSuccess: false,
+  passwordLoading: false,
+  passwordError: null,
+  passwordUpdateSuccess: false,
+  passwordMessage: null,
 };
 
 export const fetchSettings = createAsyncThunk<SettingsResponse, void, { rejectValue: string }>(
   'settings/fetchSettings',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { dispatch, getState, rejectWithValue }) => {
     try {
-      const response = await settingsAPI.getPrivacySettings();
-      const privacy = normalizePrivacySettings(response.data?.privacySettings);
+      let data: Record<string, unknown> = {};
+      try {
+        const response = await settingsAPI.getSettings();
+        data = (response.data || {}) as Record<string, unknown>;
+      } catch (error) {
+        if (!isEndpointMissingError(error)) {
+          throw error;
+        }
+
+        const privacyResponse = await settingsAPI.getPrivacySettings();
+        data = {
+          privacySettings: privacyResponse.data?.privacySettings,
+        };
+      }
+
+      const privacy = normalizePrivacySettings(data.privacy || data.privacySettings);
       const preferences = normalizePreferences(
-        safeJsonParse(localStorage.getItem(SETTINGS_PREFERENCES_KEY), defaultPreferences)
+        data.preferences || safeJsonParse(localStorage.getItem(SETTINGS_PREFERENCES_KEY), defaultPreferences)
       );
       const storedProfile = normalizeProfile(safeJsonParse(localStorage.getItem(SETTINGS_PROFILE_KEY), defaultProfile));
+      const responseProfile = normalizeProfile(data.profile || {});
       const authUser = hydrateUserFromAuthState(getState());
 
       const profile = normalizeProfile({
         ...storedProfile,
-        username: storedProfile.username || authUser.username,
-        email: storedProfile.email || authUser.email,
+        ...responseProfile,
+        username: responseProfile.username || storedProfile.username || authUser.username,
+        email: responseProfile.email || storedProfile.email || authUser.email,
       });
+
+      localStorage.setItem(SETTINGS_PREFERENCES_KEY, JSON.stringify(preferences));
+      localStorage.setItem(SETTINGS_PROFILE_KEY, JSON.stringify(profile));
+      applyTheme(preferences.theme);
+
+      dispatch(
+        updateNotificationPreferences({
+          emailReminders: preferences.emailReminders,
+          weeklySummary: preferences.weeklySummary,
+        })
+      );
+      dispatch(
+        updateAuthUser({
+          username: profile.username,
+          email: profile.email,
+        })
+      );
 
       return { privacy, preferences, profile };
     } catch (error) {
@@ -157,7 +207,7 @@ export const fetchSettings = createAsyncThunk<SettingsResponse, void, { rejectVa
 
 export const updateSettings = createAsyncThunk<SettingsResponse, SettingsPayload, { rejectValue: string }>(
   'settings/updateSettings',
-  async (payload, { getState, rejectWithValue }) => {
+  async (payload, { dispatch, getState, rejectWithValue }) => {
     try {
       const current = (getState() as { settings: SettingsState }).settings;
 
@@ -165,15 +215,58 @@ export const updateSettings = createAsyncThunk<SettingsResponse, SettingsPayload
       const mergedPreferences = normalizePreferences(payload.preferences || current.preferences);
       const mergedProfile = normalizeProfile(payload.profile || current.profile);
 
-      await settingsAPI.updatePrivacySettings(mergedPrivacy);
+      let data: Record<string, unknown> = {};
+      try {
+        const response = await settingsAPI.updateSettings({
+          privacy: mergedPrivacy,
+          preferences: mergedPreferences,
+          profile: mergedProfile,
+        });
+        data = (response.data || {}) as Record<string, unknown>;
+      } catch (error) {
+        if (!isEndpointMissingError(error)) {
+          throw error;
+        }
 
-      localStorage.setItem(SETTINGS_PREFERENCES_KEY, JSON.stringify(mergedPreferences));
-      localStorage.setItem(SETTINGS_PROFILE_KEY, JSON.stringify(mergedProfile));
+        const response = await settingsAPI.updatePrivacySettings(mergedPrivacy);
+        data = {
+          privacySettings: response.data?.privacySettings,
+        };
+      }
+
+      const privacy = normalizePrivacySettings(data.privacy || data.privacySettings || mergedPrivacy);
+      const preferences = normalizePreferences(data.preferences || mergedPreferences);
+      const profile = normalizeProfile({
+        ...mergedProfile,
+        ...(data.profile || {}),
+      });
+
+      localStorage.setItem(SETTINGS_PREFERENCES_KEY, JSON.stringify(preferences));
+      localStorage.setItem(SETTINGS_PROFILE_KEY, JSON.stringify(profile));
+      applyTheme(preferences.theme);
+
+      dispatch(
+        updateNotificationPreferences({
+          emailReminders: preferences.emailReminders,
+          weeklySummary: preferences.weeklySummary,
+        })
+      );
+      dispatch(
+        updateAuthUser({
+          username: profile.username,
+          email: profile.email,
+        })
+      );
+
+      if (typeof data.token === 'string' && data.token.trim().length > 0) {
+        dispatch(setAuthToken(data.token));
+      }
 
       return {
-        privacy: mergedPrivacy,
-        preferences: mergedPreferences,
-        profile: mergedProfile,
+        privacy,
+        preferences,
+        profile,
+        token: typeof data.token === 'string' ? data.token : undefined,
       };
     } catch (error) {
       return rejectWithValue(extractApiErrorMessage(error, 'Failed to update settings'));
@@ -206,6 +299,23 @@ export const updatePrivacySettings = createAsyncThunk<
   }
 });
 
+export const changePassword = createAsyncThunk<
+  { message: string },
+  ChangePasswordPayload,
+  { rejectValue: string }
+>('settings/changePassword', async (payload, { rejectWithValue }) => {
+  try {
+    const response = await settingsAPI.changePassword(payload);
+    const message =
+      typeof response.data?.message === 'string' && response.data.message.trim().length > 0
+        ? response.data.message
+        : 'Password updated successfully';
+    return { message };
+  } catch (error) {
+    return rejectWithValue(extractApiErrorMessage(error, 'Failed to update password'));
+  }
+});
+
 const settingsSlice = createSlice({
   name: 'settings',
   initialState,
@@ -215,6 +325,11 @@ const settingsSlice = createSlice({
     },
     clearSettingsError: (state) => {
       state.error = null;
+    },
+    clearPasswordStatus: (state) => {
+      state.passwordError = null;
+      state.passwordUpdateSuccess = false;
+      state.passwordMessage = null;
     },
   },
   extraReducers: (builder) => {
@@ -270,9 +385,26 @@ const settingsSlice = createSlice({
       .addCase(updatePrivacySettings.rejected, (state, action) => {
         state.error = action.payload || state.error;
         state.updateSuccess = false;
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.passwordLoading = true;
+        state.passwordError = null;
+        state.passwordUpdateSuccess = false;
+        state.passwordMessage = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.passwordLoading = false;
+        state.passwordError = null;
+        state.passwordUpdateSuccess = true;
+        state.passwordMessage = action.payload.message;
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.passwordLoading = false;
+        state.passwordError = action.payload || 'Failed to update password';
+        state.passwordUpdateSuccess = false;
       });
   },
 });
 
-export const { clearUpdateSuccess, clearSettingsError } = settingsSlice.actions;
+export const { clearUpdateSuccess, clearSettingsError, clearPasswordStatus } = settingsSlice.actions;
 export default settingsSlice.reducer;

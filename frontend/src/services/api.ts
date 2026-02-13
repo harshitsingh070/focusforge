@@ -172,6 +172,9 @@ export const analyticsAPI = {
 };
 
 export const settingsAPI = {
+  getSettings: () => api.get('/settings', { params: withTimestamp() }),
+  updateSettings: (data: unknown) => api.put('/settings', data),
+  changePassword: (data: unknown) => api.put('/settings/password', data),
   getPrivacySettings: () => api.get('/settings/privacy', { params: withTimestamp() }),
   updatePrivacySettings: (data: unknown) => api.put('/settings/privacy', data),
 };

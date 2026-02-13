@@ -251,6 +251,12 @@ export interface SettingsPayload {
   profile?: ProfileSettingsData;
 }
 
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

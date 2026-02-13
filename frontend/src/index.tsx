@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { applyTheme, readStoredTheme } from './utils/theme';
+
+applyTheme(readStoredTheme());
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
