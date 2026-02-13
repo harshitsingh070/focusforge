@@ -1,10 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
-import { Provider } from 'react-redux';
-import { store } from './store';
+import { Provider, useSelector } from 'react-redux';
+import { RootState, store } from './store';
 import ForgotPassword from './components/Auth/ForgotPassword';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import LandingPage from './components/Landing/LandingPage';
 import Dashboard from './components/Dashboard/Dashboard';
 import NewGoal from './components/Goals/NewGoal';
 import GoalsList from './components/Goals/GoalsList';
@@ -20,6 +21,17 @@ import ActivityLog from './components/Activity/ActivityLog';
 import PrivateRoute from './components/Layout/PrivateRoute';
 import AdminRoute from './components/Layout/AdminRoute';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import { isAdminEmail } from './constants/admin';
+
+const PublicHomeRoute: React.FC = () => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  if (!isAuthenticated) {
+    return <LandingPage />;
+  }
+
+  return <Navigate to={isAdminEmail(user?.email) ? '/admin' : '/dashboard'} replace />;
+};
 
 const App: React.FC = () => {
   return (
@@ -127,8 +139,8 @@ const App: React.FC = () => {
               </AdminRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<PublicHomeRoute />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </Provider>
