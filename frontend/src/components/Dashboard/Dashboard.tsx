@@ -5,11 +5,15 @@ import { AppDispatch, RootState } from '../../store';
 import { fetchDashboard } from '../../store/dashboardSlice';
 import { deleteGoal, fetchGoals } from '../../store/goalsSlice';
 import { fetchNotifications, markNotificationRead } from '../../store/notificationsSlice';
-import { BadgeAward } from '../../types';
+import { BadgeAward, NotificationItem } from '../../types';
 import LogActivityModal from '../Activity/LogActivityModal';
 import Navbar from '../Layout/Navbar';
 import ConfirmDeleteGoalModal from './ConfirmDeleteGoalModal';
 import GoalCard from './GoalCard';
+import RecentActivities from './RecentActivities';
+import StatCard from './StatCard';
+import StreakCounter from './StreakCounter';
+import UpcomingBadges from './UpcomingBadges';
 import WeeklyChart from './WeeklyChart';
 
 const DASHBOARD_REFRESH_INTERVAL_MS = 30000;
@@ -212,19 +216,10 @@ const Dashboard: React.FC = () => {
         </section>
 
         <section className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          <div className="card border-primary-400 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
-            <p className="text-sm font-semibold text-white/80">Total Points</p>
-            <p className="mt-2 text-4xl font-black">{data.totalPoints.toLocaleString()}</p>
-          </div>
-
-          <div className="card border-orange-300 bg-gradient-to-br from-orange-400 to-orange-600 text-white">
-            <p className="text-sm font-semibold text-white/80">Global Streak</p>
-            <p className="mt-2 text-4xl font-black">{data.globalStreak}</p>
-          </div>
-
-          <div className="card border-emerald-300 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white sm:col-span-2 xl:col-span-1">
-            <p className="text-sm font-semibold text-white/80">Active Goals</p>
-            <p className="mt-2 text-4xl font-black">{data.activeGoals.length}</p>
+          <StatCard label="Total Points" value={data.totalPoints.toLocaleString()} variant="primary" />
+          <StreakCounter streak={data.globalStreak} />
+          <div className="sm:col-span-2 xl:col-span-1">
+            <StatCard label="Active Goals" value={data.activeGoals.length} variant="success" />
           </div>
         </section>
 
@@ -261,47 +256,8 @@ const Dashboard: React.FC = () => {
 
           <div className="space-y-6">
             <WeeklyChart data={data.weeklyProgress} />
-
-            <div className="card">
-              <h3 className="font-display text-lg font-bold text-gray-900">Recent Activity</h3>
-              <div className="mt-4 space-y-3">
-                {data.recentActivities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white/80 p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-gray-900">{activity.goalTitle}</p>
-                      <p className="text-xs text-ink-muted">{activity.date}</p>
-                    </div>
-                    <span
-                      className="status-chip"
-                      style={{
-                        backgroundColor: `${activity.categoryColor}20`,
-                        color: activity.categoryColor,
-                      }}
-                    >
-                      {activity.minutes}m
-                    </span>
-                  </div>
-                ))}
-                {data.recentActivities.length === 0 && <p className="text-sm text-ink-muted">No recent activity yet.</p>}
-              </div>
-            </div>
-
-            {data.recentBadges.length > 0 && (
-              <div className="card">
-                <h3 className="font-display text-lg font-bold text-gray-900">Recent Badges</h3>
-                <div className="mt-4 space-y-3">
-                  {data.recentBadges.map((badge, idx) => (
-                    <div key={idx} className="rounded-xl border border-amber-100 bg-amber-50 p-3">
-                      <p className="font-semibold text-gray-900">{badge.name}</p>
-                      <p className="text-sm text-ink-muted">{badge.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <RecentActivities activities={data.recentActivities} />
+            <UpcomingBadges badges={data.recentBadges} />
 
             <div className="card">
               <div className="mb-4 flex items-center justify-between">
@@ -309,7 +265,7 @@ const Dashboard: React.FC = () => {
                 <span className="status-chip">{unreadCount} unread</span>
               </div>
               <div className="space-y-3">
-                {notifications.slice(0, 4).map((notification) => (
+                {notifications.slice(0, 4).map((notification: NotificationItem) => (
                   <div
                     key={notification.id}
                     className={`rounded-xl border p-3 ${

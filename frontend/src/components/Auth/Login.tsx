@@ -81,6 +81,11 @@ const Login: React.FC = () => {
                 onChange={(event) => setFormData({ ...formData, password: event.target.value })}
                 required
               />
+              <div className="mt-2 text-right">
+                <Link to="/forgot-password" className="text-xs font-semibold text-brand hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}

@@ -1,62 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import api from '../../services/api';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
+import { fetchProgress } from '../../store/badgesSlice';
 import Navbar from '../Layout/Navbar';
-
-type BadgeItem = {
-  id: number;
-  name: string;
-  description: string;
-  category?: string;
-  iconUrl?: string;
-  pointsBonus?: number;
-  earned?: boolean;
-  earnedAt?: string;
-  earnedReason?: string;
-  currentValue?: number;
-  requiredValue?: number;
-  progressPercentage?: number;
-  ruleText?: string;
-};
-
-type BadgeResponse = {
-  badges?: BadgeItem[];
-  badgesByCategory?: Record<string, BadgeItem[]>;
-  totalCount?: number;
-  earnedCount?: number;
-};
+import BadgeGrid from './BadgeGrid';
+import EarnedBadges from './EarnedBadges';
+import Progress from './Progress';
 
 const Badges: React.FC = () => {
-  const [badges, setBadges] = useState<BadgeItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { badges, earnedBadges, progress, loading, error } = useSelector((state: RootState) => state.badges);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedView, setSelectedView] = useState<'ALL' | 'EARNED' | 'LOCKED'>('ALL');
 
-  const loadBadges = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await api.get('/badges/all');
-      const data = (response.data || {}) as BadgeResponse;
-      setBadges(data.badges || []);
-    } catch (requestError: any) {
-      setError(requestError.response?.data?.message || 'Failed to load badges');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadBadges();
-  }, []);
+    dispatch(fetchProgress());
+  }, [dispatch]);
 
   const categories = useMemo(() => {
     const values = Array.from(new Set(badges.map((badge) => badge.category).filter(Boolean))) as string[];
     return ['All', ...values];
   }, [badges]);
-
-  const earnedCount = useMemo(() => badges.filter((badge) => badge.earned).length, [badges]);
 
   const filteredBadges = useMemo(() => {
     let items = [...badges];
@@ -90,20 +54,15 @@ const Badges: React.FC = () => {
         <section className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="card border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
             <p className="text-sm font-semibold text-ink-muted">Total Badges</p>
-            <p className="mt-2 text-3xl font-black text-indigo-700">{badges.length}</p>
+            <p className="mt-2 text-3xl font-black text-indigo-700">{progress.totalCount}</p>
           </div>
 
           <div className="card border-emerald-200 bg-gradient-to-br from-emerald-50 to-white">
             <p className="text-sm font-semibold text-ink-muted">Earned</p>
-            <p className="mt-2 text-3xl font-black text-emerald-700">{earnedCount}</p>
+            <p className="mt-2 text-3xl font-black text-emerald-700">{progress.earnedCount}</p>
           </div>
 
-          <div className="card border-amber-200 bg-gradient-to-br from-amber-50 to-white sm:col-span-2 xl:col-span-1">
-            <p className="text-sm font-semibold text-ink-muted">Completion</p>
-            <p className="mt-2 text-3xl font-black text-amber-700">
-              {badges.length ? Math.round((earnedCount * 100) / badges.length) : 0}%
-            </p>
-          </div>
+          <Progress earnedCount={progress.earnedCount} totalCount={progress.totalCount} />
         </section>
 
         <section className="card mb-6">
@@ -149,68 +108,17 @@ const Badges: React.FC = () => {
         {error && !loading && (
           <div className="card border-red-200 bg-red-50">
             <p className="text-sm text-red-700">{error}</p>
-            <button onClick={loadBadges} className="btn-primary mt-4">
+            <button onClick={() => dispatch(fetchProgress())} className="btn-primary mt-4">
               Retry
             </button>
           </div>
         )}
 
-        {!loading && !error && filteredBadges.length === 0 && (
-          <div className="card text-center">
-            <p className="text-ink-muted">No badges found for this filter.</p>
-          </div>
-        )}
+        {!loading && !error && <BadgeGrid badges={filteredBadges} />}
 
-        {!loading && !error && filteredBadges.length > 0 && (
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {filteredBadges.map((badge) => {
-              const progress = Math.max(0, Math.min(100, badge.progressPercentage || 0));
-
-              return (
-                <article
-                  key={badge.id}
-                  className={`card overflow-hidden ${
-                    badge.earned
-                      ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white'
-                      : 'border-slate-200 bg-gradient-to-br from-slate-50 to-white'
-                  }`}
-                >
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{badge.category || 'General'}</p>
-                      <h3 className="mt-1 break-words font-display text-lg font-bold text-gray-900">{badge.name}</h3>
-                    </div>
-                    <span className={`status-chip ${badge.earned ? '' : 'warn'}`}>{badge.earned ? 'Earned' : 'In progress'}</span>
-                  </div>
-
-                  <p className="text-sm text-gray-700">{badge.description}</p>
-
-                  {badge.ruleText && <p className="mt-2 text-xs text-ink-muted">Rule: {badge.ruleText}</p>}
-
-                  {badge.earned ? (
-                    <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-100/70 p-3">
-                      <p className="text-sm font-semibold text-emerald-800">Unlocked</p>
-                      {badge.earnedReason && <p className="mt-1 text-xs text-emerald-700">{badge.earnedReason}</p>}
-                      {badge.pointsBonus ? <p className="mt-1 text-xs text-emerald-700">Bonus: +{badge.pointsBonus} points</p> : null}
-                    </div>
-                  ) : (
-                    <div className="mt-4">
-                      <div className="mb-1 flex items-center justify-between text-xs text-ink-muted">
-                        <span>
-                          {badge.currentValue || 0} / {badge.requiredValue || '-'}
-                        </span>
-                        <span className="font-semibold">{Math.round(progress)}%</span>
-                      </div>
-                      <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-200">
-                        <div className="h-2.5 rounded-full bg-primary-600 transition-all duration-300" style={{ width: `${progress}%` }} />
-                      </div>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-          </section>
-        )}
+        <section className="mt-6">
+          <EarnedBadges badges={earnedBadges} />
+        </section>
       </main>
     </div>
   );

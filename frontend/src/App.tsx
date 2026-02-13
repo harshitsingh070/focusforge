@@ -2,15 +2,21 @@ import React from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
+import ForgotPassword from './components/Auth/ForgotPassword';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
 import NewGoal from './components/Goals/NewGoal';
+import GoalsList from './components/Goals/GoalsList';
+import GoalDetail from './components/Goals/GoalDetail';
+import EditGoal from './components/Goals/EditGoal';
+import GoalLogActivity from './components/Goals/LogActivity';
 import EnhancedLeaderboard from './components/Leaderboard/EnhancedLeaderboard';
 import Badges from './components/Badges/Badges';
 import Analytics from './components/Analytics/Analytics';
 import Settings from './components/Settings/Settings';
 import PlatformRules from './components/Rules/PlatformRules';
+import ActivityLog from './components/Activity/ActivityLog';
 import PrivateRoute from './components/Layout/PrivateRoute';
 import AdminRoute from './components/Layout/AdminRoute';
 import AdminDashboard from './components/Admin/AdminDashboard';
@@ -18,10 +24,11 @@ import AdminDashboard from './components/Admin/AdminDashboard';
 const App: React.FC = () => {
   return (
     <Provider store={store}>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/rules" element={<PlatformRules />} />
 
           <Route
@@ -37,6 +44,38 @@ const App: React.FC = () => {
             element={
               <PrivateRoute>
                 <NewGoal />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/goals"
+            element={
+              <PrivateRoute>
+                <GoalsList />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/goals/:id"
+            element={
+              <PrivateRoute>
+                <GoalDetail />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/goals/:id/edit"
+            element={
+              <PrivateRoute>
+                <EditGoal />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/goals/:id/log"
+            element={
+              <PrivateRoute>
+                <GoalLogActivity />
               </PrivateRoute>
             }
           />
@@ -73,6 +112,14 @@ const App: React.FC = () => {
             }
           />
           <Route
+            path="/activity"
+            element={
+              <PrivateRoute>
+                <ActivityLog />
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <AdminRoute>
@@ -81,6 +128,7 @@ const App: React.FC = () => {
             }
           />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
     </Provider>

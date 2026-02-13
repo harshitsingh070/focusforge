@@ -7,6 +7,7 @@ import dashboardReducer from './dashboardSlice';
 import enhancedLeaderboardReducer from './enhancedLeaderboardSlice';
 import goalsReducer from './goalsSlice';
 import leaderboardReducer from './leaderboardSlice';
+import notificationsReducer from './notificationsSlice';
 import settingsReducer from './settingsSlice';
 
 export const store = configureStore({
@@ -19,6 +20,7 @@ export const store = configureStore({
     badges: badgesReducer,
     analytics: analyticsReducer,
     settings: settingsReducer,
+    notifications: notificationsReducer,
     enhancedLeaderboard: enhancedLeaderboardReducer,
   },
   middleware: (getDefaultMiddleware) =>

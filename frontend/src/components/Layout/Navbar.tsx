@@ -7,6 +7,8 @@ import { isAdminEmail } from '../../constants/admin';
 
 const baseNavItems = [
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/goals', label: 'Goals' },
+  { to: '/activity', label: 'Activity' },
   { to: '/leaderboard', label: 'Leaderboard' },
   { to: '/badges', label: 'Badges' },
   { to: '/analytics', label: 'Analytics' },
@@ -19,6 +21,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector((state: RootState) => state.auth);
+  const displayName = user?.username || user?.email || 'User';
   const [mobileOpen, setMobileOpen] = useState(false);
   const navItems = isAdminEmail(user?.email)
     ? [...baseNavItems, { to: '/admin', label: 'Admin' }]
@@ -62,7 +65,7 @@ const Navbar: React.FC = () => {
           <div className="hidden items-center gap-4 lg:flex">
             <div className="text-right">
               <p className="text-xs text-ink-muted">Signed in as</p>
-              <p className="max-w-[12rem] truncate text-sm font-semibold text-gray-800">{user?.username}</p>
+              <p className="max-w-[12rem] truncate text-sm font-semibold text-gray-800">{displayName}</p>
             </div>
             <button onClick={handleLogout} className="btn-secondary px-3 py-2">
               Logout
@@ -91,7 +94,7 @@ const Navbar: React.FC = () => {
             <div className="app-divider mt-4 flex items-center justify-between pt-4">
               <div className="min-w-0">
                 <p className="text-xs text-ink-muted">Signed in as</p>
-                <p className="truncate text-sm font-semibold text-gray-800">{user?.username}</p>
+                <p className="truncate text-sm font-semibold text-gray-800">{displayName}</p>
               </div>
               <button onClick={handleLogout} className="btn-secondary">
                 Logout
