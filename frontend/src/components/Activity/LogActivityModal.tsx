@@ -105,14 +105,14 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !loading) {
           onClose();
         }
       }}
     >
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
+      <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-soft sm:p-5">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-2xl font-bold text-gray-900">Log Activity</h2>
@@ -178,12 +178,7 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               required
             />
             <p className="mt-1 text-xs text-ink-muted">Allowed range: 10 to {maxMinutesAllowed} minutes.</p>
-            <div className="mt-2">
-              <div className="ff-progress">
-                <span style={{ width: `${progressPercent}%`, background: progressPercent >= 100 ? 'linear-gradient(90deg, #34d399, #22c55e)' : 'linear-gradient(90deg, #60a5fa, #6366f1)' }} />
-              </div>
-              <p className="mt-1 text-xs font-semibold text-slate-500">{progressPercent}% of daily target</p>
-            </div>
+            <p className="mt-1 text-xs font-semibold text-slate-500">{progressPercent}% of daily target</p>
             <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
               {quickMinuteOptions.map((minutes) => {
                 const isSelected = formData.minutesSpent === minutes;
