@@ -1,5 +1,5 @@
 import React from 'react';
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AnalyticsMonthlyTrend, AnalyticsStreakPoint } from '../../types';
 
 interface TrendAnalysisProps {
@@ -10,34 +10,36 @@ interface TrendAnalysisProps {
 const TrendAnalysis: React.FC<TrendAnalysisProps> = ({ monthlyTrends, streakHistory }) => (
   <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <div className="card">
-      <h2 className="text-xl font-bold text-gray-900">6-Month Trends</h2>
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900">6-Month Trends</h2>
       <div className="mt-4 h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={monthlyTrends}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis yAxisId="left" />
-            <YAxis yAxisId="right" orientation="right" />
-            <Tooltip />
-            <Legend />
-            <Line yAxisId="left" type="monotone" dataKey="points" stroke="#0f766e" strokeWidth={2.5} />
-            <Line yAxisId="right" type="monotone" dataKey="goals" stroke="#2563eb" strokeWidth={2.5} />
+            <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
+            <XAxis dataKey="month" tick={{ fill: '#64748b', fontSize: 12 }} />
+            <YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} />
+            <YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
+            />
+            <Line yAxisId="left" type="monotone" dataKey="points" stroke="#3B82F6" strokeWidth={3} dot={false} />
+            <Line yAxisId="right" type="monotone" dataKey="goals" stroke="#F97316" strokeWidth={3} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
     </div>
 
     <div className="card">
-      <h2 className="text-xl font-bold text-gray-900">Streak History (30 Days)</h2>
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900">Streak History</h2>
       <div className="mt-4 h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={streakHistory}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="streak" stroke="#ea580c" strokeWidth={2.5} name="Streak" />
+            <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
+            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 12 }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
+            />
+            <Line type="monotone" dataKey="streak" stroke="#8B5CF6" strokeWidth={3} name="Streak" dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

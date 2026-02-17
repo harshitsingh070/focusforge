@@ -9,19 +9,18 @@ const baseNavItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/goals', label: 'Goals' },
   { to: '/activity', label: 'Activity' },
-  { to: '/leaderboard', label: 'Leaderboard' },
-  { to: '/badges', label: 'Badges' },
   { to: '/analytics', label: 'Analytics' },
+  { to: '/badges', label: 'Badges' },
+  { to: '/leaderboard', label: 'Leaderboard' },
   { to: '/settings', label: 'Settings' },
-  { to: '/rules', label: 'Rules' },
 ];
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const displayName = user?.username || user?.email || 'User';
+  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const displayName = user?.username || user?.email || 'Analyst';
   const [mobileOpen, setMobileOpen] = useState(false);
   const navItems = isAdminEmail(user?.email)
     ? [...baseNavItems, { to: '/admin', label: 'Admin' }]
@@ -36,73 +35,81 @@ const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-    [
-      'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
-      isActive ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-white hover:text-primary-700',
-    ].join(' ');
-
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/40 bg-white/85 backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/dashboard" className="flex items-center gap-3">
-            <span className="rounded-xl bg-primary-100 px-2 py-1 text-sm font-black text-primary-700">FF</span>
-            <div>
-              <p className="font-display text-lg font-bold text-gray-900">FocusForge</p>
-              <p className="hidden text-xs text-ink-muted sm:block">Consistency Engine</p>
-            </div>
-          </Link>
+    <nav className="ff-navbar">
+      <div className="ff-navbar__inner">
+        <Link to={isAuthenticated ? '/dashboard' : '/'} className="ff-logo">
+          <span className="ff-logo-mark">FF</span>
+          FocusForge
+        </Link>
 
-          <div className="hidden items-center gap-1 lg:flex">
-            {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} className={navLinkClass}>
+        <div className="ff-nav-links">
+          {navItems.map((item) => {
+            const isActive =
+              location.pathname === item.to ||
+              (item.to !== '/dashboard' && location.pathname.startsWith(item.to));
+
+            return (
+              <NavLink key={item.to} to={item.to} className={`ff-nav-link ${isActive ? 'active' : ''}`}>
                 {item.label}
               </NavLink>
-            ))}
-          </div>
-
-          <div className="hidden items-center gap-4 lg:flex">
-            <div className="text-right">
-              <p className="text-xs text-ink-muted">Signed in as</p>
-              <p className="max-w-[12rem] truncate text-sm font-semibold text-gray-800">{displayName}</p>
-            </div>
-            <button onClick={handleLogout} className="btn-secondary px-3 py-2">
-              Logout
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="btn-secondary px-3 py-2 lg:hidden"
-            onClick={() => setMobileOpen((open) => !open)}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? 'Close' : 'Menu'}
-          </button>
+            );
+          })}
         </div>
 
-        {mobileOpen && (
-          <div className="pb-4 lg:hidden">
-            <div className="grid gap-2">
-              {navItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className={navLinkClass}>
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-            <div className="app-divider mt-4 flex items-center justify-between pt-4">
-              <div className="min-w-0">
-                <p className="text-xs text-ink-muted">Signed in as</p>
-                <p className="truncate text-sm font-semibold text-gray-800">{displayName}</p>
-              </div>
-              <button onClick={handleLogout} className="btn-secondary">
+        <div className="ff-user-pill">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            {displayName}
+          </span>
+          {isAuthenticated ? (
+            <button type="button" onClick={handleLogout} className="btn-secondary">
+              Logout
+            </button>
+          ) : (
+            <button type="button" onClick={() => navigate('/login')} className="btn-secondary">
+              Login
+            </button>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="ff-mobile-toggle"
+          onClick={() => setMobileOpen((open) => !open)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? 'Close' : 'Menu'}
+        </button>
+      </div>
+
+      {mobileOpen && (
+        <div className="ff-mobile-panel">
+          {navItems.map((item) => {
+            const isActive =
+              location.pathname === item.to ||
+              (item.to !== '/dashboard' && location.pathname.startsWith(item.to));
+
+            return (
+              <NavLink key={item.to} to={item.to} className={`ff-mobile-link ${isActive ? 'active' : ''}`}>
+                {item.label}
+              </NavLink>
+            );
+          })}
+          <div className="app-divider my-1" />
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-semibold text-slate-600">{displayName}</span>
+            {isAuthenticated ? (
+              <button type="button" onClick={handleLogout} className="btn-secondary">
                 Logout
               </button>
-            </div>
+            ) : (
+              <button type="button" onClick={() => navigate('/login')} className="btn-secondary">
+                Login
+              </button>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 };

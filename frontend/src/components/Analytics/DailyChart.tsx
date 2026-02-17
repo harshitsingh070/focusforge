@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AnalyticsHeatmapPoint } from '../../types';
 
 interface DailyChartProps {
@@ -15,17 +15,44 @@ const DailyChart: React.FC<DailyChartProps> = ({ data }) => {
 
   return (
     <div className="card">
-      <h2 className="text-xl font-bold text-gray-900">Daily Performance (Last 7 Days)</h2>
+      <h2 className="text-3xl font-bold tracking-tight text-slate-900">Daily Performance</h2>
+      <p className="mt-1 text-sm text-slate-500">Last 7 days of focus minutes and points earned.</p>
       <div className="mt-4 h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="day" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="minutes" fill="#0f766e" radius={[6, 6, 0, 0]} />
-            <Bar dataKey="points" fill="#2563eb" radius={[6, 6, 0, 0]} />
-          </BarChart>
+          <AreaChart data={chartData}>
+            <defs>
+              <linearGradient id="minutesArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#3B82F6" stopOpacity={0.03} />
+              </linearGradient>
+              <linearGradient id="pointsArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#22C55E" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="#22C55E" stopOpacity={0.03} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
+            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+            <Tooltip
+              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
+            />
+            <Area
+              type="monotone"
+              dataKey="minutes"
+              stroke="#3B82F6"
+              strokeWidth={3}
+              fill="url(#minutesArea)"
+              dot={false}
+            />
+            <Area
+              type="monotone"
+              dataKey="points"
+              stroke="#22C55E"
+              strokeWidth={3}
+              fill="url(#pointsArea)"
+              dot={false}
+            />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>

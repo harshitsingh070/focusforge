@@ -124,13 +124,12 @@ const Settings: React.FC = () => {
     <div className="page-shell">
       <Navbar />
 
-      <main className="page-container max-w-5xl">
+      <main className="page-container">
         <section className="section-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="status-chip">Account Controls</p>
-              <h1 className="section-title mt-3">Settings</h1>
-              <p className="section-subtitle">Manage privacy, profile, and preferences from one place.</p>
+              <h1 className="section-title">Settings</h1>
+              <p className="section-subtitle">Manage your profile, privacy, and preferences.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {hasUnsavedChanges && <span className="status-chip warn">Unsaved changes</span>}
@@ -167,7 +166,7 @@ const Settings: React.FC = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
           <div className="space-y-6">
             <ProfileSettings
               value={profileState}
@@ -180,9 +179,9 @@ const Settings: React.FC = () => {
             <Preferences value={preferencesState} onChange={setPreferencesState} />
           </div>
 
-          <aside className="card h-fit">
-            <h2 className="font-display text-xl font-bold text-gray-900">Preview</h2>
-            <p className="mt-1 text-sm text-ink-muted">Quick summary of what will be shown to others.</p>
+          <aside className="card h-fit xl:sticky xl:top-28">
+            <h2 className="text-4xl font-bold tracking-tight text-slate-900">Public Profile Preview</h2>
+            <p className="mt-1 text-sm text-slate-500">Quick summary of what your community can view.</p>
             <div className="mt-4 space-y-3 text-sm">
               <div className="rounded-xl border border-slate-200 bg-white p-3">
                 <p className="text-xs uppercase tracking-wide text-ink-muted">Username</p>
@@ -198,19 +197,21 @@ const Settings: React.FC = () => {
               </div>
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800">
                 <p className="font-semibold">Visibility reminder</p>
-                <p className="mt-1 text-xs">Leaderboard, badges, and progress visibility are controlled below.</p>
+                <p className="mt-1 text-xs">Leaderboard and achievements can be hidden based on privacy settings.</p>
               </div>
             </div>
           </aside>
         </div>
 
-        <button
-          onClick={handleSave}
-          disabled={!hasUnsavedChanges || loading}
-          className="btn-primary mt-6 w-full disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? 'Saving...' : hasUnsavedChanges ? 'Save Settings' : 'No Changes to Save'}
-        </button>
+        <div className="mt-7 flex justify-end">
+          <button
+            onClick={handleSave}
+            disabled={!hasUnsavedChanges || loading}
+            className="btn-primary px-8 py-3 text-xl disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
+          </button>
+        </div>
       </main>
     </div>
   );

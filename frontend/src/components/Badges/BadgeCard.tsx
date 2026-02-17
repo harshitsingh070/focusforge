@@ -8,6 +8,7 @@ interface BadgeCardProps {
 const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
   const progress = Math.max(0, Math.min(100, badge.progressPercentage || 0));
   const categoryLabel = badge.category || 'General';
+  const badgeTone = badge.earned ? 'ff-badge-earned' : 'ff-badge-locked';
 
   return (
     <article
@@ -25,12 +26,12 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
         <span className={`status-chip ${badge.earned ? '' : 'warn'}`}>{badge.earned ? 'Earned' : 'Locked'}</span>
       </div>
 
-      <p className="text-sm text-gray-700">{badge.description}</p>
+      <p className={`text-sm text-gray-700 ${badgeTone}`}>{badge.description}</p>
 
       {badge.ruleText && <p className="mt-2 text-xs text-ink-muted">Rule: {badge.ruleText}</p>}
 
       {badge.earned ? (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-100/70 p-3">
+        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-100/70 p-3 ff-badge-earned">
           <p className="text-sm font-semibold text-emerald-800">Unlocked</p>
           {badge.earnedReason && <p className="mt-1 text-xs text-emerald-700">{badge.earnedReason}</p>}
           {badge.pointsBonus ? <p className="mt-1 text-xs text-emerald-700">Bonus: +{badge.pointsBonus} points</p> : null}

@@ -50,3 +50,11 @@ HELP.md
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Documentation 
+
+\docs 
+CONTRIBUTING.md
+DETAILED_README.md
+DetailedReadme.md
+githubui.md

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logActivity } from '../../store/activitySlice';
@@ -23,14 +23,27 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const { loading, error } = useSelector((state: RootState) => state.activity);
   const maxMinutesAllowed = Math.max(10, Math.min(600, dailyTarget));
+  const todayIso = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const [formData, setFormData] = useState<ActivityRequest>({
     goalId,
-    logDate: new Date().toISOString().split('T')[0],
+    logDate: todayIso,
     minutesSpent: Math.min(30, maxMinutesAllowed),
     notes: '',
   });
   const [localError, setLocalError] = useState<string | null>(null);
+
+  const quickMinuteOptions = useMemo(
+    () =>
+      Array.from(new Set([10, 15, 20, 30, 45, 60, maxMinutesAllowed]))
+        .filter((minutes) => minutes <= maxMinutesAllowed)
+        .sort((a, b) => a - b),
+    [maxMinutesAllowed]
+  );
+
+  const progressPercent = Math.max(0, Math.min(100, Math.round((formData.minutesSpent / maxMinutesAllowed) * 100)));
+  const remainingMinutes = Math.max(0, maxMinutesAllowed - formData.minutesSpent);
+  const isMinutesValid = formData.minutesSpent >= 10 && formData.minutesSpent <= maxMinutesAllowed;
 
   const normalizeDateForApi = (value: string): string => {
     if (!value) return value;
@@ -52,6 +65,14 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
     }
 
     return value;
+  };
+
+  const setMinutesSpent = (minutes: number) => {
+    const safeValue = Math.max(0, Math.min(600, Number.isNaN(minutes) ? 0 : minutes));
+    setFormData((prev) => ({ ...prev, minutesSpent: safeValue }));
+    if (localError) {
+      setLocalError(null);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -83,13 +104,30 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !loading) {
+          onClose();
+        }
+      }}
+    >
       <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-soft sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-2xl font-bold text-gray-900">Log Activity</h2>
             <p className="text-sm text-ink-muted">Goal: {goalTitle}</p>
-            <p className="text-xs text-ink-muted">Daily target limit: {maxMinutesAllowed} minutes</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="status-chip" style={{ background: 'rgba(59,130,246,0.14)', color: '#1d4ed8' }}>
+                Daily target: {maxMinutesAllowed}m
+              </span>
+              <span
+                className="status-chip"
+                style={{ background: remainingMinutes > 0 ? 'rgba(249,115,22,0.16)' : 'rgba(34,197,94,0.14)', color: remainingMinutes > 0 ? '#c2410c' : '#15803d' }}
+              >
+                {remainingMinutes > 0 ? `${remainingMinutes}m remaining` : 'Target reached'}
+              </span>
+            </div>
           </div>
           <button onClick={onClose} className="btn-secondary px-3 py-2 text-xs" type="button">
             Close
@@ -111,8 +149,13 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               id="activity-date"
               type="date"
               value={formData.logDate}
-              onChange={(event) => setFormData({ ...formData, logDate: event.target.value })}
-              max={new Date().toISOString().split('T')[0]}
+              onChange={(event) => {
+                setFormData({ ...formData, logDate: event.target.value });
+                if (localError) {
+                  setLocalError(null);
+                }
+              }}
+              max={todayIso}
               className="input-field"
               required
             />
@@ -127,26 +170,38 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               id="minutes"
               type="number"
               value={formData.minutesSpent}
-              onChange={(event) => setFormData({ ...formData, minutesSpent: parseInt(event.target.value, 10) || 0 })}
+              onChange={(event) => setMinutesSpent(parseInt(event.target.value, 10) || 0)}
               min="10"
               max={maxMinutesAllowed}
+              step="5"
               className="input-field"
               required
             />
             <p className="mt-1 text-xs text-ink-muted">Allowed range: 10 to {maxMinutesAllowed} minutes.</p>
-            <div className="mt-2 grid grid-cols-4 gap-2">
-              {[10, 15, 30, 45, 60]
-                .filter((minutes) => minutes <= maxMinutesAllowed)
-                .map((minutes) => (
+            <div className="mt-2">
+              <div className="ff-progress">
+                <span style={{ width: `${progressPercent}%`, background: progressPercent >= 100 ? 'linear-gradient(90deg, #34d399, #22c55e)' : 'linear-gradient(90deg, #60a5fa, #6366f1)' }} />
+              </div>
+              <p className="mt-1 text-xs font-semibold text-slate-500">{progressPercent}% of daily target</p>
+            </div>
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-6">
+              {quickMinuteOptions.map((minutes) => {
+                const isSelected = formData.minutesSpent === minutes;
+                return (
                   <button
                     key={minutes}
                     type="button"
-                    onClick={() => setFormData({ ...formData, minutesSpent: minutes })}
-                    className="btn-secondary px-2 py-2 text-xs"
+                    onClick={() => setMinutesSpent(minutes)}
+                    className={`rounded-full px-2 py-2 text-xs font-semibold transition-colors ${
+                      isSelected
+                        ? 'border border-blue-300 bg-blue-50 text-blue-700'
+                        : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
                   >
                     {minutes}m
                   </button>
-                ))}
+                );
+              })}
             </div>
           </div>
 
@@ -160,15 +215,17 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               onChange={(event) => setFormData({ ...formData, notes: event.target.value })}
               placeholder="What did you work on?"
               rows={4}
+              maxLength={280}
               className="textarea-field"
             />
+            <p className="mt-1 text-right text-xs text-slate-400">{(formData.notes || '').length}/280</p>
           </div>
 
           <div className="flex flex-col gap-2 pt-2 sm:flex-row">
             <button type="button" onClick={onClose} className="btn-secondary flex-1" disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary flex-1" disabled={loading}>
+            <button type="submit" className="btn-primary flex-1" disabled={loading || !isMinutesValid}>
               {loading ? 'Logging...' : 'Log Activity'}
             </button>
           </div>

@@ -9,9 +9,9 @@ interface DateRangeFilterProps {
 
 const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ filters, goals, onChange }) => (
   <div className="card">
-    <h3 className="font-display text-lg font-bold text-gray-900">Filters</h3>
+    <h3 className="text-3xl font-bold tracking-tight text-slate-900">Filters</h3>
 
-    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
       <div>
         <label htmlFor="activity-from" className="mb-1 block text-sm font-semibold text-gray-700">
           From

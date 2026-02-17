@@ -25,15 +25,14 @@ const ActivityLog: React.FC = () => {
     <div className="page-shell">
       <Navbar />
 
-      <main className="page-container max-w-6xl">
+      <main className="page-container">
         <section className="section-heading">
-          <p className="status-chip">History</p>
-          <h1 className="section-title mt-3">Activity Log</h1>
-          <p className="section-subtitle">Track your submissions and patterns over time.</p>
+          <h1 className="section-title">Activity</h1>
+          <p className="section-subtitle">Log daily effort and review your verified timeline.</p>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-1">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_1fr]">
+          <div className="space-y-4">
             <ActivityForm onSubmitted={() => dispatch(fetchActivities(filters))} />
             <DateRangeFilter
               filters={filters}
@@ -42,11 +41,19 @@ const ActivityLog: React.FC = () => {
             />
           </div>
 
-          <section className="space-y-3 lg:col-span-2">
+          <section className="space-y-3">
+            <div className="card flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight text-slate-900">Timeline</h2>
+                <p className="mt-1 text-sm text-slate-500">Most recent logs appear first.</p>
+              </div>
+              <span className="status-chip">{activities.length} entries</span>
+            </div>
+
             {loading && (
-              <div className="card">
+              <div className="card text-center">
                 <div className="flex justify-center py-8">
-                  <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary-600" />
+                  <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500" />
                 </div>
               </div>
             )}

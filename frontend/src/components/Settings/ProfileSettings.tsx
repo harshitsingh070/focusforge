@@ -8,11 +8,11 @@ interface ProfileSettingsProps {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ value, onChange }) => (
   <section className="card">
-    <h2 className="font-display text-xl font-bold text-gray-900">Profile</h2>
-    <p className="mt-1 text-sm text-ink-muted">Keep your public identity and intro up to date.</p>
+    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Profile</h2>
+    <p className="mt-1 text-sm text-slate-500">Manage your public identity and intro.</p>
 
-    <div className="mt-4 space-y-3">
-      <div>
+    <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="md:col-span-1">
         <label htmlFor="profile-username" className="mb-1 block text-sm font-semibold text-gray-700">
           Username
         </label>
@@ -25,7 +25,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ value, onChange }) =>
         />
       </div>
 
-      <div>
+      <div className="md:col-span-1">
         <label htmlFor="profile-email" className="mb-1 block text-sm font-semibold text-gray-700">
           Email
         </label>
@@ -38,7 +38,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ value, onChange }) =>
         />
       </div>
 
-      <div>
+      <div className="md:col-span-2">
         <label htmlFor="profile-bio" className="mb-1 block text-sm font-semibold text-gray-700">
           Bio
         </label>

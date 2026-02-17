@@ -1,37 +1,37 @@
 import React from 'react';
 import { RecentActivity } from '../../types';
+import styles from './Dashboard.module.css';
 
 interface RecentActivitiesProps {
   activities: RecentActivity[];
 }
 
 const RecentActivities: React.FC<RecentActivitiesProps> = ({ activities }) => {
+  if (!activities || activities.length === 0) {
+    return (
+      <div className={styles.sidebarCard}>
+        <h3 className={styles.sidebarCardTitle}>Recent Activity</h3>
+        <p style={{ fontSize: '0.875rem', color: '#9ca3af', textAlign: 'center', padding: '1.5rem 0' }}>
+          No activity yet.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="card">
-      <h3 className="font-display text-lg font-bold text-gray-900">Recent Activity</h3>
-      <div className="mt-4 space-y-3">
-        {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-white/80 p-3"
-          >
-            <div className="min-w-0">
-              <p className="truncate font-semibold text-gray-900">{activity.goalTitle}</p>
-              <p className="text-xs text-ink-muted">{activity.date}</p>
+    <div className={styles.sidebarCard}>
+      <h3 className={styles.sidebarCardTitle}>Recent Activity</h3>
+
+      <div className={styles.activityList}>
+        {activities.slice(0, 5).map((activity) => (
+          <div key={activity.id} className={styles.activityItem}>
+            <div className={styles.activityIcon}>📝</div>
+            <div className={styles.activityContent}>
+              <p className={styles.activityTitle}>{activity.goalTitle}</p>
+              <p className={styles.activityTime}>{activity.date}</p>
             </div>
-            <span
-              className="status-chip"
-              style={{
-                backgroundColor: `${activity.categoryColor}20`,
-                color: activity.categoryColor,
-              }}
-            >
-              {activity.minutes}m
-            </span>
           </div>
         ))}
-
-        {activities.length === 0 && <p className="text-sm text-ink-muted">No recent activity yet.</p>}
       </div>
     </div>
   );

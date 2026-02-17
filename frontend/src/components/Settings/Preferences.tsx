@@ -8,8 +8,8 @@ interface PreferencesProps {
 
 const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
   <section className="card">
-    <h2 className="font-display text-xl font-bold text-gray-900">Preferences</h2>
-    <p className="mt-1 text-sm text-ink-muted">Personalize reminders and visual defaults.</p>
+    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Preferences</h2>
+    <p className="mt-1 text-sm text-slate-500">Set your defaults for reminders and appearance.</p>
 
     <div className="mt-4 space-y-3">
       <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -29,33 +29,35 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <label className="flex items-center justify-between gap-3">
-          <span>
-            <span className="block font-semibold text-gray-900">Email reminders</span>
-            <span className="block text-sm text-ink-muted">Receive inactivity reminders over email.</span>
-          </span>
-          <input
-            type="checkbox"
-            checked={value.emailReminders}
-            onChange={(event) => onChange({ ...value, emailReminders: event.target.checked })}
-            className="h-4 w-4"
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-gray-900">Email reminders</p>
+            <p className="text-sm text-ink-muted">Receive inactivity reminders over email.</p>
+          </div>
+          <button
+            type="button"
+            className="ff-toggle"
+            data-on={String(value.emailReminders)}
+            aria-pressed={value.emailReminders}
+            onClick={() => onChange({ ...value, emailReminders: !value.emailReminders })}
           />
-        </label>
+        </div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <label className="flex items-center justify-between gap-3">
-          <span>
-            <span className="block font-semibold text-gray-900">Weekly summary</span>
-            <span className="block text-sm text-ink-muted">Enable a weekly performance summary.</span>
-          </span>
-          <input
-            type="checkbox"
-            checked={value.weeklySummary}
-            onChange={(event) => onChange({ ...value, weeklySummary: event.target.checked })}
-            className="h-4 w-4"
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-gray-900">Weekly summary</p>
+            <p className="text-sm text-ink-muted">Enable a weekly performance summary.</p>
+          </div>
+          <button
+            type="button"
+            className="ff-toggle"
+            data-on={String(value.weeklySummary)}
+            aria-pressed={value.weeklySummary}
+            onClick={() => onChange({ ...value, weeklySummary: !value.weeklySummary })}
           />
-        </label>
+        </div>
       </div>
     </div>
   </section>

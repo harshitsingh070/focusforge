@@ -1,42 +1,63 @@
 import React from 'react';
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import styles from './Dashboard.module.css';
+
+interface WeeklyProgressData {
+  dayLabel: string;
+  totalMinutes: number;
+}
 
 interface WeeklyChartProps {
   data: Record<string, number>;
 }
 
 const WeeklyChart: React.FC<WeeklyChartProps> = ({ data }) => {
-  const chartData = Object.entries(data).map(([day, minutes]) => ({ day, minutes }));
+  if (!data || Object.keys(data).length === 0) {
+    return (
+      <div className={styles.sidebarCard}>
+        <h3 className={styles.sidebarCardTitle}>Weekly Progress</h3>
+        <p style={{ fontSize: '0.875rem', color: '#9ca3af', textAlign: 'center', padding: '2rem 0' }}>
+          No progress data yet.
+        </p>
+      </div>
+    );
+  }
+
+  // Convert data object to array
+  const progressData: WeeklyProgressData[] = Object.entries(data).map(([dayLabel, totalMinutes]) => ({
+    dayLabel,
+    totalMinutes,
+  }));
+
+  const maxMinutes = Math.max(...progressData.map((d) => d.totalMinutes), 1);
+  const chartHeight = 150;
 
   return (
-    <div className="card">
-      <h3 className="font-display text-lg font-bold text-gray-900">Weekly Progress</h3>
-      <div className="mt-4 h-56 sm:h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#dfe9e6" />
-            <XAxis dataKey="day" tick={{ fill: '#56716c', fontSize: 12 }} axisLine={{ stroke: '#d7e6e2' }} />
-            <YAxis tick={{ fill: '#56716c', fontSize: 12 }} axisLine={{ stroke: '#d7e6e2' }} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #d7e6e2',
-                borderRadius: '12px',
-                boxShadow: '0 14px 26px rgba(10,95,89,0.14)',
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="minutes"
-              stroke="#0f766e"
-              strokeWidth={3}
-              dot={{ fill: '#0f766e', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6, stroke: '#0f766e', strokeWidth: 2 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+    <div className={styles.sidebarCard}>
+      <h3 className={styles.sidebarCardTitle}>Weekly Progress</h3>
+
+      <div style={{ height: `${chartHeight}px`, position: 'relative', display: 'flex', alignItems: 'flex-end', gap: '0.5rem', padding: '0.5rem 0' }}>
+        {progressData.map((day, index) => {
+          const barHeight = (day.totalMinutes / maxMinutes) * (chartHeight - 40);
+          return (
+            <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: `${barHeight}px`,
+                  background: 'linear-gradient(180deg, #34d399, #10b981)',
+                  borderRadius: '0.375rem',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+                }}
+                title={`${day.totalMinutes} min`}
+              />
+              <span style={{ fontSize: '0.75rem', color: '#6b7280', fontWeight: '500' }}>
+                {day.dayLabel}
+              </span>
+            </div>
+          );
+        })}
       </div>
-      <p className="mt-4 text-sm text-ink-muted">Consistency matters more than intensity. Keep showing up.</p>
     </div>
   );
 };
