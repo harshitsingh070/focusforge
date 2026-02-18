@@ -35,6 +35,48 @@ const GoalsList: React.FC = () => {
     return Math.max(10, Math.min(100, Math.round(blended * 100)));
   };
 
+  const withAlpha = (color: string, alpha: number) => {
+    const normalized = (color || '').trim();
+    const hexMatch = normalized.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+
+    if (hexMatch) {
+      const hex = hexMatch[1];
+      const expanded = hex.length === 3 ? hex.split('').map((char) => `${char}${char}`).join('') : hex;
+      const r = Number.parseInt(expanded.slice(0, 2), 16);
+      const g = Number.parseInt(expanded.slice(2, 4), 16);
+      const b = Number.parseInt(expanded.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    const rgbMatch = normalized.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+    if (rgbMatch) {
+      return `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, ${alpha})`;
+    }
+
+    const rgbaMatch = normalized.match(/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*[\d.]+\s*\)$/i);
+    if (rgbaMatch) {
+      const values = normalized
+        .replace(/^rgba\(/i, '')
+        .replace(/\)$/, '')
+        .split(',')
+        .slice(0, 3)
+        .map((value) => value.trim());
+      return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${alpha})`;
+    }
+
+    return normalized || '#5EA8FF';
+  };
+
+  const getRingColor = (goalColor: string, progressPercent: number) => {
+    if (progressPercent <= 20) {
+      return withAlpha(goalColor, 0.46);
+    }
+    if (progressPercent <= 50) {
+      return withAlpha(goalColor, 0.68);
+    }
+    return goalColor;
+  };
+
   const handleDeleteGoal = async (goalId: number) => {
     setDeletingGoalId(goalId);
     try {
@@ -55,7 +97,8 @@ const GoalsList: React.FC = () => {
             <p className="section-subtitle">Manage active and completed goals</p>
           </div>
           <Link to="/goals/new" className="btn-primary ff-goals-create-btn">
-            + Create Goal
+            <span className="ff-goals-create-btn__icon">+</span>
+            <span>Create Goal</span>
           </Link>
         </section>
 
@@ -94,7 +137,7 @@ const GoalsList: React.FC = () => {
             const goalColor = goal.categoryColor || '#5EA8FF';
             const ringStyle = {
               ['--ring-value' as string]: `${progressPercent}%`,
-              ['--ring-color' as string]: goalColor,
+              ['--ring-color' as string]: getRingColor(goalColor, progressPercent),
             } as React.CSSProperties;
 
             return (
@@ -106,18 +149,16 @@ const GoalsList: React.FC = () => {
                   }}
                 />
 
+                <span className={`status-chip ff-goal-status-badge ${goal.isActive ? '' : 'warn'}`}>
+                  {goal.isActive ? 'Active' : 'Paused'}
+                </span>
+
                 <div className="ff-goal-tile__content">
                   <div className="ff-goal-tile__header">
                     <div className="min-w-0">
                       <h3 className="ff-goal-title">{goal.title}</h3>
                       <p className="ff-goal-description">{goal.description || 'No description yet for this goal.'}</p>
                     </div>
-                    <span
-                      className={`status-chip ff-goal-status-badge ${goal.isActive ? '' : 'warn'}`}
-                      style={goal.isActive ? { background: `${goalColor}20`, color: goalColor } : undefined}
-                    >
-                      {goal.isActive ? 'Active' : 'Paused'}
-                    </span>
                   </div>
 
                   <div className="ff-goal-metrics">
@@ -134,6 +175,7 @@ const GoalsList: React.FC = () => {
                       <div className="ff-ring" style={ringStyle} />
                       <p className="ff-ring__label">{progressPercent}%</p>
                     </div>
+                    <p className="ff-goal-progress-label">Progress</p>
                   </div>
 
                   <div className="ff-goal-footer">

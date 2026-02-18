@@ -633,6 +633,18 @@
 
   .ff-goals-create-btn {
     min-width: 170px;
+    gap: 0.42rem;
+    padding-right: 1.3rem;
+    transition:
+      transform var(--ff-motion-duration) var(--ff-motion-easing),
+      box-shadow var(--ff-motion-duration) var(--ff-motion-easing),
+      filter var(--ff-motion-duration) var(--ff-motion-easing);
+  }
+
+  .ff-goals-create-btn__icon {
+    font-size: 1rem;
+    line-height: 1;
+    transform: translateY(-1px);
   }
 
   .ff-goal-filters {
@@ -642,16 +654,29 @@
     margin-bottom: 1.35rem;
   }
 
+  .ff-goal-filters .ff-pill {
+    padding: 0.45rem 1rem;
+    line-height: 1.1;
+  }
+
+  .ff-goal-filters .ff-pill.active {
+    border-color: #9ebcff;
+    color: #0f172a;
+    box-shadow: 0 10px 16px rgba(78, 111, 162, 0.2);
+  }
+
   .ff-goals-grid {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 1rem;
+    column-gap: 1rem;
+    row-gap: 1.35rem;
   }
 
   @media (min-width: 768px) {
     .ff-goals-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.15rem;
+      column-gap: 1.15rem;
+      row-gap: 1.55rem;
     }
   }
 
@@ -667,6 +692,7 @@
     min-height: 405px;
     padding: 1.2rem 1.2rem 1.1rem 2rem;
     animation: ff-fade-up 340ms var(--ff-motion-easing) both;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   }
 
   .ff-goals-grid .ff-goal-tile:nth-child(2n) {
@@ -684,7 +710,7 @@
     bottom: 1rem;
     width: 0.7rem;
     border-radius: 999px;
-    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.13);
   }
 
   .ff-goal-tile__content {
@@ -701,11 +727,12 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
+    padding-right: 5.1rem;
   }
 
   .ff-goal-title {
     font-size: clamp(1.35rem, 2vw, 1.95rem);
-    font-weight: 800;
+    font-weight: 850;
     line-height: 1.1;
     letter-spacing: -0.025em;
     color: #18222f;
@@ -717,7 +744,7 @@
 
   .ff-goal-description {
     margin-top: 0.38rem;
-    color: #7a8897;
+    color: rgba(122, 136, 151, 0.82);
     font-size: 0.92rem;
     line-height: 1.42;
     min-height: 2.5em;
@@ -728,8 +755,18 @@
   }
 
   .ff-goal-status-badge {
-    margin-top: 0.14rem;
+    position: absolute;
+    top: 1.05rem;
+    right: 1rem;
+    z-index: 2;
+    min-width: 74px;
+    justify-content: center;
     white-space: nowrap;
+  }
+
+  .ff-goal-status-badge:not(.warn) {
+    color: #0f6a39;
+    background: rgba(34, 197, 94, 0.2);
   }
 
   .ff-goal-metrics {
@@ -750,8 +787,19 @@
 
   .ff-goal-progress-area {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 0.35rem;
     margin-top: 0.1rem;
+  }
+
+  .ff-goal-progress-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #7c8a98;
   }
 
   .ff-goal-progress-area .ff-ring-wrap {
@@ -870,6 +918,10 @@
       padding: 1rem 1rem 0.95rem 1.8rem;
     }
 
+    .ff-goal-tile__header {
+      padding-right: 4.5rem;
+    }
+
     .ff-goal-tile__accent {
       left: 0.82rem;
     }
@@ -932,6 +984,12 @@
     .ff-goal-action:hover {
       transform: translateY(-1px);
       border-color: #c5d6e9;
+    }
+
+    .ff-goals-create-btn:hover:not(:disabled) {
+      box-shadow:
+        0 18px 30px rgba(59, 130, 246, 0.3),
+        0 0 0 3px rgba(109, 79, 246, 0.16);
     }
 
     .ff-nav-link:hover,
