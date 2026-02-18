@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AppDispatch } from '../../store';
@@ -13,6 +13,16 @@ const categories = [
   { id: 4, name: 'Academics', color: '#2563eb' },
   { id: 5, name: 'Career Skills', color: '#be185d' },
 ];
+
+const difficultyLabels: Record<number, string> = {
+  1: 'Very Easy',
+  2: 'Easy',
+  3: 'Balanced',
+  4: 'Hard',
+  5: 'Very Hard',
+};
+
+const minutePresets = [10, 15, 20, 30, 45, 60, 90, 120];
 
 const NewGoal: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,6 +40,15 @@ const NewGoal: React.FC = () => {
     endDate: '',
     isPrivate: true,
   });
+
+  const selectedCategory = useMemo(
+    () => categories.find((category) => category.id === formData.categoryId) || categories[0],
+    [formData.categoryId]
+  );
+
+  const setDailyMinutes = (value: number) => {
+    setFormData({ ...formData, dailyMinimumMinutes: Math.max(0, Math.min(600, value)) });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +82,20 @@ const NewGoal: React.FC = () => {
           <p className="status-chip">Goal Setup</p>
           <h1 className="section-title mt-3">Create New Goal</h1>
           <p className="section-subtitle">Set a daily target and keep your momentum visible.</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="status-chip" style={{ background: `${selectedCategory.color}1c`, color: selectedCategory.color }}>
+              {selectedCategory.name}
+            </span>
+            <span className="status-chip" style={{ background: 'rgba(59,130,246,0.14)', color: '#1d4ed8' }}>
+              {difficultyLabels[formData.difficulty]}
+            </span>
+            <span className="status-chip" style={{ background: 'rgba(249,115,22,0.15)', color: '#c2410c' }}>
+              {formData.dailyMinimumMinutes} min/day
+            </span>
+          </div>
         </section>
 
-        <form onSubmit={handleSubmit} className="card">
+        <form onSubmit={handleSubmit} className="card border-white/75 bg-white/92">
           {error && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
               <p className="text-sm text-red-700">{error}</p>
@@ -85,7 +115,9 @@ const NewGoal: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, categoryId: cat.id })}
                     className={`rounded-xl border px-3 py-3 text-left text-sm font-semibold transition-all ${
-                      active ? 'border-transparent text-white shadow-soft' : 'border-slate-200 bg-white text-gray-700'
+                      active
+                        ? 'border-transparent text-white shadow-soft ring-2 ring-offset-1 ring-white/85'
+                        : 'border-slate-200 bg-white text-gray-700 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                     style={active ? { backgroundColor: cat.color } : {}}
                   >
@@ -134,15 +166,35 @@ const NewGoal: React.FC = () => {
                 id="daily-commitment"
                 type="number"
                 value={formData.dailyMinimumMinutes}
-                onChange={(e) =>
-                  setFormData({ ...formData, dailyMinimumMinutes: parseInt(e.target.value, 10) || 0 })
-                }
+                onChange={(e) => setDailyMinutes(parseInt(e.target.value, 10) || 0)}
                 min="10"
                 max="600"
+                step="5"
                 className="input-field"
                 required
               />
               <p className="mt-1 text-xs text-ink-muted">Choose between 10 and 600 minutes.</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {minutePresets
+                  .filter((minutes) => minutes <= 600)
+                  .map((minutes) => {
+                    const active = formData.dailyMinimumMinutes === minutes;
+                    return (
+                      <button
+                        key={minutes}
+                        type="button"
+                        onClick={() => setDailyMinutes(minutes)}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
+                          active
+                            ? 'border-blue-300 bg-blue-50 text-blue-700'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        {minutes}m
+                      </button>
+                    );
+                  })}
+              </div>
             </div>
 
             <div>
@@ -157,15 +209,17 @@ const NewGoal: React.FC = () => {
                     onClick={() => setFormData({ ...formData, difficulty: level })}
                     className={`rounded-xl border px-2 py-2 text-sm font-semibold transition-all ${
                       formData.difficulty === level
-                        ? 'border-primary-200 bg-primary-100 text-primary-700'
-                        : 'border-slate-200 bg-white text-gray-700'
+                        ? 'border-blue-200 bg-blue-50 text-blue-700'
+                        : 'border-slate-200 bg-white text-gray-700 hover:border-slate-300'
                     }`}
                   >
                     {level}
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-xs text-ink-muted">1 = very easy, 5 = very challenging</p>
+              <p className="mt-1 text-xs font-semibold text-slate-600">
+                {formData.difficulty} - {difficultyLabels[formData.difficulty]}
+              </p>
             </div>
 
             <div>
@@ -197,19 +251,23 @@ const NewGoal: React.FC = () => {
             </div>
           </div>
 
-          <div className="mb-6 rounded-xl border border-primary-100 bg-primary-50 p-4">
+          <div
+            className={`mb-6 rounded-xl border p-4 ${
+              formData.isPrivate ? 'border-slate-200 bg-slate-50' : 'border-emerald-200 bg-emerald-50'
+            }`}
+          >
             <label className="flex items-start gap-3">
               <input
                 type="checkbox"
                 checked={!formData.isPrivate}
                 onChange={(e) => setFormData({ ...formData, isPrivate: !e.target.checked })}
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-primary-600"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
               />
               <span className="text-sm font-semibold text-gray-900">
                 Make this goal public (appear on leaderboards)
               </span>
             </label>
-            <p className="ml-7 mt-2 text-sm text-primary-700">
+            <p className={`ml-7 mt-2 text-sm ${formData.isPrivate ? 'text-slate-600' : 'text-emerald-700'}`}>
               {!formData.isPrivate
                 ? 'This goal will be visible on category leaderboards.'
                 : 'This goal stays private and visible only to you.'}

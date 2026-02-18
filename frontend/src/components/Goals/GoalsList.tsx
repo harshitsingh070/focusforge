@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { deleteGoal, fetchGoals } from '../../store/goalsSlice';
+import { Goal } from '../../types';
 import Navbar from '../Layout/Navbar';
 
 const GoalsList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { goals, loading, error } = useSelector((state: RootState) => state.goals);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [deletingGoalId, setDeletingGoalId] = useState<number | null>(null);
 
   useEffect(() => {
     dispatch(fetchGoals());
@@ -24,33 +26,40 @@ const GoalsList: React.FC = () => {
     [goals, selectedCategory]
   );
 
-  const estimateProgress = (currentStreak: number, longestStreak: number) => {
-    if (longestStreak <= 0 && currentStreak <= 0) {
-      return 12;
-    }
+  const estimateProgress = (goal: Goal) => {
+    const streakScale = Math.max(goal.longestStreak, goal.currentStreak, 1);
+    const streakRatio = goal.currentStreak / streakScale;
+    const difficultyRatio = Math.max(1, Math.min(goal.difficulty || 1, 5)) / 5;
+    const targetRatio = Math.min((goal.dailyMinimumMinutes || 0) / 120, 1);
+    const blended = streakRatio * 0.5 + difficultyRatio * 0.3 + targetRatio * 0.2;
+    return Math.max(10, Math.min(100, Math.round(blended * 100)));
+  };
 
-    const base = longestStreak > 0 ? (currentStreak / longestStreak) * 100 : currentStreak * 8;
-    return Math.max(8, Math.min(100, Math.round(base)));
+  const handleDeleteGoal = async (goalId: number) => {
+    setDeletingGoalId(goalId);
+    try {
+      await dispatch(deleteGoal(goalId));
+    } finally {
+      setDeletingGoalId((current) => (current === goalId ? null : current));
+    }
   };
 
   return (
     <div className="page-shell">
       <Navbar />
 
-      <main className="page-container">
-        <section className="section-heading">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="section-title">Your Goals</h1>
-              <p className="section-subtitle">Manage active and completed goals with clear daily targets.</p>
-            </div>
-            <Link to="/goals/new" className="btn-primary">
-              + Create Goal
-            </Link>
+      <main className="page-container ff-goals-page">
+        <section className="section-heading ff-goals-hero">
+          <div>
+            <h1 className="section-title">Your Goals</h1>
+            <p className="section-subtitle">Manage active and completed goals</p>
           </div>
+          <Link to="/goals/new" className="btn-primary ff-goals-create-btn">
+            + Create Goal
+          </Link>
         </section>
 
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="ff-goal-filters">
           {categories.map((category) => (
             <button
               key={category}
@@ -79,71 +88,85 @@ const GoalsList: React.FC = () => {
           </div>
         )}
 
-        <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <section className="ff-goals-grid">
           {filteredGoals.map((goal) => {
-            const progressPercent = estimateProgress(goal.currentStreak, goal.longestStreak);
+            const progressPercent = estimateProgress(goal);
+            const goalColor = goal.categoryColor || '#5EA8FF';
             const ringStyle = {
               ['--ring-value' as string]: `${progressPercent}%`,
-              ['--ring-color' as string]: goal.categoryColor || '#3B82F6',
+              ['--ring-color' as string]: goalColor,
             } as React.CSSProperties;
 
             return (
-              <article key={goal.id} className="card relative overflow-hidden">
+              <article key={goal.id} className="card ff-goal-tile">
                 <span
-                  className="absolute left-0 top-0 h-full w-1.5 rounded-l-2xl"
+                  className="ff-goal-tile__accent"
                   style={{
-                    background: `linear-gradient(180deg, ${goal.categoryColor || '#3B82F6'}, rgba(255,255,255,0.1))`,
+                    background: `linear-gradient(180deg, ${goalColor}, rgba(255, 255, 255, 0.18))`,
                   }}
                 />
 
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
+                <div className="ff-goal-tile__content">
+                  <div className="ff-goal-tile__header">
+                    <div className="min-w-0">
+                      <h3 className="ff-goal-title">{goal.title}</h3>
+                      <p className="ff-goal-description">{goal.description || 'No description yet for this goal.'}</p>
+                    </div>
                     <span
-                      className="status-chip"
-                      style={{ background: `${goal.categoryColor}20`, color: goal.categoryColor || '#3B82F6' }}
+                      className={`status-chip ff-goal-status-badge ${goal.isActive ? '' : 'warn'}`}
+                      style={goal.isActive ? { background: `${goalColor}20`, color: goalColor } : undefined}
                     >
-                      {goal.category}
+                      {goal.isActive ? 'Active' : 'Paused'}
                     </span>
-                    <h3 className="mt-2 truncate text-2xl font-bold text-slate-900">{goal.title}</h3>
-                  </div>
-                  <span className={`status-chip ${goal.isActive ? '' : 'warn'}`}>{goal.isActive ? 'Active' : 'Paused'}</span>
-                </div>
-
-                <p className="line-clamp-2 text-sm text-slate-500">
-                  {goal.description || 'No description set yet for this goal.'}
-                </p>
-
-                <div className="mt-4 flex items-center gap-4">
-                  <div className="ff-ring-wrap">
-                    <div className="ff-ring" style={ringStyle} />
-                    <p className="ff-ring__label">{progressPercent}%</p>
                   </div>
 
-                  <div className="flex-1 space-y-2 text-sm text-slate-600">
-                    <p>Difficulty: {goal.difficulty}/5</p>
-                    <p>Daily Target: {goal.dailyMinimumMinutes} min</p>
-                    <p>Streak: {goal.currentStreak} days</p>
-                    <p>Best: {goal.longestStreak} days</p>
+                  <div className="ff-goal-metrics">
+                    <p className="ff-goal-meta">
+                      <strong>Difficulty:</strong> {Math.max(1, Math.min(goal.difficulty || 1, 5))}/5
+                    </p>
+                    <p className="ff-goal-meta">
+                      <strong>Current Streak:</strong> {goal.currentStreak} days
+                    </p>
                   </div>
-                </div>
 
-                <div className="mt-4 grid grid-cols-4 gap-2">
-                  <Link to={`/goals/${goal.id}`} className="btn-secondary text-center">
-                    View
-                  </Link>
-                  <Link to={`/goals/${goal.id}/edit`} className="btn-secondary text-center">
-                    Edit
-                  </Link>
-                  <Link to={`/goals/${goal.id}/log`} className="btn-primary text-center">
-                    Log
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => dispatch(deleteGoal(goal.id))}
-                    className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
-                  >
-                    Delete
-                  </button>
+                  <div className="ff-goal-progress-area">
+                    <div className="ff-ring-wrap">
+                      <div className="ff-ring" style={ringStyle} />
+                      <p className="ff-ring__label">{progressPercent}%</p>
+                    </div>
+                  </div>
+
+                  <div className="ff-goal-footer">
+                    <div>
+                      <p className="ff-goal-meta">
+                        <strong>Daily Target:</strong> {goal.dailyMinimumMinutes} min
+                      </p>
+                      <p className="ff-goal-meta">
+                        <strong>Best Streak:</strong> {goal.longestStreak} days
+                      </p>
+                    </div>
+
+                    <Link to={`/goals/${goal.id}`} className="ff-goal-open-link">
+                      Open
+                    </Link>
+                  </div>
+
+                  <div className="ff-goal-quick-actions">
+                    <Link to={`/goals/${goal.id}/edit`} className="ff-goal-action">
+                      Edit
+                    </Link>
+                    <Link to={`/goals/${goal.id}/log`} className="ff-goal-action ff-goal-action--primary">
+                      Log
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGoal(goal.id)}
+                      className="ff-goal-action ff-goal-action--delete"
+                      disabled={deletingGoalId === goal.id}
+                    >
+                      {deletingGoalId === goal.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
               </article>
             );
