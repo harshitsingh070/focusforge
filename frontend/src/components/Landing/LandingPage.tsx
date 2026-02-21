@@ -9,60 +9,128 @@ interface FeatureHighlight {
 }
 
 interface WorkflowStep {
+  id: 'setup' | 'track' | 'climb';
   title: string;
   description: string;
-  detail: string;
 }
 
 interface PlatformStat {
   value: string;
   label: string;
+  detail: string;
+  tone: 'mint' | 'sky' | 'violet';
+}
+
+interface SnapshotProgress {
+  label: string;
+  value: string;
+  tone: 'mint' | 'orange' | 'blue';
 }
 
 const featureHighlights: FeatureHighlight[] = [
   {
-    label: 'Daily Focus',
-    title: 'Build momentum with structured goals',
+    label: 'Daily Dashboard',
+    title: 'Track every active goal from one clean screen',
     description:
-      'Break big ambitions into daily commitments, monitor completion, and keep your next action visible.',
+      'Monitor streak safety, completion pace, and effort logs without switching views or losing context.',
+  },
+  {
+    label: 'Activity Intelligence',
+    title: 'Catch streak risk before momentum drops',
+    description:
+      'Understand weekly rhythm, low-output windows, and completion trends so adjustments happen early.',
   },
   {
     label: 'Fair Leaderboards',
-    title: 'Compete with quality, not noise',
+    title: 'Compete on consistency, not noisy activity',
     description:
-      'Rankings favor consistency, streak health, and meaningful progress so the scoreboard stays trustworthy.',
-  },
-  {
-    label: 'Progress Intelligence',
-    title: 'See what is improving and what is slipping',
-    description:
-      'Use analytics, activity logs, and milestone trends to quickly adjust your effort before momentum drops.',
+      'Rankings reward meaningful progress and protect high-quality effort across different goal categories.',
   },
 ];
 
 const workflowSteps: WorkflowStep[] = [
   {
-    title: 'Create your goal system',
-    description: 'Set targets, effort windows, and difficulty for each goal.',
-    detail: 'Designed for coding, fitness, study, and multi-category habits.',
+    id: 'setup',
+    title: 'Set your goal system',
+    description: 'Define targets, effort windows, and difficulty for coding, fitness, study, or mixed routines.',
   },
   {
-    title: 'Track work every day',
-    description: 'Log focused minutes and protect your streaks with clear proof of effort.',
-    detail: 'Your dashboard keeps all active goals and daily progress in one place.',
+    id: 'track',
+    title: 'Log focused work daily',
+    description: 'Record real effort, keep your dashboard current, and maintain streak reliability over time.',
   },
   {
-    title: 'Climb with consistency',
-    description: 'Turn daily execution into badges, improved ranks, and measurable growth.',
-    detail: 'Compete fairly while staying accountable to your own targets.',
+    id: 'climb',
+    title: 'Review and improve weekly',
+    description: 'Use progress signals, badges, and leaderboard movement to refine your execution system.',
   },
 ];
 
 const platformStats: PlatformStat[] = [
-  { value: '3x', label: 'Faster clarity on daily priorities' },
-  { value: '24/7', label: 'Progress visibility across all goals' },
-  { value: '1', label: 'Unified place for goals, rankings, and streaks' },
+  {
+    value: '3x',
+    label: 'Faster clarity on daily priorities',
+    detail: 'Set targets and effort windows to remove uncertainty from each day.',
+    tone: 'mint',
+  },
+  {
+    value: '24/7',
+    label: 'Progress visibility across all goals',
+    detail: 'View coding, fitness, and study progress in one reliable dashboard.',
+    tone: 'sky',
+  },
+  {
+    value: '1',
+    label: 'Unified place for goals, rankings, and streaks',
+    detail: 'Stop switching tools and keep accountability inside one workflow.',
+    tone: 'violet',
+  },
 ];
+
+const snapshotProgress: SnapshotProgress[] = [
+  { label: 'Coding Goal', value: '82%', tone: 'mint' },
+  { label: 'Fitness Goal', value: '61%', tone: 'orange' },
+  { label: 'Study Goal', value: '74%', tone: 'blue' },
+];
+
+const landingVisuals = {
+  hero: '/images/landing/focusforge-hero-timer.png',
+  analytics: '/images/landing/focusforge-analytics-laptop.png',
+  streak: '/images/landing/focusforge-streak-leaderboard.png',
+};
+
+const StepIcon: React.FC<{ id: WorkflowStep['id'] }> = ({ id }) => {
+  if (id === 'setup') {
+    return (
+      <svg viewBox="0 0 24 24" className="landing-step-icon-svg" aria-hidden="true" focusable="false">
+        <path
+          d="M12 7.2a4.8 4.8 0 1 0 0 9.6a4.8 4.8 0 0 0 0-9.6Zm0-4.2l1 2.2a7.4 7.4 0 0 1 1.8.8L17 4.8l2.2 2.2l-1.2 2.2c.3.6.6 1.2.8 1.8l2.2 1v3l-2.2 1a7.4 7.4 0 0 1-.8 1.8l1.2 2.2L17 22.2l-2.2-1.2c-.6.3-1.2.6-1.8.8l-1 2.2H9l-1-2.2a7.4 7.4 0 0 1-1.8-.8L4 22.2L1.8 20l1.2-2.2a7.4 7.4 0 0 1-.8-1.8L0 15v-3l2.2-1c.2-.6.5-1.2.8-1.8L1.8 7L4 4.8l2.2 1.2c.6-.3 1.2-.6 1.8-.8L9 3h3Z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
+
+  if (id === 'track') {
+    return (
+      <svg viewBox="0 0 24 24" className="landing-step-icon-svg" aria-hidden="true" focusable="false">
+        <path
+          d="M12 1.5a10.5 10.5 0 1 0 10.5 10.5A10.5 10.5 0 0 0 12 1.5Zm0 3a1.2 1.2 0 0 1 1.2 1.2v5.3l3.5 2.1a1.2 1.2 0 1 1-1.2 2.1L11 12.5a1.2 1.2 0 0 1-.6-1V5.7A1.2 1.2 0 0 1 12 4.5Z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" className="landing-step-icon-svg" aria-hidden="true" focusable="false">
+      <path
+        d="M3 18.2V15l8.2-8.2l3.2 3.2L6.2 18.2H3Zm12.7-9.8l1.8-1.8l2.5 2.5l-1.8 1.8l-2.5-2.5ZM7 20h14v2H7z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
 
 const LandingPage: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -88,7 +156,7 @@ const LandingPage: React.FC = () => {
             <a href="#how-it-works" className="landing-nav-link">
               How It Works
             </a>
-            <a href="#community" className="landing-nav-link">
+            <a href="#results" className="landing-nav-link">
               Results
             </a>
           </nav>
@@ -107,8 +175,8 @@ const LandingPage: React.FC = () => {
       <main className="landing-main">
         <section className="landing-hero">
           <div className="landing-hero-copy">
-            <p className="landing-kicker reveal">Goal tracking for disciplined growth</p>
-            <h1 className="landing-title reveal reveal-delay-1">Forge consistency with purpose-driven goals.</h1>
+            <p className="landing-kicker reveal">How It Works</p>
+            <h1 className="landing-title reveal reveal-delay-1">From setup to measurable progress in three steps</h1>
             <p className="landing-subtitle reveal reveal-delay-2">
               FocusForge helps you plan daily effort, protect streaks, and compete on transparent leaderboards so you
               can convert intention into measurable execution.
@@ -118,7 +186,7 @@ const LandingPage: React.FC = () => {
               <Link to="/register" className="btn-primary landing-cta-primary">
                 Create Free Account
               </Link>
-              <Link to="/login" className="btn-secondary landing-cta-secondary">
+              <Link to="/login" className="landing-cta-tertiary">
                 Sign In
               </Link>
             </div>
@@ -128,7 +196,7 @@ const LandingPage: React.FC = () => {
               <Link to="/rules" className="landing-footnote-link">
                 platform rules
               </Link>{' '}
-              before you join public rankings.
+              before joining public rankings.
             </p>
           </div>
 
@@ -138,48 +206,68 @@ const LandingPage: React.FC = () => {
               <span>Live Consistency Snapshot</span>
             </div>
 
-            <ul className="landing-panel-list">
-              <li>
-                <strong>Daily dashboard:</strong> Track active goals without tab-hopping.
-              </li>
-              <li>
-                <strong>Activity intelligence:</strong> Detect streak risks before they break.
-              </li>
-              <li>
-                <strong>Leaderboard context:</strong> Understand rank changes over time.
-              </li>
-            </ul>
+            <div className="landing-panel-copy">
+              <p className="landing-panel-line">
+                <strong>Daily dashboard:</strong> Track active goals without context switching.
+              </p>
+              <p className="landing-panel-line">
+                <strong>Activity intelligence:</strong> Detect streak risk before it becomes a break.
+              </p>
+              <p className="landing-panel-line">
+                <strong>Leaderboard context:</strong> Understand ranking movement over time.
+              </p>
+            </div>
 
             <div className="landing-progress-grid">
-              <div className="landing-progress-card">
-                <p className="landing-progress-label">Coding Goal</p>
-                <div className="landing-progress-track">
-                  <span className="landing-progress-fill progress-coding" />
+              {snapshotProgress.map((item) => (
+                <div
+                  key={item.label}
+                  className={`landing-progress-card${item.label === 'Coding Goal' ? ' landing-progress-card-highlight' : ''}`}
+                >
+                  <div className="landing-progress-head">
+                    <p className="landing-progress-label">{item.label}</p>
+                    <span className="landing-progress-value">{item.value}</span>
+                  </div>
+                  <div className="landing-progress-track">
+                    <span className={`landing-progress-fill progress-${item.tone}`} style={{ width: item.value }} />
+                  </div>
                 </div>
-              </div>
-
-              <div className="landing-progress-card">
-                <p className="landing-progress-label">Fitness Goal</p>
-                <div className="landing-progress-track">
-                  <span className="landing-progress-fill progress-fitness" />
-                </div>
-              </div>
+              ))}
             </div>
 
             <div className="landing-badge-row">
-              <span className="landing-mini-chip">Streak Safe</span>
+              <span className="landing-mini-chip landing-mini-chip-highlight">Streak Safe</span>
               <span className="landing-mini-chip">Fair Play</span>
               <span className="landing-mini-chip">Weekly Wins</span>
             </div>
+
+            <figure className="landing-hero-media">
+              <img
+                src={landingVisuals.hero}
+                alt="FocusForge timer on mobile with productivity dashboard on laptop"
+                className="landing-hero-media-image"
+                loading="eager"
+              />
+              <div className="landing-hero-media-focus">
+                <div className="landing-hero-focus-chip">Streak Safe</div>
+                <div className="landing-hero-focus-progress">
+                  <span className="landing-hero-focus-progress-label">Coding Progress</span>
+                  <span className="landing-hero-focus-progress-track" aria-hidden="true">
+                    <span className="landing-hero-focus-progress-fill" />
+                  </span>
+                </div>
+              </div>
+            </figure>
           </aside>
         </section>
 
         <section id="features" className="landing-section">
           <header className="landing-section-header">
             <p className="landing-section-kicker">Why FocusForge</p>
-            <h2 className="landing-section-title">Everything you need to stay accountable</h2>
+            <h2 className="landing-section-title">Purpose-built for consistency-driven execution</h2>
             <p className="landing-section-subtitle">
-              Built for people who want clean execution systems, transparent scoring, and long-term habit growth.
+              The app theme, components, and interactions stay aligned so the public landing experience matches the
+              product feel users see after sign-in.
             </p>
           </header>
 
@@ -188,7 +276,7 @@ const LandingPage: React.FC = () => {
               <article
                 key={feature.title}
                 className="landing-feature-card reveal"
-                style={{ animationDelay: `${0.1 + index * 0.08}s` }}
+                style={{ animationDelay: `${0.12 + index * 0.08}s` }}
               >
                 <p className="landing-feature-label">{feature.label}</p>
                 <h3 className="landing-feature-title">{feature.title}</h3>
@@ -198,64 +286,92 @@ const LandingPage: React.FC = () => {
           </div>
         </section>
 
-        <section id="how-it-works" className="landing-section">
+        <section id="how-it-works" className="landing-section landing-steps-section">
           <header className="landing-section-header">
             <p className="landing-section-kicker">How It Works</p>
-            <h2 className="landing-section-title">From setup to measurable progress in three steps</h2>
+            <h2 className="landing-section-title">Simple loop: setup, track, and climb</h2>
+            <p className="landing-section-subtitle">
+              Focus on execution while FocusForge keeps progress, streak status, and momentum signals visible.
+            </p>
           </header>
-
           <div className="landing-steps">
             {workflowSteps.map((step, index) => (
-              <article key={step.title} className="landing-step-card reveal" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+              <article
+                key={step.title}
+                className="landing-step-card reveal"
+                style={{ animationDelay: `${0.2 + index * 0.08}s` }}
+              >
+                <span className={`landing-step-icon-wrap landing-step-icon-${step.id}`}>
+                  <StepIcon id={step.id} />
+                </span>
                 <span className="landing-step-index">{index + 1}</span>
                 <h3 className="landing-step-title">{step.title}</h3>
                 <p className="landing-step-description">{step.description}</p>
-                <p className="landing-step-detail">{step.detail}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section id="community" className="landing-section landing-community">
-          <div className="landing-community-grid">
-            <div className="landing-stats">
-              {platformStats.map((stat) => (
-                <article key={stat.label} className="landing-stat-card reveal">
-                  <p className="landing-stat-value">{stat.value}</p>
-                  <p className="landing-stat-label">{stat.label}</p>
-                </article>
-              ))}
-            </div>
+        <section id="results" className="landing-section landing-results">
+          <header className="landing-section-header">
+            <p className="landing-section-kicker">Results</p>
+            <h2 className="landing-section-title">Consistent visuals with measurable value</h2>
+            <p className="landing-section-subtitle">
+              The layout below mirrors your reference image style while staying inside FocusForge colors and component
+              language.
+            </p>
+          </header>
 
-            <div className="landing-quote-grid">
-              <article className="landing-quote-card reveal reveal-delay-2">
-                <p className="landing-quote-text">
-                  "I finally have one clean system for habits, progress, and leaderboard motivation."
-                </p>
-                <p className="landing-quote-author">Product Builder</p>
+          <div className="landing-stats-grid">
+            {platformStats.map((stat, index) => (
+              <article key={stat.label} className="landing-stat-card reveal" style={{ animationDelay: `${0.15 + index * 0.1}s` }}>
+                <span className={`landing-stat-icon stat-icon-${stat.tone}`} aria-hidden="true" />
+                <p className="landing-stat-value">{stat.value}</p>
+                <p className="landing-stat-label">{stat.label}</p>
+                <p className="landing-stat-detail">{stat.detail}</p>
               </article>
-              <article className="landing-quote-card reveal reveal-delay-3">
-                <p className="landing-quote-text">
-                  "The daily tracking view made it obvious where my routine was failing."
-                </p>
-                <p className="landing-quote-author">Engineering Student</p>
-              </article>
-            </div>
+            ))}
           </div>
-        </section>
 
-        <section className="landing-cta-band reveal">
-          <h2 className="landing-cta-title">Ready to turn plans into consistent output?</h2>
-          <p className="landing-cta-copy">
-            Create your account to start tracking goals, earning badges, and climbing fair leaderboards.
-          </p>
-          <div className="landing-cta-actions">
-            <Link to="/register" className="btn-primary landing-cta-primary">
-              Start with Sign Up
-            </Link>
-            <Link to="/login" className="btn-secondary landing-cta-secondary">
-              I already have an account
-            </Link>
+          <section className="landing-cta-band reveal">
+            <h2 className="landing-cta-title">Ready to turn plans into consistent output?</h2>
+            <p className="landing-cta-copy">
+              Create your account to start tracking goals, earning badges, and climbing fair leaderboards.
+            </p>
+            <div className="landing-cta-actions">
+              <Link to="/register" className="btn-primary landing-cta-primary">
+                Start with Sign Up
+              </Link>
+              <Link to="/login" className="btn-secondary landing-cta-secondary">
+                I already have an account
+              </Link>
+            </div>
+          </section>
+
+          <div className="landing-preview-grid">
+            <figure className="landing-preview-image-card reveal">
+              <img
+                src={landingVisuals.analytics}
+                alt="FocusForge analytics dashboard with goal trends and weak area insights"
+                className="landing-preview-image"
+                loading="lazy"
+              />
+              <figcaption className="landing-preview-caption">
+                Analytics view: detect momentum shifts and weak areas before streaks break.
+              </figcaption>
+            </figure>
+
+            <figure className="landing-preview-image-card reveal reveal-delay-1">
+              <img
+                src={landingVisuals.streak}
+                alt="FocusForge streak rewards and leaderboard progress on mobile and desktop"
+                className="landing-preview-image"
+                loading="lazy"
+              />
+              <figcaption className="landing-preview-caption">
+                Streak view: celebrate daily wins and climb the leaderboard with consistent effort.
+              </figcaption>
+            </figure>
           </div>
         </section>
       </main>
@@ -265,7 +381,7 @@ const LandingPage: React.FC = () => {
           <div className="landing-footer-brand">
             <p className="landing-footer-logo">FocusForge</p>
             <p className="landing-footer-copy">
-              Goal tracking and consistency intelligence for people who execute daily.
+              Goal tracking and consistency intelligence for people who execute every day.
             </p>
           </div>
 
@@ -280,7 +396,7 @@ const LandingPage: React.FC = () => {
             <p className="landing-footer-heading">Explore</p>
             <a href="#features">Features</a>
             <a href="#how-it-works">How It Works</a>
-            <a href="#community">Results</a>
+            <a href="#results">Results</a>
           </div>
         </div>
 
