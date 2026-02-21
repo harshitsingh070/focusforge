@@ -97,6 +97,7 @@ const landingVisuals = {
   hero: '/images/landing/focusforge-hero-timer.png',
   analytics: '/images/landing/focusforge-analytics-laptop.png',
   streak: '/images/landing/focusforge-streak-leaderboard.png',
+  firstBlock: '/images/landing/first-block.png',
 };
 
 const StepIcon: React.FC<{ id: WorkflowStep['id'] }> = ({ id }) => {
@@ -198,6 +199,15 @@ const LandingPage: React.FC = () => {
               </Link>{' '}
               before joining public rankings.
             </p>
+
+            <figure className="landing-first-block-media reveal reveal-delay-4">
+              <img
+                src={landingVisuals.firstBlock}
+                alt="FocusForge setup to progress illustration"
+                className="landing-first-block-image"
+                loading="eager"
+              />
+            </figure>
           </div>
 
           <aside className="landing-hero-panel reveal reveal-delay-2" aria-label="Platform snapshot">
@@ -208,13 +218,13 @@ const LandingPage: React.FC = () => {
 
             <div className="landing-panel-copy">
               <p className="landing-panel-line">
-                <strong>Daily dashboard:</strong> Track active goals without context switching.
+                <strong>Daily dashboard:</strong> Track active goals in one view.
               </p>
               <p className="landing-panel-line">
-                <strong>Activity intelligence:</strong> Detect streak risk before it becomes a break.
+                <strong>Activity intelligence:</strong> Catch streak risk early.
               </p>
               <p className="landing-panel-line">
-                <strong>Leaderboard context:</strong> Understand ranking movement over time.
+                <strong>Leaderboard context:</strong> See ranking changes quickly.
               </p>
             </div>
 

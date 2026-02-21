@@ -133,10 +133,12 @@
   display: grid;
   gap: 1.2rem;
   align-items: stretch;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .landing-hero-copy {
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 26px;
   padding: 1.9rem;
@@ -254,7 +256,35 @@
   text-decoration: underline;
 }
 
+.landing-first-block-media,
+.landing-hero-media {
+  margin: auto 0 0;
+  width: 100%;
+}
+
+.landing-first-block-media {
+  overflow: hidden;
+  border: 1px solid rgba(214, 224, 238, 0.88);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.08);
+}
+
+.landing-first-block-image,
+.landing-hero-media-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.landing-first-block-image {
+  object-fit: cover;
+  object-position: center;
+}
+
 .landing-hero-panel {
+  display: flex;
+  flex-direction: column;
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 26px;
   padding: 1.35rem;
@@ -398,7 +428,6 @@
 
 .landing-hero-media {
   position: relative;
-  margin: 1rem 0 0;
   overflow: hidden;
   border: 1px solid rgba(214, 224, 238, 0.88);
   border-radius: 1rem;
@@ -407,9 +436,6 @@
 }
 
 .landing-hero-media-image {
-  display: block;
-  width: 100%;
-  max-height: 340px;
   object-fit: cover;
   object-position: center;
   filter: saturate(0.88) brightness(0.88) blur(0.45px);

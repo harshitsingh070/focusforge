@@ -1,0 +1,325 @@
+.register-page-shell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(1rem, 2vw, 1.6rem) 1rem;
+}
+
+.register-grid {
+  display: grid;
+  width: 100%;
+  max-width: 1180px;
+  gap: 1rem;
+}
+
+.register-card {
+  position: relative;
+}
+
+.register-value-card {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.9rem;
+}
+
+.register-value-title {
+  max-width: 11ch;
+}
+
+.register-value-copy {
+  max-width: 34ch;
+  line-height: 1.62;
+}
+
+.register-value-cue {
+  margin-top: 0.2rem;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.68rem;
+  border: 1px solid rgba(94, 168, 255, 0.38);
+  border-radius: 14px;
+  padding: 0.4rem 0.62rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(236, 244, 255, 0.82));
+}
+
+.register-cue-ring {
+  --progress: 74;
+  position: relative;
+  display: grid;
+  height: 2rem;
+  width: 2rem;
+  place-items: center;
+  border-radius: 999px;
+  background: conic-gradient(#22c55e calc(var(--progress) * 1%), rgba(148, 163, 184, 0.3) 0);
+}
+
+.register-cue-ring::before {
+  position: absolute;
+  inset: 0.24rem;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.95);
+  content: '';
+}
+
+.register-cue-ring-core {
+  position: relative;
+  z-index: 1;
+  color: #166534;
+  font-size: 0.58rem;
+  font-weight: 700;
+}
+
+.register-cue-text-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.26rem;
+  color: #334155;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.register-cue-flame {
+  display: inline-flex;
+  height: 0.9rem;
+  width: 0.9rem;
+  color: #f97316;
+}
+
+.register-cue-flame svg {
+  height: 100%;
+  width: 100%;
+  fill: currentColor;
+}
+
+.register-benefit-list {
+  margin: 0.05rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.42rem;
+  list-style: none;
+}
+
+.register-benefit-list li {
+  position: relative;
+  padding-left: 1rem;
+  color: #4f6174;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.register-benefit-list li::before {
+  position: absolute;
+  top: 0.48rem;
+  left: 0;
+  height: 0.36rem;
+  width: 0.36rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5ea8ff, #6d4ff6);
+  content: '';
+}
+
+.register-form-card {
+  width: 100%;
+  max-width: 42rem;
+  justify-self: center;
+}
+
+.register-input-wrap {
+  position: relative;
+}
+
+.register-input {
+  padding-right: 2.2rem;
+}
+
+.register-password-wrap .register-input {
+  padding-right: 5.1rem;
+}
+
+.register-input-status {
+  position: absolute;
+  top: 50%;
+  right: 0.82rem;
+  height: 0.86rem;
+  width: 0.86rem;
+  transform: translateY(-50%);
+  border: 1px solid rgba(148, 163, 184, 0.58);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  transition:
+    border-color var(--ff-motion-duration) var(--ff-motion-easing),
+    box-shadow var(--ff-motion-duration) var(--ff-motion-easing),
+    background-color var(--ff-motion-duration) var(--ff-motion-easing);
+  pointer-events: none;
+}
+
+.register-input-status::after {
+  position: absolute;
+  inset: 0.16rem;
+  border-radius: inherit;
+  background: rgba(148, 163, 184, 0.42);
+  content: '';
+  transition: background-color var(--ff-motion-duration) var(--ff-motion-easing);
+}
+
+.register-password-wrap .register-input-status {
+  right: 3.2rem;
+}
+
+.register-input-wrap:focus-within .register-input {
+  border-color: #7da9ff;
+  box-shadow:
+    0 0 0 4px rgba(94, 168, 255, 0.2),
+    0 10px 24px rgba(59, 130, 246, 0.12);
+  background: #fff;
+}
+
+.register-input-wrap:focus-within .register-input-status {
+  border-color: rgba(94, 168, 255, 0.78);
+}
+
+.register-input-wrap:focus-within .register-input-status::after {
+  background: linear-gradient(180deg, #5ea8ff, #6d4ff6);
+}
+
+.register-input-wrap.is-valid .register-input-status {
+  border-color: rgba(22, 163, 74, 0.65);
+}
+
+.register-input-wrap.is-valid .register-input-status::after {
+  background: rgba(22, 163, 74, 0.8);
+}
+
+.register-input-wrap.has-error .register-input-status {
+  border-color: rgba(220, 38, 38, 0.66);
+}
+
+.register-input-wrap.has-error .register-input-status::after {
+  background: rgba(220, 38, 38, 0.8);
+}
+
+.register-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.68rem;
+  transform: translateY(-50%);
+  border: 0;
+  padding: 0.16rem 0.36rem;
+  border-radius: 0.44rem;
+  color: #607185;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color var(--ff-motion-duration) var(--ff-motion-easing),
+    background-color var(--ff-motion-duration) var(--ff-motion-easing);
+}
+
+.register-password-strength {
+  margin-top: 0.36rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.register-strength-bar {
+  display: inline-block;
+  width: 4.8rem;
+  height: 0.3rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.28);
+}
+
+.register-strength-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width var(--ff-motion-duration) var(--ff-motion-easing);
+}
+
+.register-strength-weak > span {
+  background: linear-gradient(90deg, #fb7185, #f97316);
+}
+
+.register-strength-medium > span {
+  background: linear-gradient(90deg, #f59e0b, #facc15);
+}
+
+.register-strength-strong > span {
+  background: linear-gradient(90deg, #34d399, #16a34a);
+}
+
+.register-strength-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.register-submit-btn {
+  padding-top: 0.94rem;
+  padding-bottom: 0.94rem;
+  box-shadow:
+    0 18px 30px rgba(59, 130, 246, 0.31),
+    0 0 0 1px rgba(109, 79, 246, 0.2);
+}
+
+.register-secondary-links {
+  margin-top: 1.15rem;
+  display: grid;
+  gap: 0.36rem;
+  text-align: center;
+  color: #7a8b9e;
+  font-size: 0.83rem;
+}
+
+.register-link-primary {
+  color: #3f5f84;
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color var(--ff-motion-duration) var(--ff-motion-easing);
+}
+
+.register-link-rules {
+  color: rgba(79, 103, 129, 0.8);
+  font-size: 0.77rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--ff-motion-duration) var(--ff-motion-easing);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .register-submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px) scale(1.018);
+    box-shadow:
+      0 24px 38px rgba(59, 130, 246, 0.36),
+      0 0 0 4px rgba(109, 79, 246, 0.14);
+    filter: brightness(1.05);
+  }
+
+  .register-password-toggle:hover {
+    color: #1f3f64;
+    background: rgba(226, 232, 240, 0.56);
+  }
+
+  .register-link-primary:hover,
+  .register-link-rules:hover {
+    color: #355275;
+    text-decoration: underline;
+  }
+}
+
+@media (min-width: 1024px) {
+  .register-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.1rem;
+  }
+
+  .register-form-card {
+    max-width: none;
+    justify-self: stretch;
+  }
+}
