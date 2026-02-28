@@ -159,6 +159,10 @@ export const enhancedLeaderboardAPI = {
         ...(period ? { period } : {}),
       }),
     }),
+  getCategories: () =>
+    api.get('/leaderboard/v2/categories', {
+      params: withTimestamp(),
+    }),
 };
 
 export const badgesAPI = {
