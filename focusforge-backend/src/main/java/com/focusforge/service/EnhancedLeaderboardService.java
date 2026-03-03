@@ -24,12 +24,6 @@ public class EnhancedLeaderboardService {
             Map.entry("career skills", "Career Skills"),
             Map.entry("career_skills", "Career Skills"),
             Map.entry("career-skills", "Career Skills"));
-    private static final List<String> FALLBACK_CATEGORIES = List.of(
-            "Coding",
-            "Health",
-            "Reading",
-            "Academics",
-            "Career Skills");
 
     @Autowired
     private PointLedgerRepository pointLedgerRepository;
@@ -48,9 +42,6 @@ public class EnhancedLeaderboardService {
 
     @Autowired
     private LeaderboardSnapshotRepository snapshotRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
 
     public Map<String, Object> getLeaderboard(String categoryName, String period) {
         try {
@@ -130,25 +121,6 @@ public class EnhancedLeaderboardService {
         }
     }
 
-    public Map<String, Object> getAvailableCategories() {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            List<String> categories = categoryRepository.findAllByOrderByNameAsc().stream()
-                    .map(Category::getName)
-                    .filter(Objects::nonNull)
-                    .map(String::trim)
-                    .filter(name -> !name.isEmpty())
-                    .collect(Collectors.toList());
-
-            response.put("categories", categories.isEmpty() ? FALLBACK_CATEGORIES : categories);
-            return response;
-        } catch (Exception ex) {
-            log.error("Failed to load leaderboard categories", ex);
-            response.put("categories", FALLBACK_CATEGORIES);
-            return response;
-        }
-    }
-
     private List<Map<String, Object>> computeOnDemandLeaderboard(
             String normalizedCategory,
             LocalDate startDate,
@@ -170,15 +142,7 @@ public class EnhancedLeaderboardService {
             return null;
         }
 
-        String normalizedInput = CATEGORY_ALIASES.getOrDefault(trimmed.toLowerCase(Locale.ROOT), trimmed);
-        try {
-            return categoryRepository.findFirstByNameIgnoreCase(normalizedInput)
-                    .map(Category::getName)
-                    .orElse(normalizedInput);
-        } catch (Exception ex) {
-            log.warn("Category normalization lookup failed for '{}'", normalizedInput, ex);
-            return normalizedInput;
-        }
+        return CATEGORY_ALIASES.getOrDefault(trimmed.toLowerCase(Locale.ROOT), trimmed);
     }
 
     /**

@@ -192,4 +192,8 @@ export const adminAPI = {
   getOverview: () => api.get('/admin/overview', { params: withTimestamp() }),
 };
 
+export const diagnosticAPI = {
+  getLeaderboardData: () => api.get('/diagnostic/leaderboard-data', { params: withTimestamp() }),
+};
+
 export default api;

@@ -33,9 +33,4 @@ public class EnhancedLeaderboardController {
         return ResponseEntity.ok(
                 leaderboardService.getUserRankContext(currentUser.getId(), category, period));
     }
-
-    @GetMapping("/categories")
-    public ResponseEntity<Map<String, Object>> getCategories() {
-        return ResponseEntity.ok(leaderboardService.getAvailableCategories());
-    }
 }

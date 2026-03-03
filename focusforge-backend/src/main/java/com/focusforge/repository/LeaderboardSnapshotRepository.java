@@ -16,8 +16,7 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
         // Find current snapshot for a specific period/category
         @Query("SELECT ls FROM LeaderboardSnapshot ls WHERE " +
                         "ls.periodType = :periodType " +
-                        "AND ((:categoryName IS NULL AND ls.categoryName IS NULL) " +
-                        "OR (ls.categoryName IS NOT NULL AND LOWER(ls.categoryName) = LOWER(:categoryName))) " +
+                        "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
                         "AND ls.periodStart = :periodStart " +
                         "AND ls.periodEnd = :periodEnd " +
                         "ORDER BY ls.rankPosition ASC")
@@ -31,8 +30,7 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
         @Query("SELECT ls FROM LeaderboardSnapshot ls WHERE " +
                         "ls.user.id = :userId " +
                         "AND ls.periodType = :periodType " +
-                        "AND ((:categoryName IS NULL AND ls.categoryName IS NULL) " +
-                        "OR (ls.categoryName IS NOT NULL AND LOWER(ls.categoryName) = LOWER(:categoryName))) " +
+                        "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
                         "AND ls.periodStart = :periodStart " +
                         "AND ls.periodEnd = :periodEnd " +
                         "ORDER BY ls.rankPosition ASC, ls.id ASC")
@@ -46,8 +44,7 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
         // Get users around a specific rank (for context view)
         @Query("SELECT ls FROM LeaderboardSnapshot ls WHERE " +
                         "ls.periodType = :periodType " +
-                        "AND ((:categoryName IS NULL AND ls.categoryName IS NULL) " +
-                        "OR (ls.categoryName IS NOT NULL AND LOWER(ls.categoryName) = LOWER(:categoryName))) " +
+                        "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
                         "AND ls.periodStart = :periodStart " +
                         "AND ls.periodEnd = :periodEnd " +
                         "AND ls.rankPosition BETWEEN :minRank AND :maxRank " +
@@ -62,8 +59,7 @@ public interface LeaderboardSnapshotRepository extends JpaRepository<Leaderboard
 
         @Query("SELECT COUNT(ls) FROM LeaderboardSnapshot ls WHERE " +
                         "ls.periodType = :periodType " +
-                        "AND ((:categoryName IS NULL AND ls.categoryName IS NULL) " +
-                        "OR (ls.categoryName IS NOT NULL AND LOWER(ls.categoryName) = LOWER(:categoryName))) " +
+                        "AND (:categoryName IS NULL AND ls.categoryName IS NULL OR ls.categoryName = :categoryName) " +
                         "AND ls.periodStart = :periodStart " +
                         "AND ls.periodEnd = :periodEnd")
         Long countParticipants(

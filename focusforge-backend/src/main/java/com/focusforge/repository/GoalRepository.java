@@ -25,7 +25,7 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
     List<Goal> findActiveGoalsForUser(@Param("userId") Long userId, @Param("today") LocalDate today);
 
     // Leaderboard queries (note: isPrivate=false means public)
-    @Query("SELECT g FROM Goal g WHERE LOWER(g.category.name) = LOWER(:categoryName) AND g.isPrivate = false AND g.isActive = true")
+    @Query("SELECT g FROM Goal g WHERE g.category.name = :categoryName AND g.isPrivate = false AND g.isActive = true")
     List<Goal> findPublicGoalsByCategory(@Param("categoryName") String categoryName);
 
     @Query("SELECT g FROM Goal g WHERE g.user.id = :userId AND g.isPrivate = false AND g.isActive = true")
