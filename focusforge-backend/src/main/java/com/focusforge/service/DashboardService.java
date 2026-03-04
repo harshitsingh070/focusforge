@@ -157,23 +157,25 @@ public class DashboardService {
 
     private Map<String, Integer> getWeeklyProgress(Long userId) {
         LocalDate today = LocalDate.now();
-        LocalDate weekAgo = today.minus(6, ChronoUnit.DAYS);
-        List<Object[]> dailyTotals = activityLogRepository.getDailyTotals(userId, weekAgo, today);
+        LocalDate weekStart = today.with(java.time.DayOfWeek.MONDAY);
+        LocalDate weekEnd = weekStart.plusDays(6);
+        LocalDate queryEnd = today.isBefore(weekEnd) ? today : weekEnd;
+        List<Object[]> dailyTotals = activityLogRepository.getDailyTotals(userId, weekStart, queryEnd);
         
         Map<String, Integer> weeklyMap = new LinkedHashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE");
         
-        // Initialize with 0
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minus(i, ChronoUnit.DAYS);
+        // Initialize current calendar week (Mon-Sun) with 0.
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = weekStart.plusDays(i);
             weeklyMap.put(date.format(formatter), 0);
         }
         
         // Fill actual data
         for (Object[] row : dailyTotals) {
             LocalDate date = (LocalDate) row[0];
-            Long total = (Long) row[1];
-            weeklyMap.put(date.format(formatter), total.intValue());
+            Number total = (Number) row[1];
+            weeklyMap.put(date.format(formatter), total != null ? total.intValue() : 0);
         }
         
         return weeklyMap;

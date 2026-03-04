@@ -23,8 +23,12 @@ export const applyTheme = (theme: AppTheme): void => {
   const resolvedTheme = theme === 'system' ? resolveSystemTheme() : theme;
 
   root.dataset.theme = theme;
-  root.classList.remove('theme-light', 'theme-dark');
-  root.classList.add(resolvedTheme === 'dark' ? 'theme-dark' : 'theme-light');
+  root.classList.remove('theme-light', 'theme-dark', 'dark');
+  if (resolvedTheme === 'dark') {
+    root.classList.add('theme-dark', 'dark');
+  } else {
+    root.classList.add('theme-light');
+  }
   root.style.colorScheme = resolvedTheme;
 };
 

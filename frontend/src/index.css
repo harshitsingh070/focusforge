@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,6 +8,11 @@
 
 @layer base {
   :root {
+    --ff-primary: #895af6;
+    --ff-primary-soft: #a885f8;
+    --ff-primary-rgb: 137 90 246;
+    --ff-bg-light: #f6f5f8;
+    --ff-bg-dark: #151022;
     --ff-green-500: #22c55e;
     --ff-green-600: #16a34a;
     --ff-blue-500: #3b82f6;
@@ -23,14 +30,53 @@
     --ff-shadow-card: 0 12px 30px rgba(15, 23, 42, 0.06);
     --ff-motion-duration: 240ms;
     --ff-motion-easing: cubic-bezier(0.22, 1, 0.36, 1);
+    --ff-dashboard-panel: rgba(255, 255, 255, 0.95);
+    --ff-dashboard-soft: #f7f4ff;
+    --ff-dashboard-border: #e7defa;
+    --ff-dashboard-title: #1f1a35;
+    --ff-dashboard-muted: #6c6885;
+    --ff-dashboard-shadow: 0 12px 26px rgba(37, 20, 86, 0.08);
   }
 
   :root.theme-light {
-    --ff-bg: #f8fafc;
+    --ff-bg: var(--ff-bg-light);
+    --ff-text-900: #0f172a;
+    --ff-text-700: #334155;
+    --ff-text-500: #64748b;
+    --ff-dashboard-panel: rgba(255, 255, 255, 0.95);
+    --ff-dashboard-soft: #f7f4ff;
+    --ff-dashboard-border: #e7defa;
+    --ff-dashboard-title: #1f1a35;
+    --ff-dashboard-muted: #6c6885;
+    --ff-dashboard-shadow: 0 12px 26px rgba(37, 20, 86, 0.08);
   }
 
   :root.theme-dark {
-    --ff-bg: #eef3f9;
+    --ff-bg: var(--ff-bg-dark);
+    --ff-text-900: #f4efff;
+    --ff-text-700: #c7bedf;
+    --ff-text-500: #a89ec2;
+    --ff-line: #312a4a;
+    --ff-dashboard-panel: rgba(26, 20, 43, 0.88);
+    --ff-dashboard-soft: rgba(41, 33, 67, 0.9);
+    --ff-dashboard-border: rgba(146, 124, 196, 0.28);
+    --ff-dashboard-title: #f4edff;
+    --ff-dashboard-muted: #b9aed7;
+    --ff-dashboard-shadow: 0 16px 30px rgba(0, 0, 0, 0.36);
+  }
+
+  :root.dark {
+    --ff-bg: var(--ff-bg-dark);
+    --ff-text-900: #f4efff;
+    --ff-text-700: #c7bedf;
+    --ff-text-500: #a89ec2;
+    --ff-line: #312a4a;
+    --ff-dashboard-panel: rgba(26, 20, 43, 0.92);
+    --ff-dashboard-soft: rgba(41, 33, 67, 0.92);
+    --ff-dashboard-border: rgba(146, 124, 196, 0.32);
+    --ff-dashboard-title: #f4edff;
+    --ff-dashboard-muted: #b9aed7;
+    --ff-dashboard-shadow: 0 16px 30px rgba(0, 0, 0, 0.36);
   }
 
   * {
@@ -46,10 +92,7 @@
   body {
     margin: 0;
     color: var(--ff-text-900);
-    background:
-      radial-gradient(circle at 10% 8%, rgba(34, 197, 94, 0.15), transparent 38%),
-      radial-gradient(circle at 86% 92%, rgba(249, 115, 22, 0.14), transparent 35%),
-      linear-gradient(132deg, #d9efe6 0%, #e9f0e6 42%, #f2e9da 100%);
+    background: var(--ff-bg);
     font-family: 'Inter', 'SF Pro Text', 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -190,8 +233,8 @@
     font-size: 0.92rem;
     font-weight: 700;
     color: #fff;
-    background: linear-gradient(130deg, #5ea8ff, #6d4ff6);
-    box-shadow: 0 14px 28px rgba(59, 130, 246, 0.34);
+    background: linear-gradient(130deg, var(--ff-primary), #6f3ff5);
+    box-shadow: 0 14px 28px rgba(var(--ff-primary-rgb), 0.34);
     cursor: pointer;
     transition:
       transform var(--ff-motion-duration) var(--ff-motion-easing),
@@ -259,8 +302,8 @@
   .input-field:focus,
   .select-field:focus,
   .textarea-field:focus {
-    border-color: #8ab5ff;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
+    border-color: rgba(var(--ff-primary-rgb), 0.62);
+    box-shadow: 0 0 0 4px rgba(var(--ff-primary-rgb), 0.16);
     background-color: #fff;
   }
 
