@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { format } from 'date-fns';
+import { format, formatDistanceToNowStrict } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
@@ -63,6 +63,36 @@ const formatDisplayTime = (value: string) => {
   } catch {
     return value;
   }
+};
+
+const formatRelativeTime = (value?: string) => {
+  if (!value) {
+    return 'Recently';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return 'Recently';
+  }
+
+  return formatDistanceToNowStrict(parsed, { addSuffix: true });
+};
+
+const formatActivityTimestamp = (value: string) => {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return 'Recently';
+  }
+
+  const now = Date.now();
+  const diff = Math.max(0, now - parsed.getTime());
+  const dayMs = 24 * 60 * 60 * 1000;
+
+  if (diff < dayMs) {
+    return formatDisplayTime(value);
+  }
+
+  return formatDisplayDate(value);
 };
 
 const getInitials = (value?: string | null) => {
@@ -421,14 +451,27 @@ const Dashboard: React.FC = () => {
     totalDailyTarget > 0 ? Math.max(0, Math.min(100, Math.round((totalTodayProgress / totalDailyTarget) * 100))) : 0;
   const displayName = user?.username || data.username || 'Alex';
   const latestBadge = data.recentBadges[0];
+  const latestBadgeTimeLabel = formatRelativeTime(latestBadge?.awardedAt || latestBadge?.earnedAt);
+  const latestBadgeDetail = latestBadge?.earnedReason || latestBadge?.description || 'Recently unlocked.';
   const primaryGoals = prioritizedGoals.slice(0, 2);
+  const streakMessage = data.underReview
+    ? 'Activity logs are currently under review.'
+    : data.globalStreak > 0
+      ? `${data.globalStreak}-day consistency streak.`
+      : 'Build your streak';
   const todayLabel = getTodayWeekdayLabel();
   const todayIndex = weeklyBars.findIndex((bar) => bar.id === todayLabel);
   const currentDayMinutes = todayIndex >= 0 ? weeklyBars[todayIndex].minutes : 0;
   const previousDayMinutes = todayIndex > 0 ? weeklyBars[todayIndex - 1].minutes : 0;
   const trendPercent =
-    todayIndex > 0 ? Math.round(((currentDayMinutes - previousDayMinutes) / Math.max(previousDayMinutes, 1)) * 100) : 0;
-  const trendLabel = `${trendPercent >= 0 ? '+' : ''}${trendPercent}% this week`;
+    todayIndex <= 0
+      ? 0
+      : previousDayMinutes <= 0
+        ? currentDayMinutes > 0
+          ? 100
+          : 0
+        : Math.round(((currentDayMinutes - previousDayMinutes) / previousDayMinutes) * 100);
+  const trendLabel = todayIndex > 0 ? `${trendPercent >= 0 ? '+' : ''}${trendPercent}% vs yesterday` : 'No comparison yet';
   const completingSoon = prioritizedGoals.filter((entry) => entry.progressPercent >= 80 && !entry.goal.completedToday).length;
 
   return (
@@ -602,9 +645,7 @@ const Dashboard: React.FC = () => {
                   <div>
                     <p className="mb-1 font-medium text-slate-500 dark:text-slate-400">Global Streak</p>
                     <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white">{data.globalStreak} Days</h3>
-                    <p className="mt-2 text-sm font-bold text-orange-500">
-                      {data.globalStreak > 0 ? 'Personal Record! ??' : 'Build your streak'}
-                    </p>
+                    <p className="mt-2 text-sm font-bold text-orange-500">{streakMessage}</p>
                   </div>
                   <div className="rounded-xl bg-orange-100 p-3 dark:bg-orange-900/30">
                     <span className="material-symbols-outlined text-orange-600">local_fire_department</span>
@@ -636,68 +677,76 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                  {primaryGoals.map((entry) => {
-                    const { goal, progressPercent, orderIndex } = entry;
-                    const categoryColor = goal.categoryColor || accentPalette[orderIndex % accentPalette.length];
-                    const activityScore = getGoalActivityScore(goal, progressPercent);
-                    const ringColor = getGoalRingColor(goal, progressPercent, activityScore);
-                    const dashOffset = RING_CIRCUMFERENCE - (RING_CIRCUMFERENCE * progressPercent) / 100;
-                    const score = Math.round(progressPercent * 9 + goal.currentStreak * 13);
+                  {primaryGoals.length === 0 ? (
+                    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:col-span-2">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No active goals available.</p>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Create a goal to start tracking validated progress data.</p>
+                    </article>
+                  ) : (
+                    primaryGoals.map((entry) => {
+                      const { goal, progressPercent, orderIndex } = entry;
+                      const categoryColor = goal.categoryColor || accentPalette[orderIndex % accentPalette.length];
+                      const activityScore = getGoalActivityScore(goal, progressPercent);
+                      const ringColor = getGoalRingColor(goal, progressPercent, activityScore);
+                      const dashOffset = RING_CIRCUMFERENCE - (RING_CIRCUMFERENCE * progressPercent) / 100;
 
-                    return (
-                      <article
-                        key={goal.goalId}
-                        className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-                      >
-                        <div className="mb-6 flex items-start justify-between">
-                          <div
-                            className="rounded-xl p-3"
-                            style={{
-                              background: withAlpha(categoryColor, 0.16),
-                            }}
-                          >
-                            <span className="material-symbols-outlined" style={{ color: categoryColor }}>
-                              {getGoalGlyph(goal.category)}
-                            </span>
-                          </div>
+                      return (
+                        <article
+                          key={goal.goalId}
+                          className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                        >
+                          <div className="mb-6 flex items-start justify-between">
+                            <div
+                              className="rounded-xl p-3"
+                              style={{
+                                background: withAlpha(categoryColor, 0.16),
+                              }}
+                            >
+                              <span className="material-symbols-outlined" style={{ color: categoryColor }}>
+                                {getGoalGlyph(goal.category)}
+                              </span>
+                            </div>
 
-                          <div className="relative h-16 w-16">
-                            <svg className="h-full w-full -rotate-90" viewBox="0 0 64 64">
-                              <circle className="text-slate-200 dark:text-slate-700" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="6" />
-                              <circle
-                                cx="32"
-                                cy="32"
-                                fill="transparent"
-                                r="28"
-                                stroke={ringColor}
-                                strokeDasharray={RING_CIRCUMFERENCE}
-                                strokeDashoffset={dashOffset}
-                                strokeWidth="6"
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{progressPercent}%</span>
+                            <div className="relative h-16 w-16">
+                              <svg className="h-full w-full -rotate-90" viewBox="0 0 64 64">
+                                <circle className="text-slate-200 dark:text-slate-700" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" strokeWidth="6" />
+                                <circle
+                                  cx="32"
+                                  cy="32"
+                                  fill="transparent"
+                                  r="28"
+                                  stroke={ringColor}
+                                  strokeDasharray={RING_CIRCUMFERENCE}
+                                  strokeDashoffset={dashOffset}
+                                  strokeWidth="6"
+                                  strokeLinecap="round"
+                                />
+                              </svg>
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{progressPercent}%</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div>
-                          <h4 className="text-lg font-bold text-slate-900 dark:text-white">{goal.title}</h4>
-                          <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Current Score: {score}xp</p>
-                          <button
-                            type="button"
-                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--ff-primary)] py-3 font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                            disabled={goal.completedToday}
-                            onClick={() => setSelectedGoal(goal)}
-                          >
-                            <span className="material-symbols-outlined text-sm">add</span>
-                            {goal.completedToday ? 'Completed Today' : 'Log Activity'}
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
+                          <div>
+                            <h4 className="text-lg font-bold text-slate-900 dark:text-white">{goal.title}</h4>
+                            <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                              {goal.todayProgress}/{goal.dailyTarget} min today · {goal.currentStreak} day streak
+                            </p>
+                            <button
+                              type="button"
+                              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--ff-primary)] py-3 font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                              disabled={goal.completedToday}
+                              onClick={() => setSelectedGoal(goal)}
+                            >
+                              <span className="material-symbols-outlined text-sm">add</span>
+                              {goal.completedToday ? 'Completed Today' : 'Log Activity'}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })
+                  )}
                 </div>
 
                 <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -773,10 +822,8 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="font-bold text-slate-900 dark:text-white">{latestBadge.name}</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Earned 2 hours ago</p>
-                        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-                          <div className="h-full w-2/3 bg-[var(--ff-primary)]" />
-                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">{latestBadgeTimeLabel}</p>
+                        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{latestBadgeDetail}</p>
                       </div>
                     </div>
                   ) : (
@@ -794,20 +841,9 @@ const Dashboard: React.FC = () => {
                   <div className="space-y-6">
                     {data.recentActivities.slice(0, 3).map((activity, index) => {
                       const tone = activityTone[index] || activityTone[activityTone.length - 1];
-                      const title = index === 0 ? 'Coding session logged' : index === 1 ? 'Milestone Reached' : 'Goal Created';
-                      const subtitle =
-                        index === 0
-                          ? `${activity.minutes} mins in ${activity.goalTitle}`
-                          : index === 1
-                            ? `${Math.max(1, Math.round(activity.minutes / 60))} hours total focus time`
-                            : `"${activity.goalTitle}" started`;
-
-                      const dateText =
-                        index === 0
-                          ? formatDisplayTime(activity.date)
-                          : index === 1
-                            ? 'Yesterday'
-                            : formatDisplayDate(activity.date);
+                      const title = activity.goalTitle;
+                      const subtitle = `${activity.minutes} minutes logged`;
+                      const dateText = formatActivityTimestamp(activity.date);
 
                       return (
                         <div key={activity.id} className="flex gap-4">

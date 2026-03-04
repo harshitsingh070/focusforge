@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { dashboardAPI, extractApiErrorMessage } from '../services/api';
 import { Badge, DashboardData, RecentActivity } from '../types';
+import { sanitizeDashboardData } from '../utils/dashboardValidation';
 
 interface DashboardState {
   data: DashboardData | null;
@@ -27,7 +28,7 @@ export const fetchDashboard = createAsyncThunk<DashboardData, void, { rejectValu
   async (_, { rejectWithValue }) => {
     try {
       const response = await dashboardAPI.getDashboard();
-      return response.data as DashboardData;
+      return sanitizeDashboardData(response.data);
     } catch (error) {
       return rejectWithValue(extractApiErrorMessage(error, 'Failed to load dashboard'));
     }
@@ -47,10 +48,10 @@ const dashboardSlice = createSlice({
       }
 
       const patch = action.payload as Partial<DashboardData>;
-      const merged = {
+      const merged = sanitizeDashboardData({
         ...state.data,
         ...patch,
-      };
+      });
 
       state.data = merged;
       state.dashboardData = merged;
