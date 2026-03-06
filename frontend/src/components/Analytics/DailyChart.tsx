@@ -16,7 +16,7 @@ const DailyChart: React.FC<DailyChartProps> = ({ data }) => {
   return (
     <div className="card">
       <h2 className="text-3xl font-bold tracking-tight text-slate-900">Daily Performance</h2>
-      <p className="mt-1 text-sm text-slate-500">Last 7 days of focus minutes and points earned.</p>
+      <p className="mt-1 text-sm font-medium text-slate-500">Last 7 days of focus minutes and points earned.</p>
       <div className="mt-4 h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
@@ -31,9 +31,20 @@ const DailyChart: React.FC<DailyChartProps> = ({ data }) => {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
-            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
+            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
+            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
             <Tooltip
+              cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
+              labelFormatter={(label) => `Day: ${label}`}
+              formatter={(value, series) => {
+                const numeric = Number(value) || 0;
+                if (String(series).toLowerCase().includes('minute')) {
+                  return [`${numeric.toLocaleString()} min`, 'Focus Minutes'];
+                }
+                return [numeric.toLocaleString(), 'Points'];
+              }}
+              labelStyle={{ color: '#0f172a', fontWeight: 700, marginBottom: 4 }}
+              itemStyle={{ color: '#334155', fontWeight: 600, fontSize: 12 }}
               contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
             />
             <Area

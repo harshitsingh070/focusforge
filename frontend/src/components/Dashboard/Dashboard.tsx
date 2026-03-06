@@ -272,6 +272,7 @@ const Dashboard: React.FC = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<GoalProgress | null>(null);
   const [selectedWeeklyId, setSelectedWeeklyId] = useState<string | null>(null);
+  const [hoveredWeeklyId, setHoveredWeeklyId] = useState<string | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [markingNotificationId, setMarkingNotificationId] = useState<number | null>(null);
@@ -369,6 +370,15 @@ const Dashboard: React.FC = () => {
     return weeklyBars.find((point) => point.id === todayLabel) || weeklyBars[weeklyBars.length - 1];
   }, [weeklyBars, selectedWeeklyId]);
 
+  const hoveredWeekPoint = useMemo(() => {
+    if (!hoveredWeeklyId) {
+      return null;
+    }
+    return weeklyBars.find((point) => point.id === hoveredWeeklyId) || null;
+  }, [hoveredWeeklyId, weeklyBars]);
+
+  const highlightedWeekPoint = hoveredWeekPoint || selectedWeekPoint;
+
   const activeGoalCards = useMemo<ActiveGoalCardData[]>(
     () =>
       (data?.activeGoals || []).map((goal, orderIndex) => {
@@ -413,6 +423,12 @@ const Dashboard: React.FC = () => {
       setSelectedWeeklyId(fallbackId);
     }
   }, [weeklyBars, selectedWeeklyId]);
+
+  useEffect(() => {
+    if (hoveredWeeklyId && !weeklyBars.some((point) => point.id === hoveredWeeklyId)) {
+      setHoveredWeeklyId(null);
+    }
+  }, [hoveredWeeklyId, weeklyBars]);
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -729,9 +745,19 @@ const Dashboard: React.FC = () => {
                           </div>
 
                           <div>
+                            <span
+                              className="mb-2 inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"
+                              style={{
+                                color: categoryColor,
+                                borderColor: withAlpha(categoryColor, 0.36),
+                                background: withAlpha(categoryColor, 0.12),
+                              }}
+                            >
+                              {goal.category}
+                            </span>
                             <h4 className="text-lg font-bold text-slate-900 dark:text-white">{goal.title}</h4>
                             <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-                              {goal.todayProgress}/{goal.dailyTarget} min today · {goal.currentStreak} day streak
+                              {goal.todayProgress}/{goal.dailyTarget} min today - {goal.currentStreak} day streak
                             </p>
                             <button
                               type="button"
@@ -760,39 +786,50 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="overflow-x-auto">
-                    <div className="flex min-w-[520px] items-end justify-between px-4 pb-8">
+                  <div className="px-2 pb-8">
+                    <div className="grid grid-cols-7 items-end gap-1.5 sm:gap-3">
                       {weeklyBars.map((bar) => {
                         const heightPercent = Math.max(12, Math.round((bar.minutes / maxWeeklyMinutes) * 100));
                         const isSelected = bar.id === selectedWeekPoint?.id;
+                        const isHovered = bar.id === hoveredWeeklyId;
 
                         return (
                           <button
                             key={bar.id}
                             type="button"
                             onClick={() => setSelectedWeeklyId(bar.id)}
-                            className="group relative w-10"
+                            onMouseEnter={() => setHoveredWeeklyId(bar.id)}
+                            onMouseLeave={() => setHoveredWeeklyId((current) => (current === bar.id ? null : current))}
+                            onFocus={() => setHoveredWeeklyId(bar.id)}
+                            onBlur={() => setHoveredWeeklyId((current) => (current === bar.id ? null : current))}
+                            aria-label={`${bar.label}: ${bar.minutes} minutes`}
+                            className="group relative flex h-[210px] w-full items-end justify-center"
                           >
                             <div
                               className={`relative h-48 rounded-t-lg ${
-                                isSelected
+                                isSelected || isHovered
                                   ? 'bg-[var(--ff-primary)]'
                                   : 'bg-slate-100 dark:bg-slate-800'
                               }`}
-                              style={{ height: `${Math.max(20, Math.round((heightPercent / 100) * 192))}px` }}
+                              style={{ height: `${Math.max(20, Math.round((heightPercent / 100) * 192))}px`, width: '70%' }}
                             >
-                              {!isSelected && (
+                              {!isSelected && !isHovered && (
                                 <div className="absolute inset-0 h-full rounded-t-lg bg-[var(--ff-primary)] opacity-20 transition-all group-hover:opacity-40" />
                               )}
-                              <div className="absolute bottom-full left-1/2 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-[10px] text-white group-hover:block">
-                                {bar.minutes}m
+                              <div
+                                className={`pointer-events-none absolute bottom-full left-1/2 mb-2 w-max -translate-x-1/2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] leading-tight shadow-md transition-all dark:border-slate-700 dark:bg-slate-900 ${
+                                  isHovered ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0'
+                                }`}
+                              >
+                                <p className="font-semibold text-slate-900 dark:text-slate-100">{bar.label}</p>
+                                <p className="text-slate-500 dark:text-slate-300">{bar.minutes} minutes</p>
                               </div>
                             </div>
                             <p
-                              className={`absolute top-full left-1/2 mt-2 -translate-x-1/2 text-xs ${
-                                isSelected
+                              className={`absolute bottom-0 left-1/2 -translate-x-1/2 text-[11px] sm:text-xs ${
+                                isSelected || isHovered
                                   ? 'font-bold text-slate-900 dark:text-white'
-                                  : 'font-medium text-slate-400'
+                                  : 'font-medium text-slate-500'
                               }`}
                             >
                               {bar.label}
@@ -803,9 +840,11 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {selectedWeekPoint && (
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {selectedWeekPoint.label}: {selectedWeekPoint.minutes} minutes logged.
+                  {highlightedWeekPoint && (
+                    <p className="mt-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                      <span className="font-semibold text-slate-900 dark:text-slate-100">{highlightedWeekPoint.label}</span>
+                      {' · '}
+                      {highlightedWeekPoint.minutes} minutes logged
                     </p>
                   )}
                 </article>
