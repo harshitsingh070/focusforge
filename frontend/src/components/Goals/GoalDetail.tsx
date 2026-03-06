@@ -67,29 +67,29 @@ const GoalDetail: React.FC = () => {
             <p className="text-sm text-gray-700">{selectedGoal.description || 'No description provided.'}</p>
 
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">Difficulty</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.difficulty}/5</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.difficulty}/5</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">Daily Minimum</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.dailyMinimumMinutes} minutes</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.dailyMinimumMinutes} minutes</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">Current Streak</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.currentStreak}</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.currentStreak}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">Longest Streak</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.longestStreak}</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.longestStreak}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">Start Date</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.startDate}</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.startDate}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs text-ink-muted">End Date</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedGoal.endDate || 'Open ended'}</p>
+                <p className="text-lg font-semibold text-[var(--ff-text-900)]">{selectedGoal.endDate || 'Open ended'}</p>
               </div>
             </div>
 

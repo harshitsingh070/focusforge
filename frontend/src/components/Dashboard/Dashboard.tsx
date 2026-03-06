@@ -321,7 +321,7 @@ const Dashboard: React.FC = () => {
   if (loading && !data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--ff-bg)] px-4 text-[var(--ff-text-900)]">
-        <div className="w-full max-w-md rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
+        <div className="w-full max-w-md rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
           <h1 className="mt-4 text-2xl font-bold">Loading dashboard</h1>
           <p className="mt-1 text-sm text-[var(--ff-text-700)]">Preparing your productivity overview.</p>
@@ -333,12 +333,12 @@ const Dashboard: React.FC = () => {
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--ff-bg)] px-4 text-[var(--ff-text-900)]">
-        <div className="w-full max-w-md rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
+        <div className="w-full max-w-md rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
           <h1 className="text-2xl font-bold">Dashboard unavailable</h1>
           <p className="mt-2 text-sm text-rose-500">{error || 'Unable to load dashboard data right now.'}</p>
           <button
             type="button"
-            className="mt-5 rounded-[10px] bg-[var(--ff-primary)] px-4 py-2 text-sm font-semibold text-white transition-[transform,background-color,filter,box-shadow] duration-normal ease-premium hover:bg-[var(--ff-primary-hover)] hover:brightness-105 hover:shadow-hover"
+            className="mt-5 rounded-[10px] bg-[var(--ff-primary)] px-[18px] py-[10px] text-sm font-semibold text-white transition-[transform,background-color,filter,box-shadow] duration-normal ease-premium hover:bg-[var(--ff-primary-hover)] hover:brightness-105 hover:shadow-hover"
             onClick={refreshDashboard}
           >
             Retry
@@ -399,11 +399,10 @@ const Dashboard: React.FC = () => {
                     key={item.to}
                     type="button"
                     onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                      active
-                        ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
-                        : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                    }`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${active
+                      ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
+                      : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
@@ -413,10 +412,10 @@ const Dashboard: React.FC = () => {
             </nav>
           </div>
 
-          <div className="mt-auto flex items-center gap-3 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
+          <div className="mt-auto flex items-center gap-3 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ff-surface-hover)] text-xs font-bold text-[var(--ff-text-900)]">
               {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-emerald-500" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-[#22C55E]" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--ff-text-900)]">{displayName}</p>
@@ -463,7 +462,7 @@ const Dashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
                   New Task
@@ -482,11 +481,10 @@ const Dashboard: React.FC = () => {
                       key={item.to}
                       type="button"
                       onClick={() => navigate(item.to)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                        active
-                          ? 'bg-[var(--ff-primary)] font-semibold text-white'
-                          : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                      }`}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${active
+                        ? 'bg-[var(--ff-primary)] font-semibold text-white'
+                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
                       {item.label}
@@ -505,7 +503,7 @@ const Dashboard: React.FC = () => {
             )}
 
             <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <article className="group relative overflow-hidden rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:-translate-y-[3px] hover:shadow-e3">
+              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Total Points</p>
@@ -520,7 +518,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </article>
 
-              <article className="group relative overflow-hidden rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:-translate-y-[3px] hover:shadow-e3">
+              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Global Streak</p>
@@ -532,7 +530,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </article>
 
-              <article className="group relative overflow-hidden rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:-translate-y-[3px] hover:shadow-e3">
+              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Active Goals</p>
@@ -559,7 +557,7 @@ const Dashboard: React.FC = () => {
                     </button>
                   </div>
 
-                  <div className="relative h-64 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                  <div className="relative h-64 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                     <div className="pointer-events-none absolute inset-x-6 bottom-6 top-6 z-0 flex flex-col justify-between opacity-20">
                       {[0, 1, 2, 3].map((line) => (
                         <div key={line} className="w-full border-b border-[var(--ff-border)]" />
@@ -582,13 +580,12 @@ const Dashboard: React.FC = () => {
                             aria-label={`${bar.label}: ${bar.minutes} minutes`}
                           >
                             <div
-                              className={`relative w-[70%] rounded-t-md transition-colors ${
-                                !hasValue
-                                  ? 'bg-[var(--ff-surface-hover)] opacity-55'
-                                  : isWeekend
+                              className={`relative w-[70%] rounded-t-md transition-colors ${!hasValue
+                                ? 'bg-[var(--ff-surface-hover)] opacity-55'
+                                : isWeekend
                                   ? 'bg-[rgb(var(--ff-primary-rgb)/0.25)] hover:bg-[rgb(var(--ff-primary-rgb)/0.35)]'
                                   : 'bg-gradient-to-t from-[var(--ff-primary)] to-[var(--ff-primary-soft)] hover:brightness-110'
-                              }`}
+                                }`}
                               style={{ height: `${heightPercent}%` }}
                             >
                               {hoveredWeeklyId === bar.id && (
@@ -608,9 +605,8 @@ const Dashboard: React.FC = () => {
                               )}
                             </div>
                             <p
-                              className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs ${
-                                hasValue ? 'text-[var(--ff-text-700)]' : 'text-[var(--ff-text-500)]'
-                              }`}
+                              className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs ${hasValue ? 'text-[var(--ff-text-700)]' : 'text-[var(--ff-text-500)]'
+                                }`}
                             >
                               {bar.label}
                             </p>
@@ -624,7 +620,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex flex-col gap-4">
                   <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Active Goals</h3>
                   {visibleGoals.length === 0 ? (
-                    <div className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                    <div className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                       <p className="text-sm text-[var(--ff-text-700)]">No active goals available yet. Create one to get started.</p>
                     </div>
                   ) : (
@@ -636,7 +632,7 @@ const Dashboard: React.FC = () => {
                       return (
                         <article
                           key={goal.goalId}
-                          className="flex flex-col items-center justify-between gap-4 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 transition-all duration-normal ease-premium hover:-translate-y-[2px] hover:shadow-e2 sm:flex-row"
+                          className="flex flex-col items-center justify-between gap-4 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow sm:flex-row"
                           style={{ borderLeftWidth: 4, borderLeftColor: categoryColor }}
                         >
                           <div className="flex w-full items-center gap-4 sm:w-auto">
@@ -677,7 +673,7 @@ const Dashboard: React.FC = () => {
 
                           <button
                             type="button"
-                            className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
+                            className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
                             onClick={() => {
                               if (goal.completedToday) {
                                 navigate(`/goals/${goal.goalId}`);
@@ -696,7 +692,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               <aside className="flex flex-col gap-6">
-                <article className="relative overflow-hidden rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                <article className="relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                   <div className="pointer-events-none absolute inset-0 [background-image:var(--ff-gradient-card-accent)]" />
                   <h3 className="relative z-10 text-lg font-bold text-[var(--ff-text-900)]">Badge Momentum</h3>
                   <div className="relative z-10 mt-4 flex justify-center">
@@ -713,7 +709,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </article>
 
-                <article className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                <article className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                   <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Recent Activity</h3>
                   <div className="relative mt-4 flex flex-col gap-0">
                     <div className="absolute bottom-2 left-[11px] top-2 z-0 w-px bg-[var(--ff-line)]" />
@@ -725,11 +721,10 @@ const Dashboard: React.FC = () => {
                       return (
                         <div key={activity.id} className="relative z-10 flex gap-4 pb-4 last:pb-0">
                           <div
-                            className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 ${
-                              primary
-                                ? 'border-[var(--ff-primary)] bg-[var(--ff-surface-soft)]'
-                                : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
-                            }`}
+                            className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 ${primary
+                              ? 'border-[var(--ff-primary)] bg-[var(--ff-surface-soft)]'
+                              : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
+                              }`}
                           >
                             {primary && <span className="h-2 w-2 rounded-full bg-[var(--ff-primary)]" />}
                           </div>
@@ -791,11 +786,10 @@ const Dashboard: React.FC = () => {
                 {prioritizedNotifications.map((notification) => (
                   <article
                     key={notification.id}
-                    className={`rounded-xl border p-3 ${
-                      notification.isRead
-                        ? 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
-                        : 'border-[rgb(var(--ff-primary-rgb)/0.45)] bg-[rgb(var(--ff-primary-rgb)/0.10)]'
-                    }`}
+                    className={`rounded-xl border p-3 ${notification.isRead
+                      ? 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
+                      : 'border-[rgb(var(--ff-primary-rgb)/0.45)] bg-[rgb(var(--ff-primary-rgb)/0.10)]'
+                      }`}
                   >
                     <p className="text-sm font-bold text-[var(--ff-text-900)]">{notification.title || 'Alert'}</p>
                     <p className="mt-1 text-xs text-[var(--ff-text-700)]">{notification.message}</p>

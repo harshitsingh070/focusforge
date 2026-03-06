@@ -15,16 +15,15 @@ const Sidebar: React.FC = () => (
   <aside className="hidden w-64 shrink-0 lg:block">
     <div className="sticky top-20 card">
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">Navigation</p>
-      <div className="grid gap-2">
+      <div className="grid gap-1.5">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              [
-                'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
-                isActive ? 'bg-primary-100 text-primary-700' : 'text-gray-700 hover:bg-white hover:text-primary-700',
-              ].join(' ')
+              isActive
+                ? 'sidebar-nav-active'
+                : 'sidebar-nav-item'
             }
           >
             {item.label}

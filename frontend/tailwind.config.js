@@ -60,7 +60,9 @@ module.exports = {
         e1: '0 1px 2px rgba(0,0,0,0.05)',
         e2: '0 8px 20px rgba(0,0,0,0.08)',
         e3: '0 20px 40px rgba(0,0,0,0.12)',
-        hover: '0 25px 60px rgba(124,58,237,0.15)',
+        hover: '0 0 0 1px rgba(124,58,237,0.30), 0 0 28px rgba(139,92,246,0.25), 0 20px 40px rgba(0,0,0,0.18)',
+        glow: '0 0 0 1px rgba(124,58,237,0.30), 0 0 28px rgba(139,92,246,0.25), 0 20px 40px rgba(0,0,0,0.18)',
+        'glow-btn': '0 0 0 3px rgba(139,92,246,0.45), 0 0 20px rgba(167,139,250,0.35), 0 8px 24px rgba(0,0,0,0.25)',
         soft: '0 8px 20px rgba(0,0,0,0.08)',
       },
       borderRadius: {

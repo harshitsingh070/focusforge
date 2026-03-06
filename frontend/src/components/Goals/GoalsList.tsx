@@ -177,11 +177,10 @@ const GoalsList: React.FC = () => {
                     key={item.to}
                     type="button"
                     onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
-                      active
-                        ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
-                        : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                    }`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${active
+                      ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
+                      : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                      }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
@@ -194,7 +193,7 @@ const GoalsList: React.FC = () => {
           <div className="mt-auto flex items-center gap-3 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ff-surface-hover)] text-xs font-bold text-[var(--ff-text-900)]">
               {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-emerald-500" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-[#22C55E]" />
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--ff-text-900)]">{displayName}</p>
@@ -236,7 +235,7 @@ const GoalsList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
                   New Task
@@ -255,11 +254,10 @@ const GoalsList: React.FC = () => {
                       key={item.to}
                       type="button"
                       onClick={() => navigate(item.to)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-                        active
-                          ? 'bg-[var(--ff-primary)] font-semibold text-white'
-                          : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                      }`}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${active
+                        ? 'bg-[var(--ff-primary)] font-semibold text-white'
+                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                        }`}
                     >
                       <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
                       {item.label}
@@ -277,7 +275,7 @@ const GoalsList: React.FC = () => {
               </div>
             )}
 
-            <section className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+            <section className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <span className="inline-flex rounded-full bg-[var(--ff-primary-100)] px-3 py-1 text-xs font-semibold tracking-[0.08em] text-[var(--ff-primary)]">
@@ -313,11 +311,10 @@ const GoalsList: React.FC = () => {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-fast ease-premium ${
-                      activeTab === tab.id
-                        ? 'bg-[var(--ff-primary)] text-white shadow-e1'
-                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                    }`}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-fast ease-premium ${activeTab === tab.id
+                      ? 'bg-[var(--ff-primary)] text-white shadow-e1'
+                      : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                      }`}
                   >
                     {tab.label}
                   </button>
@@ -326,7 +323,7 @@ const GoalsList: React.FC = () => {
             </section>
 
             {loading ? (
-              <section className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
+              <section className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
                 <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
               </section>
             ) : (
@@ -345,7 +342,7 @@ const GoalsList: React.FC = () => {
                   return (
                     <article
                       key={goal.id}
-                      className="flex h-full flex-col rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:-translate-y-[2px] hover:shadow-e3"
+                      className="flex h-full flex-col rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
@@ -395,7 +392,7 @@ const GoalsList: React.FC = () => {
                       <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                         <Link
                           to={`/goals/${goal.id}`}
-                          className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
+                          className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
                         >
                           Details
                         </Link>
@@ -403,7 +400,7 @@ const GoalsList: React.FC = () => {
                           type="button"
                           onClick={() => navigate(`/goals/${goal.id}/log`)}
                           disabled={!goal.isActive}
-                          className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Update Progress
                         </button>
@@ -413,7 +410,7 @@ const GoalsList: React.FC = () => {
                 })}
 
                 {filteredGoals.length === 0 && (
-                  <article className="col-span-full rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-10 text-center shadow-e2">
+                  <article className="col-span-full rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-10 text-center shadow-e2">
                     <p className="text-sm text-[var(--ff-text-700)]">No goals match this view yet.</p>
                   </article>
                 )}

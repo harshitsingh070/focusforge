@@ -8,12 +8,12 @@ interface PreferencesProps {
 
 const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
   <section className="card">
-    <h2 className="text-4xl font-bold tracking-tight text-slate-900">Preferences</h2>
-    <p className="mt-1 text-sm text-slate-500">Set your defaults for reminders and appearance.</p>
+    <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Preferences</h2>
+    <p className="mt-1 text-sm text-[var(--ff-text-700)]">Set your defaults for reminders and appearance.</p>
 
     <div className="mt-4 space-y-3">
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
-        <label htmlFor="pref-theme" className="mb-1 block text-sm font-semibold text-gray-700">
+      <div className="soft-card p-3">
+        <label htmlFor="pref-theme" className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">
           Theme
         </label>
         <select
@@ -28,10 +28,10 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
         </select>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="soft-card p-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="font-semibold text-gray-900">Email reminders</p>
+            <p className="font-semibold text-[var(--ff-text-900)]">Email reminders</p>
             <p className="text-sm text-ink-muted">Receive inactivity reminders over email.</p>
           </div>
           <button
@@ -44,10 +44,10 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-3">
+      <div className="soft-card p-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="font-semibold text-gray-900">Weekly summary</p>
+            <p className="font-semibold text-[var(--ff-text-900)]">Weekly summary</p>
             <p className="text-sm text-ink-muted">Enable a weekly performance summary.</p>
           </div>
           <button

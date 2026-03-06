@@ -153,15 +153,15 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
         {profileFormError && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {profileFormError}
           </div>
         )}
 
         {updateSuccess && (
-          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">
             Settings saved successfully.
           </div>
         )}
@@ -180,22 +180,22 @@ const Settings: React.FC = () => {
           </div>
 
           <aside className="card h-fit xl:sticky xl:top-28">
-            <h2 className="text-4xl font-bold tracking-tight text-slate-900">Public Profile Preview</h2>
-            <p className="mt-1 text-sm text-slate-500">Quick summary of what your community can view.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Public Profile Preview</h2>
+            <p className="mt-1 text-sm text-[var(--ff-text-700)]">Quick summary of what your community can view.</p>
             <div className="mt-4 space-y-3 text-sm">
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs uppercase tracking-wide text-ink-muted">Username</p>
-                <p className="mt-1 font-semibold text-gray-900">{profileState.username || 'Not set'}</p>
+                <p className="mt-1 font-semibold text-[var(--ff-text-900)]">{profileState.username || 'Not set'}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs uppercase tracking-wide text-ink-muted">Visibility</p>
-                <p className="mt-1 font-semibold text-gray-900">{privacyState.showActivity}</p>
+                <p className="mt-1 font-semibold text-[var(--ff-text-900)]">{privacyState.showActivity}</p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="soft-card p-3">
                 <p className="text-xs uppercase tracking-wide text-ink-muted">Theme</p>
-                <p className="mt-1 font-semibold capitalize text-gray-900">{preferencesState.theme}</p>
+                <p className="mt-1 font-semibold capitalize text-[var(--ff-text-900)]">{preferencesState.theme}</p>
               </div>
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800">
                 <p className="font-semibold">Visibility reminder</p>
                 <p className="mt-1 text-xs">Leaderboard and achievements can be hidden based on privacy settings.</p>
               </div>
@@ -207,7 +207,7 @@ const Settings: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={!hasUnsavedChanges || loading}
-            className="btn-primary px-8 py-3 text-xl disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
           </button>

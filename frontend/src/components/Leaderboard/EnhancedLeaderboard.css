@@ -1,3 +1,6 @@
+/* FocusForge Premium — Leaderboard Styles */
+/* Aligned to FF design token system: purple brand, proper surfaces, FF shadows */
+
 .ff-leaderboard-container {
   padding-top: 1.2rem;
 }
@@ -6,12 +9,13 @@
   position: relative;
   overflow: hidden;
   padding: 1.25rem;
-  border-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--ff-border);
   background:
-    radial-gradient(circle at 22% 26%, rgba(191, 228, 212, 0.72), transparent 60%),
-    radial-gradient(circle at 80% 75%, rgba(236, 224, 203, 0.78), transparent 58%),
-    linear-gradient(135deg, rgba(228, 242, 235, 0.95), rgba(240, 231, 214, 0.9));
-  box-shadow: 0 24px 40px rgba(57, 73, 93, 0.12);
+    var(--ff-gradient-highlight),
+    var(--ff-gradient-card-accent),
+    var(--ff-surface-elevated);
+  box-shadow: var(--ff-shadow-e2);
+  border-radius: var(--ff-radius-lg);
 }
 
 .ff-leaderboard-hero::before,
@@ -27,7 +31,7 @@
   left: -100px;
   width: 240px;
   height: 240px;
-  background: rgba(139, 194, 165, 0.18);
+  background: rgba(124, 58, 237, 0.07);
 }
 
 .ff-leaderboard-hero::after {
@@ -35,10 +39,10 @@
   bottom: -100px;
   width: 220px;
   height: 220px;
-  background: rgba(236, 178, 127, 0.18);
+  background: rgba(139, 92, 246, 0.06);
 }
 
-.ff-leaderboard-hero > * {
+.ff-leaderboard-hero>* {
   position: relative;
   z-index: 1;
 }
@@ -59,8 +63,8 @@
 
 .ff-leaderboard-pills .ff-pill {
   min-width: 98px;
-  border-color: rgba(223, 231, 236, 0.98);
-  background: rgba(255, 255, 255, 0.76);
+  border-color: var(--ff-border);
+  background: var(--ff-surface-elevated);
   transition:
     transform var(--ff-motion-duration) var(--ff-motion-easing),
     box-shadow var(--ff-motion-duration) var(--ff-motion-easing),
@@ -68,8 +72,10 @@
 }
 
 .ff-leaderboard-pills .ff-pill.active {
-  border-color: rgba(196, 211, 224, 0.98);
-  box-shadow: 0 10px 24px rgba(76, 92, 116, 0.16);
+  border-color: var(--ff-primary);
+  background: var(--ff-primary);
+  color: #ffffff;
+  box-shadow: var(--ff-shadow-e1);
 }
 
 .ff-leaderboard-filter-row {
@@ -79,7 +85,7 @@
 .ff-leaderboard-filter-row__label {
   display: block;
   margin-bottom: 0.48rem;
-  color: #546678;
+  color: var(--ff-text-500);
   font-size: 0.74rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -95,13 +101,13 @@
 
 .ff-category-pill {
   flex: 0 0 auto;
-  border: 1px solid rgba(219, 228, 235, 0.94);
+  border: 1px solid var(--ff-border);
   border-radius: 999px;
   padding: 0.48rem 0.86rem;
-  background: rgba(255, 255, 255, 0.73);
-  color: #34495d;
+  background: var(--ff-surface-elevated);
+  color: var(--ff-text-700);
   font-size: 0.83rem;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
   transition:
     transform var(--ff-motion-duration) var(--ff-motion-easing),
@@ -112,15 +118,15 @@
 }
 
 .ff-category-pill.active {
-  border-color: rgba(148, 184, 214, 0.96);
-  background: linear-gradient(135deg, rgba(229, 243, 255, 0.95), rgba(236, 248, 255, 0.95));
-  color: #0b4a7a;
-  box-shadow: 0 8px 18px rgba(55, 110, 158, 0.14);
+  border-color: var(--ff-primary);
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--ff-primary);
+  box-shadow: var(--ff-shadow-e1);
 }
 
 .ff-leaderboard-error {
   margin-top: 1rem;
-  border-radius: 12px;
+  border-radius: var(--ff-radius-sm);
   border: 1px solid #fecaca;
   background: rgba(254, 226, 226, 0.75);
   padding: 0.7rem 0.82rem;
@@ -143,8 +149,8 @@
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  border: 3px solid rgba(148, 163, 184, 0.25);
-  border-top-color: #2563eb;
+  border: 3px solid var(--ff-border);
+  border-top-color: var(--ff-primary);
   animation: ff-leaderboard-spin 0.9s linear infinite;
 }
 
@@ -170,11 +176,11 @@
   width: 132px;
   height: 132px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
-  border: 3px solid rgba(255, 255, 255, 0.92);
+  background: var(--ff-surface-elevated);
+  border: 3px solid var(--ff-border);
   box-shadow:
-    inset 0 0 0 2px rgba(214, 226, 224, 0.68),
-    0 16px 30px rgba(52, 65, 85, 0.16);
+    inset 0 0 0 2px rgba(124, 58, 237, 0.12),
+    var(--ff-shadow-e2);
 }
 
 .ff-podium-slot--rank-1 .ff-podium-avatar-ring {
@@ -217,8 +223,8 @@
   color: #fff;
   font-size: 0.98rem;
   font-weight: 800;
-  border: 2px solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 10px 18px rgba(51, 65, 85, 0.24);
+  border: 2px solid var(--ff-surface-elevated);
+  box-shadow: var(--ff-shadow-e2);
 }
 
 .ff-podium-medal--1 {
@@ -235,34 +241,36 @@
 
 .ff-podium-name {
   margin-top: 0.62rem;
-  color: #18222f;
+  color: var(--ff-text-900);
   font-size: 1.07rem;
-  font-weight: 750;
+  font-weight: 700;
 }
 
-.ff-podium-name > span {
+.ff-podium-name>span {
   margin-right: 0.33rem;
-  color: #516171;
+  color: var(--ff-text-700);
   font-size: 0.83rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .ff-podium-points {
   margin-top: 0.2rem;
-  color: #3f4f5f;
+  color: var(--ff-text-700);
   font-size: 0.92rem;
   font-weight: 700;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
 .ff-podium-base {
   margin-top: 0.7rem;
   width: min(92%, 228px);
   border-radius: 999px 999px 18px 18px;
-  border: 1px solid rgba(239, 243, 244, 0.98);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(219, 228, 224, 0.88));
+  border: 1px solid var(--ff-border);
+  background: linear-gradient(180deg, var(--ff-surface-elevated), var(--ff-surface-soft));
   box-shadow:
     inset 0 4px 0 rgba(255, 255, 255, 0.75),
-    0 12px 24px rgba(88, 106, 122, 0.2);
+    var(--ff-shadow-e2);
 }
 
 .ff-podium-slot--rank-1 .ff-podium-base {
@@ -282,25 +290,26 @@
   place-items: center;
   width: 148px;
   min-height: 128px;
-  border-radius: 18px;
-  border: 1px dashed rgba(148, 163, 184, 0.56);
-  color: #64748b;
+  border-radius: var(--ff-radius-lg);
+  border: 1px dashed var(--ff-border);
+  color: var(--ff-text-500);
   font-size: 0.86rem;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--ff-surface-soft);
 }
 
 .ff-podium-empty-state {
   padding: 2rem 0;
   text-align: center;
-  color: #64748b;
+  color: var(--ff-text-500);
   font-weight: 600;
 }
 
 .ff-leaderboard-table {
   margin-top: -1.3rem;
-  border-color: rgba(255, 255, 255, 0.95);
-  background: linear-gradient(180deg, rgba(252, 254, 255, 0.94), rgba(245, 250, 253, 0.93));
+  border: 1px solid var(--ff-border);
+  background: var(--ff-surface-elevated);
+  box-shadow: var(--ff-shadow-e2);
 }
 
 .ff-leaderboard-table__head {
@@ -313,14 +322,14 @@
 
 .ff-leaderboard-table__title {
   font-size: clamp(1.6rem, 2.3vw, 2.2rem);
-  color: #142234;
+  color: var(--ff-text-900);
   letter-spacing: -0.025em;
 }
 
 .ff-leaderboard-table__meta {
-  color: #5c6d7e;
+  color: var(--ff-text-700);
   font-size: 0.9rem;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .ff-leaderboard-table-wrap {
@@ -330,12 +339,12 @@
 
 .ff-leaderboard-data-table {
   min-width: 760px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: var(--ff-radius-lg);
+  background: var(--ff-surface-elevated);
 }
 
 .ff-leaderboard-data-table thead tr {
-  background: rgba(244, 249, 252, 0.92);
+  background: var(--ff-surface-soft);
 }
 
 .ff-leaderboard-data-table th {
@@ -347,7 +356,7 @@
 }
 
 .ff-leaderboard-row-self {
-  background: linear-gradient(90deg, rgba(187, 227, 245, 0.54), rgba(223, 246, 255, 0.56));
+  background: rgba(124, 58, 237, 0.07);
 }
 
 .ff-rank-chip {
@@ -368,7 +377,7 @@
 }
 
 .ff-rank-chip--silver {
-  color: #4b5563;
+  color: var(--ff-text-700);
   background: rgba(203, 213, 225, 0.44);
 }
 
@@ -378,8 +387,8 @@
 }
 
 .ff-rank-chip--default {
-  color: #1e293b;
-  background: rgba(226, 232, 240, 0.68);
+  color: var(--ff-text-900);
+  background: var(--ff-surface-hover);
 }
 
 .ff-leaderboard-user {
@@ -396,15 +405,15 @@
   place-items: center;
   color: #fff;
   font-size: 0.86rem;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  box-shadow: 0 10px 18px rgba(37, 99, 235, 0.2);
+  box-shadow: var(--ff-shadow-e1);
   flex: 0 0 auto;
 }
 
 .ff-leaderboard-user__name {
-  color: #0f172a;
+  color: var(--ff-text-900);
   font-size: 0.94rem;
   font-weight: 700;
   line-height: 1.2;
@@ -418,7 +427,7 @@
 }
 
 .ff-leaderboard-user__move--muted {
-  color: #64748b;
+  color: var(--ff-text-500);
 }
 
 .ff-leaderboard-user__move--up {
@@ -430,15 +439,17 @@
 }
 
 .ff-leaderboard-score {
-  color: #11253b;
+  color: var(--ff-text-900);
   font-weight: 800;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
 .ff-leaderboard-points-cell,
 .ff-leaderboard-days {
-  color: #1e293b;
+  color: var(--ff-text-900);
   font-weight: 700;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
 }
 
@@ -468,7 +479,7 @@
 .ff-leaderboard-empty {
   padding: 2rem 0.8rem 1.8rem;
   text-align: center;
-  color: #64748b;
+  color: var(--ff-text-700);
   font-size: 0.94rem;
   font-weight: 600;
 }

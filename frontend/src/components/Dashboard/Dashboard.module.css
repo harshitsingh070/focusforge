@@ -1,26 +1,33 @@
-/* Modern SaaS Dashboard Styles */
+/* FocusForge Premium — Dashboard Module Styles */
+/* All values use the global FF design token system from index.css */
 
 /* Page Background */
 .dashboardPage {
   min-height: 100vh;
-  background: linear-gradient(135deg, #e8f5f1 0%, #f8f4ee 100%);
+  background-color: var(--ff-bg);
+  background-image: var(--ff-gradient-bg-light), var(--ff-gradient-highlight);
   position: relative;
   overflow-x: hidden;
 }
 
+:global(.theme-dark) .dashboardPage,
+:global(.dark) .dashboardPage {
+  background-image: var(--ff-gradient-bg-dark);
+}
+
 /* Top Navigation Bar */
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--ff-surface-elevated);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid var(--ff-border);
+  box-shadow: var(--ff-shadow-e1);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
 .navContainer {
-  max-width: 1440px;
+  max-width: var(--ff-layout-content);
   margin: 0 auto;
   padding: 1rem 2rem;
   display: flex;
@@ -33,10 +40,10 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'Inter', 'Manrope', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   font-weight: 700;
   font-size: 1.25rem;
-  color: #1f2937;
+  color: var(--ff-text-900);
   text-decoration: none;
 }
 
@@ -49,35 +56,37 @@
 }
 
 .navLink {
-  padding: 0.625rem 1.25rem;
-  border-radius: 0.75rem;
-  font-family: 'Inter', 'Manrope', sans-serif;
+  padding: 0.55rem 1rem;
+  border-radius: var(--ff-radius-btn);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   font-size: 0.9375rem;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--ff-text-700);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    color var(--ff-motion-normal) var(--ff-motion-easing),
+    background-color var(--ff-motion-normal) var(--ff-motion-easing);
   background: transparent;
   border: none;
   cursor: pointer;
 }
 
 .navLink:hover {
-  background: rgba(16, 185, 129, 0.08);
-  color: #059669;
+  background: var(--ff-surface-hover);
+  color: var(--ff-text-900);
 }
 
 .navLink.active {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: var(--ff-gradient-primary);
   color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  box-shadow: var(--ff-shadow-e1);
 }
 
 /* Main Container */
 .container {
-  max-width: 1440px;
+  max-width: var(--ff-layout-content);
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--ff-layout-page-padding);
 }
 
 /* Greeting Section */
@@ -86,20 +95,21 @@
 }
 
 .greetingTitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 2.5rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--ff-text-900);
   margin: 0 0 0.5rem 0;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 .greetingSubtitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 1rem;
-  color: #6b7280;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px;
+  color: var(--ff-text-700);
   margin: 0;
 }
 
@@ -107,7 +117,7 @@
 .mainLayout {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 2rem;
+  gap: var(--ff-layout-card-gap);
 }
 
 .mainContent {
@@ -117,23 +127,25 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--ff-layout-card-gap);
 }
 
 /* Stat Cards Grid */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: var(--ff-layout-card-gap);
+  margin-bottom: var(--ff-layout-card-gap);
 }
 
 .statCard {
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-  border-radius: 1.25rem;
+  background: linear-gradient(135deg, var(--gradient-start, var(--ff-primary)), var(--gradient-end, var(--ff-primary-soft)));
+  border-radius: var(--ff-radius-lg);
   padding: 2rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  box-shadow: var(--ff-shadow-e2);
+  transition:
+    transform var(--ff-motion-normal) var(--ff-motion-easing),
+    box-shadow var(--ff-motion-normal) var(--ff-motion-easing);
   position: relative;
   overflow: hidden;
 }
@@ -152,12 +164,13 @@
 
 .statCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--ff-shadow-e3);
 }
 
+/* Stat card color variants using the primary color scale */
 .statCard.blue {
-  --gradient-start: #6366f1;
-  --gradient-end: #8b5cf6;
+  --gradient-start: var(--ff-primary);
+  --gradient-end: var(--ff-primary-soft);
 }
 
 .statCard.coral {
@@ -171,8 +184,8 @@
 }
 
 .statCard.purple {
-  --gradient-start: #a855f7;
-  --gradient-end: #ec4899;
+  --gradient-start: var(--ff-primary-600, #7c3aed);
+  --gradient-end: var(--ff-primary-400, #a78bfa);
 }
 
 .statIcon {
@@ -182,16 +195,17 @@
 }
 
 .statValue {
-  font-family: 'Inter', 'Manrope', sans-serif;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 3rem;
   font-weight: 800;
   color: white;
   margin: 0;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .statLabel {
-  font-family: 'Inter', 'Manrope', sans-serif;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
   font-size: 0.9375rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
@@ -203,36 +217,40 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--ff-layout-card-gap);
 }
 
 .goalsTitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ff-text-900);
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .goalsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: var(--ff-layout-card-gap);
   margin-bottom: 2rem;
 }
 
 .goalCard {
-  background: white;
-  border-radius: 1.25rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
+  background: var(--ff-surface-elevated);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius-lg);
+  padding: 24px;
+  box-shadow: var(--ff-shadow-e2);
+  transition:
+    transform var(--ff-motion-normal) var(--ff-motion-easing),
+    box-shadow var(--ff-motion-normal) var(--ff-motion-easing);
   position: relative;
 }
 
 .goalCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: var(--ff-shadow-e3);
 }
 
 .goalHeader {
@@ -249,17 +267,17 @@
 
 .goalCategory {
   display: inline-block;
-  padding: 0.375rem 0.875rem;
-  border-radius: 1rem;
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.75rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px;
   font-weight: 600;
   margin-bottom: 0.75rem;
 }
 
 .goalCategory.coding {
-  background: rgba(99, 102, 241, 0.12);
-  color: #6366f1;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--ff-primary);
 }
 
 .goalCategory.health {
@@ -268,15 +286,15 @@
 }
 
 .goalCategory.reading {
-  background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
 }
 
 .goalTitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ff-text-900);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -294,17 +312,18 @@
 }
 
 .streakValue {
-  font-family: 'Inter', 'Manrope', sans-serif;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--ff-text-900);
   margin: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .streakLabel {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.75rem;
-  color: #6b7280;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: var(--ff-text-700);
   margin: 0.25rem 0 0 0;
 }
 
@@ -313,63 +332,69 @@
 }
 
 .progressBar {
-  height: 0.5rem;
-  background: #e5e7eb;
-  border-radius: 0.25rem;
+  height: 9px;
+  background: var(--ff-surface-hover);
+  border-radius: 999px;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
-  border-radius: 0.25rem;
-  transition: width 0.5s ease;
+  background: var(--ff-gradient-primary);
+  border-radius: 999px;
+  transition: width 600ms ease-out;
 }
 
 .progressText {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.875rem;
-  color: #6b7280;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: var(--ff-text-700);
 }
 
 .logButton {
   width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, #10b981, #059669);
+  padding: 10px 18px;
+  background: var(--ff-gradient-primary);
   color: white;
   border: none;
-  border-radius: 0.75rem;
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.9375rem;
+  border-radius: var(--ff-radius-btn);
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition:
+    transform var(--ff-motion-normal) var(--ff-motion-easing),
+    box-shadow var(--ff-motion-normal) var(--ff-motion-easing),
+    filter var(--ff-motion-normal) var(--ff-motion-easing);
+  box-shadow: var(--ff-shadow-e1);
 }
 
 .logButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  box-shadow: var(--ff-shadow-hover);
+  filter: brightness(1.05);
 }
 
 /* Sidebar Cards */
 .sidebarCard {
-  background: white;
-  border-radius: 1.25rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  background: var(--ff-surface-elevated);
+  border: 1px solid var(--ff-border);
+  border-radius: var(--ff-radius-lg);
+  padding: 24px;
+  box-shadow: var(--ff-shadow-e2);
 }
 
 .sidebarCardTitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ff-text-900);
   margin: 0 0 1.25rem 0;
+  letter-spacing: -0.02em;
 }
 
 /* Weekly Progress Chart */
@@ -394,8 +419,9 @@
 .activityIcon {
   width: 36px;
   height: 36px;
-  border-radius: 0.5rem;
-  background: #f3f4f6;
+  border-radius: var(--ff-radius-sm);
+  background: var(--ff-surface-soft);
+  border: 1px solid var(--ff-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -409,25 +435,25 @@
 }
 
 .activityTitle {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.9375rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--ff-text-900);
   margin: 0 0 0.25rem 0;
 }
 
 .activityTime {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.8125rem;
-  color: #9ca3af;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  color: var(--ff-text-500);
   margin: 0;
 }
 
 /* Notification Card */
 .notificationCard {
-  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-  border: 1px solid #fbbf24;
-  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(251, 146, 60, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: var(--ff-radius-lg);
   padding: 1rem;
   display: flex;
   align-items: center;
@@ -439,8 +465,8 @@
 }
 
 .notificationText {
-  font-family: 'Inter', 'Manrope', sans-serif;
-  font-size: 0.9375rem;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 16px;
   font-weight: 600;
   color: #92400e;
   margin: 0;
@@ -451,7 +477,7 @@
   .mainLayout {
     grid-template-columns: 1fr;
   }
-  
+
   .sidebar {
     grid-column: 1;
   }
@@ -461,16 +487,20 @@
   .navMenu {
     display: none;
   }
-  
+
   .statsGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .goalsGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .greetingTitle {
-    font-size: 2rem;
+    font-size: 1.6rem;
+  }
+
+  .container {
+    padding: 1.5rem 1rem;
   }
 }

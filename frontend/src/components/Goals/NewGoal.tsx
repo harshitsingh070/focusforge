@@ -97,7 +97,7 @@ const NewGoal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="card border-white/75 bg-white/92">
           {error && (
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4">
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
@@ -114,11 +114,10 @@ const NewGoal: React.FC = () => {
                     key={cat.id}
                     type="button"
                     onClick={() => setFormData({ ...formData, categoryId: cat.id })}
-                    className={`rounded-xl border px-3 py-3 text-left text-sm font-semibold transition-all ${
-                      active
+                    className={`rounded-lg border px-3 py-3 text-left text-sm font-semibold transition-all ${active
                         ? 'border-transparent text-white shadow-soft ring-2 ring-offset-1 ring-white/85'
-                        : 'border-slate-200 bg-white text-gray-700 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
+                        : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                      }`}
                     style={active ? { backgroundColor: cat.color } : {}}
                   >
                     {cat.name}
@@ -184,11 +183,10 @@ const NewGoal: React.FC = () => {
                         key={minutes}
                         type="button"
                         onClick={() => setDailyMinutes(minutes)}
-                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                          active
-                            ? 'border-blue-300 bg-blue-50 text-blue-700'
-                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                        }`}
+                        className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${active
+                            ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
+                            : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                          }`}
                       >
                         {minutes}m
                       </button>
@@ -207,11 +205,10 @@ const NewGoal: React.FC = () => {
                     key={level}
                     type="button"
                     onClick={() => setFormData({ ...formData, difficulty: level })}
-                    className={`rounded-xl border px-2 py-2 text-sm font-semibold transition-all ${
-                      formData.difficulty === level
-                        ? 'border-blue-200 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 bg-white text-gray-700 hover:border-slate-300'
-                    }`}
+                    className={`rounded-lg border px-2 py-2 text-sm font-semibold transition-all ${formData.difficulty === level
+                        ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
+                        : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                      }`}
                   >
                     {level}
                   </button>
@@ -252,9 +249,8 @@ const NewGoal: React.FC = () => {
           </div>
 
           <div
-            className={`mb-6 rounded-xl border p-4 ${
-              formData.isPrivate ? 'border-slate-200 bg-slate-50' : 'border-emerald-200 bg-emerald-50'
-            }`}
+            className={`mb-6 rounded-lg border p-4 ${formData.isPrivate ? 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]' : 'border-emerald-200 bg-emerald-50'
+              }`}
           >
             <label className="flex items-start gap-3">
               <input

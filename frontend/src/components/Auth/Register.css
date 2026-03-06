@@ -1,3 +1,6 @@
+/* FocusForge Premium — Register Page Styles */
+/* All focus/glow colors aligned to FF purple brand system */
+
 .register-page-shell {
   display: flex;
   justify-content: center;
@@ -37,10 +40,10 @@
   width: fit-content;
   align-items: center;
   gap: 0.68rem;
-  border: 1px solid rgba(94, 168, 255, 0.38);
+  border: 1px solid rgba(124, 58, 237, 0.28);
   border-radius: 14px;
   padding: 0.4rem 0.62rem;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(236, 244, 255, 0.82));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(245, 243, 255, 0.82));
 }
 
 .register-cue-ring {
@@ -51,7 +54,7 @@
   width: 2rem;
   place-items: center;
   border-radius: 999px;
-  background: conic-gradient(#22c55e calc(var(--progress) * 1%), rgba(148, 163, 184, 0.3) 0);
+  background: conic-gradient(var(--ff-primary) calc(var(--progress) * 1%), rgba(148, 163, 184, 0.3) 0);
 }
 
 .register-cue-ring::before {
@@ -65,7 +68,7 @@
 .register-cue-ring-core {
   position: relative;
   z-index: 1;
-  color: #166534;
+  color: var(--ff-primary-700, #6d28d9);
   font-size: 0.58rem;
   font-weight: 700;
 }
@@ -103,7 +106,7 @@
 .register-benefit-list li {
   position: relative;
   padding-left: 1rem;
-  color: #4f6174;
+  color: var(--ff-text-700);
   font-size: 0.88rem;
   line-height: 1.45;
 }
@@ -115,7 +118,7 @@
   height: 0.36rem;
   width: 0.36rem;
   border-radius: 999px;
-  background: linear-gradient(180deg, #5ea8ff, #6d4ff6);
+  background: var(--ff-gradient-primary);
   content: '';
 }
 
@@ -168,19 +171,19 @@
 }
 
 .register-input-wrap:focus-within .register-input {
-  border-color: #7da9ff;
+  border-color: rgba(124, 58, 237, 0.6);
   box-shadow:
-    0 0 0 4px rgba(94, 168, 255, 0.2),
-    0 10px 24px rgba(59, 130, 246, 0.12);
+    0 0 0 4px rgba(124, 58, 237, 0.16),
+    0 10px 24px rgba(124, 58, 237, 0.10);
   background: #fff;
 }
 
 .register-input-wrap:focus-within .register-input-status {
-  border-color: rgba(94, 168, 255, 0.78);
+  border-color: rgba(124, 58, 237, 0.72);
 }
 
 .register-input-wrap:focus-within .register-input-status::after {
-  background: linear-gradient(180deg, #5ea8ff, #6d4ff6);
+  background: var(--ff-gradient-primary);
 }
 
 .register-input-wrap.is-valid .register-input-status {
@@ -207,7 +210,7 @@
   border: 0;
   padding: 0.16rem 0.36rem;
   border-radius: 0.44rem;
-  color: #607185;
+  color: var(--ff-text-700);
   font-size: 0.68rem;
   font-weight: 700;
   background: transparent;
@@ -233,27 +236,27 @@
   background: rgba(148, 163, 184, 0.28);
 }
 
-.register-strength-bar > span {
+.register-strength-bar>span {
   display: block;
   height: 100%;
   border-radius: inherit;
   transition: width var(--ff-motion-duration) var(--ff-motion-easing);
 }
 
-.register-strength-weak > span {
+.register-strength-weak>span {
   background: linear-gradient(90deg, #fb7185, #f97316);
 }
 
-.register-strength-medium > span {
+.register-strength-medium>span {
   background: linear-gradient(90deg, #f59e0b, #facc15);
 }
 
-.register-strength-strong > span {
-  background: linear-gradient(90deg, #34d399, #16a34a);
+.register-strength-strong>span {
+  background: linear-gradient(90deg, var(--ff-primary), var(--ff-primary-soft));
 }
 
 .register-strength-label {
-  color: #64748b;
+  color: var(--ff-text-500);
   font-size: 0.72rem;
   font-weight: 600;
 }
@@ -262,8 +265,8 @@
   padding-top: 0.94rem;
   padding-bottom: 0.94rem;
   box-shadow:
-    0 18px 30px rgba(59, 130, 246, 0.31),
-    0 0 0 1px rgba(109, 79, 246, 0.2);
+    0 18px 30px rgba(124, 58, 237, 0.28),
+    0 0 0 1px rgba(124, 58, 237, 0.16);
 }
 
 .register-secondary-links {
@@ -271,12 +274,12 @@
   display: grid;
   gap: 0.36rem;
   text-align: center;
-  color: #7a8b9e;
+  color: var(--ff-text-500);
   font-size: 0.83rem;
 }
 
 .register-link-primary {
-  color: #3f5f84;
+  color: var(--ff-primary);
   font-size: 0.84rem;
   font-weight: 700;
   text-decoration: none;
@@ -284,7 +287,7 @@
 }
 
 .register-link-rules {
-  color: rgba(79, 103, 129, 0.8);
+  color: var(--ff-text-700);
   font-size: 0.77rem;
   font-weight: 500;
   text-decoration: none;
@@ -295,19 +298,19 @@
   .register-submit-btn:hover:not(:disabled) {
     transform: translateY(-1px) scale(1.018);
     box-shadow:
-      0 24px 38px rgba(59, 130, 246, 0.36),
-      0 0 0 4px rgba(109, 79, 246, 0.14);
+      0 24px 38px rgba(124, 58, 237, 0.34),
+      0 0 0 4px rgba(124, 58, 237, 0.12);
     filter: brightness(1.05);
   }
 
   .register-password-toggle:hover {
-    color: #1f3f64;
-    background: rgba(226, 232, 240, 0.56);
+    color: var(--ff-text-900);
+    background: var(--ff-surface-hover);
   }
 
   .register-link-primary:hover,
   .register-link-rules:hover {
-    color: #355275;
+    color: var(--ff-primary-hover);
     text-decoration: underline;
   }
 }

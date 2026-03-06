@@ -1,3 +1,6 @@
+/* FocusForge Premium — Login Page Styles */
+/* All focus/glow colors updated to match the FF purple brand system */
+
 .login-page-shell {
   position: relative;
   display: flex;
@@ -24,8 +27,8 @@
   inset: 0;
   z-index: -3;
   background:
-    radial-gradient(circle at 18% 16%, rgba(94, 168, 255, 0.14), transparent 36%),
-    radial-gradient(circle at 84% 84%, rgba(52, 211, 153, 0.12), transparent 34%);
+    radial-gradient(circle at 18% 16%, rgba(124, 58, 237, 0.12), transparent 36%),
+    radial-gradient(circle at 84% 84%, rgba(139, 92, 246, 0.09), transparent 34%);
   content: '';
   pointer-events: none;
 }
@@ -64,11 +67,11 @@
   display: inline-flex;
   align-items: center;
   gap: 0.74rem;
-  border: 1px solid rgba(94, 168, 255, 0.38);
+  border: 1px solid rgba(124, 58, 237, 0.28);
   border-radius: 14px;
   padding: 0.42rem 0.68rem;
-  background: linear-gradient(140deg, rgba(255, 255, 255, 0.92), rgba(236, 244, 255, 0.82));
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.92), rgba(245, 243, 255, 0.82));
+  box-shadow: 0 10px 20px rgba(124, 58, 237, 0.08);
 }
 
 .login-value-ring {
@@ -79,7 +82,7 @@
   width: 2.2rem;
   place-items: center;
   border-radius: 999px;
-  background: conic-gradient(#34d399 calc(var(--progress) * 1%), rgba(148, 163, 184, 0.34) 0);
+  background: conic-gradient(var(--ff-primary) calc(var(--progress) * 1%), rgba(148, 163, 184, 0.34) 0);
 }
 
 .login-value-ring::before {
@@ -95,7 +98,7 @@
   z-index: 1;
   font-size: 0.6rem;
   font-weight: 700;
-  color: #166534;
+  color: var(--ff-primary-700, #6d28d9);
 }
 
 .login-value-cue-text {
@@ -159,20 +162,20 @@
 }
 
 .login-input-wrap:focus-within .login-input {
-  border-color: #7da9ff;
+  border-color: rgba(124, 58, 237, 0.6);
   box-shadow:
-    0 0 0 4px rgba(94, 168, 255, 0.2),
-    0 10px 24px rgba(59, 130, 246, 0.14);
+    0 0 0 4px rgba(124, 58, 237, 0.16),
+    0 10px 24px rgba(124, 58, 237, 0.10);
   background-color: #fff;
 }
 
 .login-input-wrap:focus-within .login-input-status {
-  border-color: rgba(94, 168, 255, 0.82);
-  box-shadow: 0 0 0 4px rgba(94, 168, 255, 0.14);
+  border-color: rgba(124, 58, 237, 0.72);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
 }
 
 .login-input-wrap:focus-within .login-input-status::after {
-  background: linear-gradient(180deg, #5ea8ff, #6d4ff6);
+  background: var(--ff-gradient-primary);
 }
 
 .login-input-wrap.is-ready:not(.has-error) .login-input-status {
@@ -195,12 +198,12 @@
   padding-top: 0.92rem;
   padding-bottom: 0.92rem;
   box-shadow:
-    0 18px 30px rgba(59, 130, 246, 0.32),
-    0 0 0 1px rgba(109, 79, 246, 0.2);
+    0 18px 30px rgba(124, 58, 237, 0.28),
+    0 0 0 1px rgba(124, 58, 237, 0.16);
 }
 
 .login-aux-link {
-  color: #4f6781;
+  color: var(--ff-text-700);
   font-size: 0.76rem;
   font-weight: 600;
   text-decoration: none;
@@ -212,12 +215,12 @@
   display: grid;
   gap: 0.36rem;
   text-align: center;
-  color: #7a8b9e;
+  color: var(--ff-text-500);
   font-size: 0.82rem;
 }
 
 .login-secondary-link {
-  color: #6f8399;
+  color: var(--ff-text-700);
   font-size: 0.78rem;
   font-weight: 500;
   text-decoration: none;
@@ -228,14 +231,14 @@
   .login-submit-btn:hover:not(:disabled) {
     transform: translateY(-1px) scale(1.018);
     box-shadow:
-      0 24px 38px rgba(59, 130, 246, 0.37),
-      0 0 0 4px rgba(109, 79, 246, 0.14);
+      0 24px 38px rgba(124, 58, 237, 0.34),
+      0 0 0 4px rgba(124, 58, 237, 0.12);
     filter: brightness(1.05);
   }
 
   .login-aux-link:hover,
   .login-secondary-link:hover {
-    color: #4f6580;
+    color: var(--ff-primary);
     text-decoration: underline;
   }
 }
@@ -261,7 +264,7 @@
     transform: translateX(-50%);
     border-radius: 999px;
     background:
-      radial-gradient(circle at center, rgba(94, 168, 255, 0.3), rgba(94, 168, 255, 0.02) 64%),
+      radial-gradient(circle at center, rgba(124, 58, 237, 0.22), rgba(124, 58, 237, 0.02) 64%),
       linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0));
     filter: blur(12px);
     pointer-events: none;
