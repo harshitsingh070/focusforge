@@ -134,7 +134,16 @@ const sanitizeWeeklyProgress = (value: unknown): Record<string, number> => {
       if (!day) {
         return;
       }
-      normalized.set(day, toNonNegativeInt(safeEntry.minutes ?? safeEntry.total ?? safeEntry.value));
+      normalized.set(
+        day,
+        toNonNegativeInt(
+          safeEntry.minutes ??
+            safeEntry.minutesSpent ??
+            safeEntry.durationMinutes ??
+            safeEntry.total ??
+            safeEntry.value
+        )
+      );
     });
   }
 
@@ -146,23 +155,44 @@ const sanitizeWeeklyProgress = (value: unknown): Record<string, number> => {
 
 const sanitizeGoalProgress = (value: unknown, fallbackIndex: number): GoalProgress => {
   const raw = isRecord(value) ? value : {};
-  const todayProgress = toNonNegativeInt(raw.todayProgress);
-  const dailyTarget = Math.max(1, toNonNegativeInt(raw.dailyTarget, 1));
-  const completedToday = toBoolean(raw.completedToday, todayProgress > 0);
-  const currentStreak = toNonNegativeInt(raw.currentStreak);
-  const longestStreak = Math.max(currentStreak, toNonNegativeInt(raw.longestStreak, currentStreak));
+  const todayProgress = toNonNegativeInt(
+    raw.todayProgress ??
+      raw.todayMinutes ??
+      raw.minutesToday ??
+      raw.loggedToday ??
+      raw.todayLoggedMinutes ??
+      raw.progressToday
+  );
+  const dailyTarget = Math.max(
+    1,
+    toNonNegativeInt(
+      raw.dailyTarget ??
+        raw.dailyMinimumMinutes ??
+        raw.targetMinutes ??
+        raw.minutesTarget ??
+        raw.dailyGoal ??
+        raw.goalMinutesPerDay,
+      1
+    )
+  );
+  const completedToday = toBoolean(raw.completedToday ?? raw.doneToday, todayProgress >= dailyTarget);
+  const currentStreak = toNonNegativeInt(raw.currentStreak ?? raw.streak ?? raw.activeStreak);
+  const longestStreak = Math.max(
+    currentStreak,
+    toNonNegativeInt(raw.longestStreak ?? raw.bestStreak, currentStreak)
+  );
 
   return {
-    goalId: Math.max(1, toNonNegativeInt(raw.goalId, fallbackIndex + 1)),
-    title: toTrimmedString(raw.title, 'Untitled Goal'),
-    category: toTrimmedString(raw.category, 'General'),
-    categoryColor: sanitizeColor(raw.categoryColor),
+    goalId: Math.max(1, toNonNegativeInt(raw.goalId ?? raw.id, fallbackIndex + 1)),
+    title: toTrimmedString(raw.title ?? raw.goalTitle ?? raw.name, 'Untitled Goal'),
+    category: toTrimmedString(raw.category ?? raw.categoryName, 'General'),
+    categoryColor: sanitizeColor(raw.categoryColor ?? raw.colorCode ?? raw.categoryHex),
     currentStreak,
     longestStreak,
     dailyTarget,
     todayProgress,
     completedToday,
-    atRisk: completedToday ? false : toBoolean(raw.atRisk),
+    atRisk: completedToday ? false : toBoolean(raw.atRisk ?? raw.riskFlag),
   };
 };
 
@@ -170,15 +200,18 @@ const sanitizeRecentActivity = (value: unknown, fallbackIndex: number): RecentAc
   const raw = isRecord(value) ? value : {};
 
   return {
-    id: Math.max(1, toNonNegativeInt(raw.id, fallbackIndex + 1)),
-    goalTitle: toTrimmedString(raw.goalTitle, 'Goal Activity'),
-    categoryColor: sanitizeColor(raw.categoryColor),
-    minutes: toNonNegativeInt(raw.minutes),
-    date: toDateString(raw.date),
+    id: Math.max(1, toNonNegativeInt(raw.id ?? raw.activityId, fallbackIndex + 1)),
+    goalTitle: toTrimmedString(raw.goalTitle ?? raw.goalName ?? raw.title ?? raw.name, 'Goal Activity'),
+    categoryColor: sanitizeColor(raw.categoryColor ?? raw.colorCode ?? raw.goalColor),
+    minutes: toNonNegativeInt(
+      raw.minutes ?? raw.minutesSpent ?? raw.durationMinutes ?? raw.timeSpent ?? raw.loggedMinutes
+    ),
+    date: toDateString(raw.date ?? raw.logDate ?? raw.createdAt ?? raw.timestamp ?? raw.activityAt),
     points:
-      raw.points === undefined || raw.points === null
+      (raw.points ?? raw.pointsEarned ?? raw.score) === undefined ||
+      (raw.points ?? raw.pointsEarned ?? raw.score) === null
         ? undefined
-        : toNonNegativeInt(raw.points),
+        : toNonNegativeInt(raw.points ?? raw.pointsEarned ?? raw.score),
   };
 };
 

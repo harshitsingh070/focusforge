@@ -1,220 +1,427 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
-import { deleteGoal, fetchGoals } from '../../store/goalsSlice';
+import { fetchGoals } from '../../store/goalsSlice';
 import { Goal } from '../../types';
-import Navbar from '../Layout/Navbar';
+
+type GoalTab = 'ACTIVE' | 'ALL' | 'COMPLETED' | 'ARCHIVED';
+type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
+
+interface GoalWithMeta extends Goal {
+  progressPercent: number;
+  completed: boolean;
+  difficultyLevel: DifficultyLevel;
+}
+
+const navItems = [
+  { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+  { to: '/goals', label: 'Goals', icon: 'track_changes' },
+  { to: '/analytics', label: 'Statistics', icon: 'monitoring' },
+  { to: '/badges', label: 'Badges', icon: 'military_tech' },
+  { to: '/settings', label: 'Settings', icon: 'settings' },
+];
+
+const TAB_ITEMS: Array<{ id: GoalTab; label: string }> = [
+  { id: 'ACTIVE', label: 'Active' },
+  { id: 'ALL', label: 'All Goals' },
+  { id: 'COMPLETED', label: 'Completed' },
+  { id: 'ARCHIVED', label: 'Archived' },
+];
+
+const fallbackGoalColors = ['#8B5CF6', '#7C3AED', '#3B82F6', '#22C55E'];
+
+const DIFFICULTY_STYLE: Record<DifficultyLevel, { background: string; color: string; border: string }> = {
+  Easy: {
+    background: 'rgba(34, 197, 94, 0.12)',
+    color: '#16A34A',
+    border: 'rgba(34, 197, 94, 0.35)',
+  },
+  Medium: {
+    background: 'rgba(245, 158, 11, 0.12)',
+    color: '#D97706',
+    border: 'rgba(245, 158, 11, 0.35)',
+  },
+  Hard: {
+    background: 'rgba(239, 68, 68, 0.12)',
+    color: '#DC2626',
+    border: 'rgba(239, 68, 68, 0.35)',
+  },
+};
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+const getInitials = (value: string) => {
+  const tokens = (value || '')
+    .split(/[\s@._-]+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (tokens.length === 0) {
+    return 'FF';
+  }
+
+  return tokens.map((token) => token[0]?.toUpperCase() || '').join('');
+};
+
+const estimateProgress = (goal: Goal): number => {
+  const streakBase = goal.longestStreak > 0 ? goal.currentStreak / goal.longestStreak : goal.currentStreak > 0 ? 0.55 : 0;
+  const targetScore = clamp((goal.dailyMinimumMinutes || 0) / 90, 0, 1);
+  const difficultyScore = clamp((goal.difficulty || 1) / 5, 0.2, 1);
+
+  const weighted = streakBase * 0.58 + targetScore * 0.27 + difficultyScore * 0.15;
+  let progress = Math.round(weighted * 100);
+
+  if (!goal.isActive) {
+    progress = Math.max(progress, 70);
+  }
+
+  return clamp(progress, 0, 100);
+};
+
+const getDifficultyLevel = (difficulty: number): DifficultyLevel => {
+  if (difficulty <= 2) {
+    return 'Easy';
+  }
+  if (difficulty === 3) {
+    return 'Medium';
+  }
+  return 'Hard';
+};
+
+const isActiveNav = (pathname: string, route: string) => pathname === route || (route !== '/dashboard' && pathname.startsWith(route));
 
 const GoalsList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const { goals, loading, error } = useSelector((state: RootState) => state.goals);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [deletingGoalId, setDeletingGoalId] = useState<number | null>(null);
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<GoalTab>('ACTIVE');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     dispatch(fetchGoals());
   }, [dispatch]);
 
-  const categories = useMemo(
-    () => ['All', ...Array.from(new Set(goals.map((goal) => goal.category).filter(Boolean)))],
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
+  const displayName = [user?.username, user?.email, 'FocusForge User'].find(
+    (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
+  ) as string;
+  const firstName = displayName.split(/[\s@._-]+/).filter(Boolean)[0] || 'there';
+  const initials = getInitials(displayName);
+
+  const goalsWithMeta = useMemo<GoalWithMeta[]>(
+    () =>
+      goals.map((goal) => {
+        const progressPercent = estimateProgress(goal);
+        return {
+          ...goal,
+          progressPercent,
+          completed: progressPercent >= 90,
+          difficultyLevel: getDifficultyLevel(Math.max(1, Math.min(goal.difficulty || 1, 5))),
+        };
+      }),
     [goals]
   );
 
-  const filteredGoals = useMemo(
-    () => goals.filter((goal) => selectedCategory === 'All' || goal.category === selectedCategory),
-    [goals, selectedCategory]
-  );
+  const filteredGoals = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
 
-  const estimateProgress = (goal: Goal) => {
-    const streakScale = Math.max(goal.longestStreak, goal.currentStreak, 1);
-    const streakRatio = goal.currentStreak / streakScale;
-    const difficultyRatio = Math.max(1, Math.min(goal.difficulty || 1, 5)) / 5;
-    const targetRatio = Math.min((goal.dailyMinimumMinutes || 0) / 120, 1);
-    const blended = streakRatio * 0.5 + difficultyRatio * 0.3 + targetRatio * 0.2;
-    return Math.max(10, Math.min(100, Math.round(blended * 100)));
-  };
+    return goalsWithMeta.filter((goal) => {
+      const matchesTab =
+        activeTab === 'ALL' ||
+        (activeTab === 'ACTIVE' && goal.isActive) ||
+        (activeTab === 'COMPLETED' && goal.completed) ||
+        (activeTab === 'ARCHIVED' && !goal.isActive);
 
-  const withAlpha = (color: string, alpha: number) => {
-    const normalized = (color || '').trim();
-    const hexMatch = normalized.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+      if (!matchesTab) {
+        return false;
+      }
 
-    if (hexMatch) {
-      const hex = hexMatch[1];
-      const expanded = hex.length === 3 ? hex.split('').map((char) => `${char}${char}`).join('') : hex;
-      const r = Number.parseInt(expanded.slice(0, 2), 16);
-      const g = Number.parseInt(expanded.slice(2, 4), 16);
-      const b = Number.parseInt(expanded.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
+      if (!query) {
+        return true;
+      }
 
-    const rgbMatch = normalized.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
-    if (rgbMatch) {
-      return `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, ${alpha})`;
-    }
-
-    const rgbaMatch = normalized.match(/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*[\d.]+\s*\)$/i);
-    if (rgbaMatch) {
-      const values = normalized
-        .replace(/^rgba\(/i, '')
-        .replace(/\)$/, '')
-        .split(',')
-        .slice(0, 3)
-        .map((value) => value.trim());
-      return `rgba(${values[0]}, ${values[1]}, ${values[2]}, ${alpha})`;
-    }
-
-    return normalized || '#5EA8FF';
-  };
-
-  const getRingColor = (goalColor: string, progressPercent: number) => {
-    if (progressPercent <= 20) {
-      return withAlpha(goalColor, 0.46);
-    }
-    if (progressPercent <= 50) {
-      return withAlpha(goalColor, 0.68);
-    }
-    return goalColor;
-  };
-
-  const handleDeleteGoal = async (goalId: number) => {
-    setDeletingGoalId(goalId);
-    try {
-      await dispatch(deleteGoal(goalId));
-    } finally {
-      setDeletingGoalId((current) => (current === goalId ? null : current));
-    }
-  };
+      return [goal.title, goal.description, goal.category].some((field) => field?.toLowerCase().includes(query));
+    });
+  }, [activeTab, goalsWithMeta, searchQuery]);
 
   return (
-    <div className="page-shell">
-      <Navbar />
+    <div className="min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
+      <div className="flex h-screen overflow-hidden">
+        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 md:flex">
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center gap-3 px-2">
+              <div className="rounded-[10px] bg-[var(--ff-primary-100)] p-2 dark:bg-[var(--ff-primary-900)]/40">
+                <span className="material-symbols-outlined text-2xl text-[var(--ff-primary)]">auto_awesome</span>
+              </div>
+              <div className="overflow-hidden">
+                <h1 className="truncate text-lg font-bold tracking-tight text-[var(--ff-text-900)]">FocusForge</h1>
+                <p className="text-xs font-medium text-[var(--ff-text-700)]">Dashboard</p>
+              </div>
+            </div>
 
-      <main className="page-container ff-goals-page">
-        <section className="section-heading ff-goals-hero">
-          <div>
-            <h1 className="section-title">Your Goals</h1>
-            <p className="section-subtitle">Manage active and completed goals</p>
+            <nav className="mt-4 flex flex-col gap-2">
+              {navItems.map((item) => {
+                const active = isActiveNav(location.pathname, item.to);
+
+                return (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={() => navigate(item.to)}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                      active
+                        ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
+                        : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                    <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-          <Link to="/goals/new" className="btn-primary ff-goals-create-btn">
-            <span className="ff-goals-create-btn__icon">+</span>
-            <span>Create Goal</span>
-          </Link>
-        </section>
 
-        <div className="ff-goal-filters">
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              className={`ff-pill ${selectedCategory === category ? 'active' : ''}`}
-              onClick={() => setSelectedCategory(category)}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {loading && (
-          <div className="card text-center">
-            <div className="flex justify-center py-8">
-              <div className="h-11 w-11 animate-spin rounded-full border-2 border-slate-200 border-t-blue-500" />
+          <div className="mt-auto flex items-center gap-3 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ff-surface-hover)] text-xs font-bold text-[var(--ff-text-900)]">
+              {initials}
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-emerald-500" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[var(--ff-text-900)]">{displayName}</p>
+              <p className="truncate text-xs text-[var(--ff-text-700)]">Pro Member</p>
             </div>
           </div>
-        )}
+        </aside>
 
-        {error && !loading && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        <main className="flex flex-1 flex-col overflow-y-auto">
+          <header className="sticky top-0 z-20 bg-[var(--ff-surface-elevated)]/95 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileNavOpen((current) => !current)}
+                  className="mt-1 rounded-[10px] border border-[var(--ff-border)] p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] md:hidden"
+                  aria-label="Toggle navigation"
+                >
+                  <span className="material-symbols-outlined text-[20px]">menu</span>
+                </button>
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)] sm:text-3xl">
+                    Welcome back,{' '}
+                    <span className="[background-image:var(--ff-gradient-primary)] bg-clip-text text-transparent">{firstName}</span>
+                  </h2>
+                  <p className="mt-1 text-sm text-[var(--ff-text-700)]">Let&apos;s crush today&apos;s productivity targets.</p>
+                </div>
+              </div>
 
-        {!loading && filteredGoals.length === 0 && (
-          <div className="card text-center">
-            <p className="text-ink-muted">No goals found for this filter. Try a different category.</p>
-          </div>
-        )}
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  className="relative rounded-full p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]"
+                  aria-label="Notifications"
+                >
+                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--ff-primary)]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/goals/new')}
+                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                >
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  New Task
+                </button>
+              </div>
+            </div>
+          </header>
 
-        <section className="ff-goals-grid">
-          {filteredGoals.map((goal) => {
-            const progressPercent = estimateProgress(goal);
-            const goalColor = goal.categoryColor || '#5EA8FF';
-            const ringStyle = {
-              ['--ring-value' as string]: `${progressPercent}%`,
-              ['--ring-color' as string]: getRingColor(goalColor, progressPercent),
-            } as React.CSSProperties;
-
-            return (
-              <article key={goal.id} className="card ff-goal-tile">
-                <span
-                  className="ff-goal-tile__accent"
-                  style={{
-                    background: `linear-gradient(180deg, ${goalColor}, rgba(255, 255, 255, 0.18))`,
-                  }}
-                />
-
-                <span className={`status-chip ff-goal-status-badge ${goal.isActive ? '' : 'warn'}`}>
-                  {goal.isActive ? 'Active' : 'Paused'}
-                </span>
-
-                <div className="ff-goal-tile__content">
-                  <div className="ff-goal-tile__header">
-                    <div className="min-w-0">
-                      <h3 className="ff-goal-title">{goal.title}</h3>
-                      <p className="ff-goal-description">{goal.description || 'No description yet for this goal.'}</p>
-                    </div>
-                  </div>
-
-                  <div className="ff-goal-metrics">
-                    <p className="ff-goal-meta">
-                      <strong>Difficulty:</strong> {Math.max(1, Math.min(goal.difficulty || 1, 5))}/5
-                    </p>
-                    <p className="ff-goal-meta">
-                      <strong>Current Streak:</strong> {goal.currentStreak} days
-                    </p>
-                  </div>
-
-                  <div className="ff-goal-progress-area">
-                    <div className="ff-ring-wrap">
-                      <div className="ff-ring" style={ringStyle} />
-                      <p className="ff-ring__label">{progressPercent}%</p>
-                    </div>
-                    <p className="ff-goal-progress-label">Progress</p>
-                  </div>
-
-                  <div className="ff-goal-footer">
-                    <div>
-                      <p className="ff-goal-meta">
-                        <strong>Daily Target:</strong> {goal.dailyMinimumMinutes} min
-                      </p>
-                      <p className="ff-goal-meta">
-                        <strong>Best Streak:</strong> {goal.longestStreak} days
-                      </p>
-                    </div>
-
-                    <Link to={`/goals/${goal.id}`} className="ff-goal-open-link">
-                      Open
-                    </Link>
-                  </div>
-
-                  <div className="ff-goal-quick-actions">
-                    <Link to={`/goals/${goal.id}/edit`} className="ff-goal-action">
-                      Edit
-                    </Link>
-                    <Link to={`/goals/${goal.id}/log`} className="ff-goal-action ff-goal-action--primary">
-                      Log
-                    </Link>
+          {mobileNavOpen && (
+            <div className="border-b border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-3 shadow-e1 md:hidden">
+              <div className="grid grid-cols-2 gap-2">
+                {navItems.map((item) => {
+                  const active = isActiveNav(location.pathname, item.to);
+                  return (
                     <button
+                      key={item.to}
                       type="button"
-                      onClick={() => handleDeleteGoal(goal.id)}
-                      className="ff-goal-action ff-goal-action--delete"
-                      disabled={deletingGoalId === goal.id}
+                      onClick={() => navigate(item.to)}
+                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
+                        active
+                          ? 'bg-[var(--ff-primary)] font-semibold text-white'
+                          : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                      }`}
                     >
-                      {deletingGoalId === goal.id ? 'Deleting...' : 'Delete'}
+                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                      {item.label}
                     </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+            {error && (
+              <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-600 dark:text-rose-300">
+                {error}
+              </div>
+            )}
+
+            <section className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <span className="inline-flex rounded-full bg-[var(--ff-primary-100)] px-3 py-1 text-xs font-semibold tracking-[0.08em] text-[var(--ff-primary)]">
+                    LEVEL 8 GOAL SETTER
+                  </span>
+                  <h3 className="mt-2 text-2xl font-bold text-[var(--ff-text-900)]">My Goals</h3>
+                  <p className="mt-1 text-sm text-[var(--ff-text-700)]">Track your progress and crush your targets.</p>
+                </div>
+
+                <div className="w-full max-w-md">
+                  <label htmlFor="goals-search" className="mb-2 block text-sm font-medium text-[var(--ff-text-700)]">
+                    Search goals
+                  </label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
+                      search
+                    </span>
+                    <input
+                      id="goals-search"
+                      type="text"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search goals..."
+                      className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)]"
+                    />
                   </div>
                 </div>
-              </article>
-            );
-          })}
-        </section>
-      </main>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {TAB_ITEMS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-fast ease-premium ${
+                      activeTab === tab.id
+                        ? 'bg-[var(--ff-primary)] text-white shadow-e1'
+                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {loading ? (
+              <section className="rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
+                <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
+              </section>
+            ) : (
+              <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {filteredGoals.map((goal, index) => {
+                  const difficultyStyle = DIFFICULTY_STYLE[goal.difficultyLevel];
+                  const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
+                  const progressDegrees = goal.progressPercent * 3.6;
+
+                  const categoryPillStyle: React.CSSProperties = {
+                    color: categoryColor,
+                    backgroundColor: `${categoryColor}22`,
+                    borderColor: `${categoryColor}55`,
+                  };
+
+                  return (
+                    <article
+                      key={goal.id}
+                      className="flex h-full flex-col rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:-translate-y-[2px] hover:shadow-e3"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <h4 className="line-clamp-2 text-xl font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <span
+                              className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                              style={categoryPillStyle}
+                            >
+                              {goal.category || 'General'}
+                            </span>
+                            <span className="rounded-full border border-orange-300/50 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                              ?? {Math.max(goal.currentStreak, 0)} Day Streak
+                            </span>
+                            <span
+                              className="rounded-full border px-3 py-1 text-xs font-semibold"
+                              style={{
+                                backgroundColor: difficultyStyle.background,
+                                color: difficultyStyle.color,
+                                borderColor: difficultyStyle.border,
+                              }}
+                            >
+                              {goal.difficultyLevel}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="relative h-16 w-16 shrink-0">
+                          <div
+                            className="h-16 w-16 rounded-full"
+                            style={{
+                              background: `conic-gradient(var(--ff-primary) ${progressDegrees}deg, var(--ff-surface-hover) 0deg)`,
+                            }}
+                          />
+                          <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface-elevated)]" />
+                          <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ff-text-900)]">
+                            {goal.progressPercent}%
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="mt-3 line-clamp-2 text-sm text-[var(--ff-text-700)]">
+                        {goal.description?.trim() || 'No goal description provided.'}
+                      </p>
+                      <p className="mt-2 text-sm text-[var(--ff-text-700)]">Daily target: {Math.max(goal.dailyMinimumMinutes, 0)} minutes</p>
+
+                      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Link
+                          to={`/goals/${goal.id}`}
+                          className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2 text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
+                        >
+                          Details
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/goals/${goal.id}/log`)}
+                          disabled={!goal.isActive}
+                          className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Update Progress
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+
+                {filteredGoals.length === 0 && (
+                  <article className="col-span-full rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-10 text-center shadow-e2">
+                    <p className="text-sm text-[var(--ff-text-700)]">No goals match this view yet.</p>
+                  </article>
+                )}
+              </section>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
