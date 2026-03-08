@@ -74,15 +74,25 @@ const NewGoal: React.FC = () => {
   };
 
   return (
-    <div className="page-shell">
+    <div
+      className="min-h-screen pt-[82px] bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]"
+    >
       <Navbar />
 
-      <main className="page-container max-w-4xl">
-        <section className="section-heading">
-          <p className="status-chip">Goal Setup</p>
-          <h1 className="section-title mt-3">Create New Goal</h1>
-          <p className="section-subtitle">Set a daily target and keep your momentum visible.</p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+        {/* Back */}
+        <button
+          onClick={handleCancel}
+          className="mb-6 flex items-center gap-1.5 text-sm font-medium text-[var(--ff-text-700)] transition-colors hover:text-[var(--ff-text-900)]"
+        >
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          Back
+        </button>
+
+        {/* Heading */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-[rgba(124,58,237,0.1)] px-3 py-0.5 text-xs font-semibold text-[var(--ff-primary)]">Goal Setup</span>
             <span className="status-chip" style={{ background: `${selectedCategory.color}1c`, color: selectedCategory.color }}>
               {selectedCategory.name}
             </span>
@@ -93,18 +103,20 @@ const NewGoal: React.FC = () => {
               {formData.dailyMinimumMinutes} min/day
             </span>
           </div>
-        </section>
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Create New Goal</h1>
+          <p className="mt-1 text-sm text-[var(--ff-text-700)]">Set a daily target and keep your momentum visible.</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="card border-white/75 bg-white/92">
+        <form onSubmit={handleSubmit} className="rounded-2xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
           {error && (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-6 rounded-xl border border-rose-300/50 bg-rose-50 px-4 py-3 dark:border-rose-500/30 dark:bg-rose-500/10">
+              <p className="text-sm text-rose-700 dark:text-rose-300">{error}</p>
             </div>
           )}
 
           <div className="mb-6">
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Category <span className="text-red-500">*</span>
+            <label className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
+              Category <span className="text-rose-500">*</span>
             </label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((cat) => {
@@ -115,8 +127,8 @@ const NewGoal: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, categoryId: cat.id })}
                     className={`rounded-lg border px-3 py-3 text-left text-sm font-semibold transition-all ${active
-                        ? 'border-transparent text-white shadow-soft ring-2 ring-offset-1 ring-white/85'
-                        : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                      ? 'border-transparent text-white shadow-soft ring-2 ring-offset-1 ring-white/85'
+                      : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
                       }`}
                     style={active ? { backgroundColor: cat.color } : {}}
                   >
@@ -129,7 +141,7 @@ const NewGoal: React.FC = () => {
 
           <div className="mb-6 grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <label htmlFor="goal-title" className="mb-2 block text-sm font-semibold text-gray-700">
+              <label htmlFor="goal-title" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
                 Goal Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -144,7 +156,7 @@ const NewGoal: React.FC = () => {
             </div>
 
             <div className="sm:col-span-2">
-              <label htmlFor="goal-description" className="mb-2 block text-sm font-semibold text-gray-700">
+              <label htmlFor="goal-description" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
                 Description
               </label>
               <textarea
@@ -158,8 +170,8 @@ const NewGoal: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="daily-commitment" className="mb-2 block text-sm font-semibold text-gray-700">
-                Daily Commitment (minutes) <span className="text-red-500">*</span>
+              <label htmlFor="daily-commitment" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
+                Daily Commitment (minutes) <span className="text-rose-500">*</span>
               </label>
               <input
                 id="daily-commitment"
@@ -172,7 +184,7 @@ const NewGoal: React.FC = () => {
                 className="input-field"
                 required
               />
-              <p className="mt-1 text-xs text-ink-muted">Choose between 10 and 600 minutes.</p>
+              <p className="mt-1 text-xs text-[var(--ff-text-500)]">Choose between 10 and 600 minutes.</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {minutePresets
                   .filter((minutes) => minutes <= 600)
@@ -184,8 +196,8 @@ const NewGoal: React.FC = () => {
                         type="button"
                         onClick={() => setDailyMinutes(minutes)}
                         className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${active
-                            ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
-                            : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                          ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
+                          : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
                           }`}
                       >
                         {minutes}m
@@ -196,8 +208,8 @@ const NewGoal: React.FC = () => {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Difficulty Level <span className="text-red-500">*</span>
+              <label className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
+                Difficulty Level <span className="text-rose-500">*</span>
               </label>
               <div className="grid grid-cols-5 gap-2">
                 {[1, 2, 3, 4, 5].map((level) => (
@@ -206,22 +218,22 @@ const NewGoal: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, difficulty: level })}
                     className={`rounded-lg border px-2 py-2 text-sm font-semibold transition-all ${formData.difficulty === level
-                        ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
-                        : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
+                      ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
+                      : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
                       }`}
                   >
                     {level}
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-xs font-semibold text-slate-600">
+              <p className="mt-1 text-xs font-semibold text-[var(--ff-text-700)]">
                 {formData.difficulty} - {difficultyLabels[formData.difficulty]}
               </p>
             </div>
 
             <div>
-              <label htmlFor="start-date" className="mb-2 block text-sm font-semibold text-gray-700">
-                Start Date <span className="text-red-500">*</span>
+              <label htmlFor="start-date" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
+                Start Date <span className="text-rose-500">*</span>
               </label>
               <input
                 id="start-date"
@@ -234,8 +246,8 @@ const NewGoal: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="end-date" className="mb-2 block text-sm font-semibold text-gray-700">
-                End Date (Optional)
+              <label htmlFor="end-date" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
+                End Date <span className="font-normal text-[var(--ff-text-500)]">(Optional)</span>
               </label>
               <input
                 id="end-date"
@@ -259,23 +271,26 @@ const NewGoal: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, isPrivate: !e.target.checked })}
                 className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
               />
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-[var(--ff-text-900)]">
                 Make this goal public (appear on leaderboards)
               </span>
             </label>
-            <p className={`ml-7 mt-2 text-sm ${formData.isPrivate ? 'text-slate-600' : 'text-emerald-700'}`}>
+            <p className={`ml-7 mt-2 text-sm ${formData.isPrivate ? 'text-[var(--ff-text-700)]' : 'text-emerald-700 dark:text-emerald-400'}`}>
               {!formData.isPrivate
                 ? 'This goal will be visible on category leaderboards.'
                 : 'This goal stays private and visible only to you.'}
             </p>
           </div>
 
-          <div className="app-divider flex flex-col gap-3 pt-4 sm:flex-row">
-            <button type="button" onClick={handleCancel} className="btn-secondary flex-1" disabled={loading}>
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
+            <button type="button" onClick={handleCancel} className="flex-1 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ff-text-900)] transition-colors hover:bg-[var(--ff-surface-hover)]" disabled={loading}>
               Cancel
             </button>
-            <button type="submit" className="btn-primary flex-1" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Goal'}
+            <button type="submit" className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[filter,box-shadow] hover:brightness-105 hover:shadow-hover disabled:opacity-60" disabled={loading}>
+              {loading
+                ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Creating…</>
+                : <><span className="material-symbols-outlined text-[18px]">add_circle</span> Create Goal</>
+              }
             </button>
           </div>
         </form>

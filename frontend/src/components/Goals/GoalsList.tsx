@@ -102,10 +102,12 @@ const GoalsList: React.FC = () => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<GoalTab>('ACTIVE');
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
 
+  // Refresh goals every time this page is visited so archive changes are reflected
   useEffect(() => {
     dispatch(fetchGoals());
-  }, [dispatch]);
+  }, [dispatch, location.pathname]);
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -114,7 +116,6 @@ const GoalsList: React.FC = () => {
   const displayName = [user?.username, user?.email, 'FocusForge User'].find(
     (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
   ) as string;
-  const firstName = displayName.split(/[\s@._-]+/).filter(Boolean)[0] || 'there';
   const initials = getInitials(displayName);
 
   const goalsWithMeta = useMemo<GoalWithMeta[]>(
@@ -131,31 +132,36 @@ const GoalsList: React.FC = () => {
     [goals]
   );
 
+  // Unique category list derived from all goals
+  const categoryOptions = useMemo(() => {
+    const cats = Array.from(new Set(goalsWithMeta.map((g) => g.category).filter(Boolean))) as string[];
+    return cats.sort();
+  }, [goalsWithMeta]);
+
   const filteredGoals = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
     return goalsWithMeta.filter((goal) => {
       const matchesTab =
         activeTab === 'ALL' ||
-        (activeTab === 'ACTIVE' && goal.isActive) ||
+        (activeTab === 'ACTIVE' && goal.isActive && !goal.completed) ||
         (activeTab === 'COMPLETED' && goal.completed) ||
         (activeTab === 'ARCHIVED' && !goal.isActive);
 
-      if (!matchesTab) {
-        return false;
-      }
+      if (!matchesTab) return false;
 
-      if (!query) {
-        return true;
-      }
+      if (categoryFilter !== 'ALL' && goal.category !== categoryFilter) return false;
+
+      if (!query) return true;
 
       return [goal.title, goal.description, goal.category].some((field) => field?.toLowerCase().includes(query));
     });
-  }, [activeTab, goalsWithMeta, searchQuery]);
+  }, [activeTab, categoryFilter, goalsWithMeta, searchQuery]);
 
   return (
     <div className="min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
       <div className="flex h-screen overflow-hidden">
+        {/* ── Sidebar ── */}
         <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 md:flex">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3 px-2">
@@ -202,48 +208,96 @@ const GoalsList: React.FC = () => {
           </div>
         </aside>
 
+        {/* ── Main ── */}
         <main className="flex flex-1 flex-col overflow-y-auto">
-          <header className="sticky top-0 z-20 bg-[var(--ff-surface-elevated)]/95 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMobileNavOpen((current) => !current)}
-                  className="mt-1 rounded-[10px] border border-[var(--ff-border)] p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] md:hidden"
-                  aria-label="Toggle navigation"
-                >
-                  <span className="material-symbols-outlined text-[20px]">menu</span>
-                </button>
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)] sm:text-3xl">
-                    Welcome back,{' '}
-                    <span className="[background-image:var(--ff-gradient-primary)] bg-clip-text text-transparent">{firstName}</span>
-                  </h2>
-                  <p className="mt-1 text-sm text-[var(--ff-text-700)]">Let&apos;s crush today&apos;s productivity targets.</p>
-                </div>
+          {/* Sticky page header */}
+          <header className="sticky top-0 z-20 bg-[var(--ff-surface-elevated)]/95 px-6 py-4 backdrop-blur-md sm:px-8">
+            {/* Row 1: title + actions */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              {/* Mobile hamburger */}
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen((c) => !c)}
+                className="rounded-[10px] border border-[var(--ff-border)] p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] md:hidden"
+                aria-label="Toggle navigation"
+              >
+                <span className="material-symbols-outlined text-[20px]">menu</span>
+              </button>
+
+              {/* Title */}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">My Goals</h2>
+                <p className="mt-0.5 text-sm text-[var(--ff-text-700)]">Track your progress and crush your targets.</p>
               </div>
 
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  className="relative rounded-full p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]"
-                  aria-label="Notifications"
-                >
-                  <span className="material-symbols-outlined">notifications</span>
-                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--ff-primary)]" />
-                </button>
+              {/* Search + New Goal */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="relative">
+                  <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
+                    search
+                  </span>
+                  <input
+                    id="goals-search"
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search goals..."
+                    className="w-52 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-all duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)] focus:w-64"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
                 >
-                  <span className="material-symbols-outlined text-sm">add</span>
-                  New Task
+                  <span className="material-symbols-outlined text-[18px]">add</span>
+                  New Goal
                 </button>
+              </div>
+            </div>
+
+            {/* Row 2: Filter tabs + category dropdown */}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {TAB_ITEMS.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-fast ease-premium ${activeTab === tab.id
+                      ? 'bg-[var(--ff-primary)] text-white shadow-e1'
+                      : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                      }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Category dropdown */}
+              <div className="relative">
+                <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[var(--ff-text-500)]">
+                  category
+                </span>
+                <select
+                  id="goals-category-filter"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  className="appearance-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-1.5 pl-9 pr-8 text-sm font-medium text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium focus:border-[rgba(var(--ff-primary-rgb),0.55)] cursor-pointer"
+                >
+                  <option value="ALL">All Categories</option>
+                  {categoryOptions.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[var(--ff-text-500)]">
+                  expand_more
+                </span>
               </div>
             </div>
           </header>
 
+          {/* Mobile nav drawer */}
           {mobileNavOpen && (
             <div className="border-b border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-3 shadow-e1 md:hidden">
               <div className="grid grid-cols-2 gap-2">
@@ -268,64 +322,68 @@ const GoalsList: React.FC = () => {
             </div>
           )}
 
-          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+          {/* ── Content area ── */}
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8">
             {error && (
               <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-600 dark:text-rose-300">
                 {error}
               </div>
             )}
 
-            <section className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                <div>
-                  <span className="inline-flex rounded-full bg-[var(--ff-primary-100)] px-3 py-1 text-xs font-semibold tracking-[0.08em] text-[var(--ff-primary)]">
-                    LEVEL 8 GOAL SETTER
-                  </span>
-                  <h3 className="mt-2 text-2xl font-bold text-[var(--ff-text-900)]">My Goals</h3>
-                  <p className="mt-1 text-sm text-[var(--ff-text-700)]">Track your progress and crush your targets.</p>
-                </div>
-
-                <div className="w-full max-w-md">
-                  <label htmlFor="goals-search" className="mb-2 block text-sm font-medium text-[var(--ff-text-700)]">
-                    Search goals
-                  </label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
-                      search
-                    </span>
-                    <input
-                      id="goals-search"
-                      type="text"
-                      value={searchQuery}
-                      onChange={(event) => setSearchQuery(event.target.value)}
-                      placeholder="Search goals..."
-                      className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {TAB_ITEMS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors duration-fast ease-premium ${activeTab === tab.id
-                      ? 'bg-[var(--ff-primary)] text-white shadow-e1'
-                      : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                      }`}
+            {/* ── Summary stats ── */}
+            {!loading && (
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  {
+                    icon: 'track_changes',
+                    label: 'Total Goals',
+                    value: goalsWithMeta.length,
+                    accent: 'var(--ff-primary)',
+                    bg: 'rgba(124,58,237,0.08)',
+                  },
+                  {
+                    icon: 'check_circle',
+                    label: 'Completed',
+                    value: goalsWithMeta.filter((g) => g.completed).length,
+                    accent: '#16A34A',
+                    bg: 'rgba(34,197,94,0.08)',
+                  },
+                  {
+                    icon: 'local_fire_department',
+                    label: 'Best Streak',
+                    value: `${Math.max(0, ...goalsWithMeta.map((g) => g.currentStreak))} days`,
+                    accent: '#D97706',
+                    bg: 'rgba(245,158,11,0.08)',
+                  },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex items-center gap-4 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] px-5 py-4 shadow-e1"
                   >
-                    {tab.label}
-                  </button>
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
+                      style={{ background: stat.bg }}
+                    >
+                      <span
+                        className="material-symbols-outlined text-[22px]"
+                        style={{ color: stat.accent }}
+                      >
+                        {stat.icon}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-[22px] font-bold leading-none text-[var(--ff-text-900)]">{stat.value}</p>
+                      <p className="mt-1 text-xs font-medium text-[var(--ff-text-500)]">{stat.label}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </section>
+            )}
 
             {loading ? (
-              <section className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
-                <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
-              </section>
+              <div className="flex items-center justify-center py-20">
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
+              </div>
             ) : (
               <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 {filteredGoals.map((goal, index) => {
@@ -342,23 +400,23 @@ const GoalsList: React.FC = () => {
                   return (
                     <article
                       key={goal.id}
-                      className="flex h-full flex-col rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow"
+                      className="flex h-full flex-col rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.45)] hover:shadow-glow"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
-                          <h4 className="line-clamp-2 text-xl font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
-                          <div className="mt-3 flex flex-wrap gap-2">
+                          <h4 className="line-clamp-2 text-lg font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
+                          <div className="mt-2.5 flex flex-wrap gap-2">
                             <span
-                              className="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                              className="rounded-full border px-3 py-0.5 text-xs font-semibold uppercase tracking-wide"
                               style={categoryPillStyle}
                             >
                               {goal.category || 'General'}
                             </span>
-                            <span className="rounded-full border border-orange-300/50 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
-                              ?? {Math.max(goal.currentStreak, 0)} Day Streak
+                            <span className="rounded-full border border-orange-300/50 bg-orange-50 px-3 py-0.5 text-xs font-semibold text-orange-700 dark:bg-orange-900/20 dark:text-orange-300">
+                              🔥 {Math.max(goal.currentStreak, 0)} Day Streak
                             </span>
                             <span
-                              className="rounded-full border px-3 py-1 text-xs font-semibold"
+                              className="rounded-full border px-3 py-0.5 text-xs font-semibold"
                               style={{
                                 backgroundColor: difficultyStyle.background,
                                 color: difficultyStyle.color,
@@ -370,29 +428,33 @@ const GoalsList: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="relative h-16 w-16 shrink-0">
+                        {/* Progress ring */}
+                        <div className="relative h-14 w-14 shrink-0">
                           <div
-                            className="h-16 w-16 rounded-full"
+                            className="h-14 w-14 rounded-full"
                             style={{
                               background: `conic-gradient(var(--ff-primary) ${progressDegrees}deg, var(--ff-surface-hover) 0deg)`,
                             }}
                           />
                           <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface-elevated)]" />
-                          <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ff-text-900)]">
+                          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[var(--ff-text-900)]">
                             {goal.progressPercent}%
                           </span>
                         </div>
                       </div>
 
-                      <p className="mt-3 line-clamp-2 text-sm text-[var(--ff-text-700)]">
+                      <p className="mt-3 line-clamp-2 flex-1 text-sm text-[var(--ff-text-700)]">
                         {goal.description?.trim() || 'No goal description provided.'}
                       </p>
-                      <p className="mt-2 text-sm text-[var(--ff-text-700)]">Daily target: {Math.max(goal.dailyMinimumMinutes, 0)} minutes</p>
+                      <p className="mt-1.5 text-xs text-[var(--ff-text-500)]">
+                        Daily target:{' '}
+                        <span className="font-medium text-[var(--ff-text-700)]">{Math.max(goal.dailyMinimumMinutes, 0)} min</span>
+                      </p>
 
-                      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="mt-5 grid grid-cols-2 gap-3">
                         <Link
                           to={`/goals/${goal.id}`}
-                          className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
+                          className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ff-text-900)] transition-[background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
                         >
                           Details
                         </Link>
@@ -400,7 +462,7 @@ const GoalsList: React.FC = () => {
                           type="button"
                           onClick={() => navigate(`/goals/${goal.id}/log`)}
                           disabled={!goal.isActive}
-                          className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Update Progress
                         </button>
@@ -410,8 +472,17 @@ const GoalsList: React.FC = () => {
                 })}
 
                 {filteredGoals.length === 0 && (
-                  <article className="col-span-full rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-10 text-center shadow-e2">
-                    <p className="text-sm text-[var(--ff-text-700)]">No goals match this view yet.</p>
+                  <article className="col-span-full rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-12 text-center shadow-e2">
+                    <span className="material-symbols-outlined mb-3 block text-4xl text-[var(--ff-text-500)]">track_changes</span>
+                    <p className="text-sm font-medium text-[var(--ff-text-700)]">No goals match this view yet.</p>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/goals/new')}
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 text-sm font-semibold text-white shadow-e1 hover:brightness-105"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">add</span>
+                      Add your first goal
+                    </button>
                   </article>
                 )}
               </section>

@@ -58,7 +58,7 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="ff-user-pill">
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+          <span className="rounded-full border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-1 text-xs font-semibold text-[var(--ff-text-700)]">
             {displayName}
           </span>
           {isAuthenticated ? (
@@ -97,7 +97,7 @@ const Navbar: React.FC = () => {
           })}
           <div className="app-divider my-1" />
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-semibold text-slate-600">{displayName}</span>
+            <span className="text-sm font-semibold text-[var(--ff-text-700)]">{displayName}</span>
             {isAuthenticated ? (
               <button type="button" onClick={handleLogout} className="btn-secondary">
                 Logout

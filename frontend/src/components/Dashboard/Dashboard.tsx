@@ -386,7 +386,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="overflow-hidden">
                 <h1 className="truncate text-lg font-bold tracking-tight text-[var(--ff-text-900)]">FocusForge</h1>
-                <p className="text-xs font-medium text-[var(--ff-text-700)]">Dashboard</p>
+          
               </div>
             </div>
 
