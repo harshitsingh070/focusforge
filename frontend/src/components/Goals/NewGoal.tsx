@@ -79,7 +79,7 @@ const NewGoal: React.FC = () => {
     >
       <Navbar />
 
-      <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className="ff-page-enter mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Back */}
         <button
           onClick={handleCancel}

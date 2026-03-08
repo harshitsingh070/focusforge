@@ -91,11 +91,35 @@
     --ff-gradient-btn: linear-gradient(135deg, #7c3aed, #8b5cf6);
     --ff-gradient-btn-hover: linear-gradient(135deg, #8b5cf6, #a78bfa);
 
+    /* ── Motion & Animation Tokens ─────────────────── */
+    /* Speed tiers */
     --ff-motion-fast: 120ms;
     --ff-motion-normal: 180ms;
-    --ff-motion-slow: 240ms;
+    --ff-motion-large: 220ms;
+    --ff-motion-progress: 750ms;
     --ff-motion-duration: var(--ff-motion-normal);
-    --ff-motion-easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Global easing */
+    --ff-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ff-ease-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+    --ff-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+    --ff-motion-easing: var(--ff-ease-standard);
+
+    /* Distance rules */
+    --ff-motion-dist-sm: 4px;
+    --ff-motion-dist-md: 8px;
+    --ff-motion-dist-lg: 16px;
+
+    /* Motion accent colors */
+    --ff-motion-accent: #7C3AED;
+    --ff-motion-glow: rgba(139, 92, 246, 0.25);
+    --ff-motion-glow-btn: rgba(139, 92, 246, 0.35);
+    --ff-motion-glow-nav: rgba(139, 92, 246, 0.35);
+    --ff-motion-glow-hover: rgba(139, 92, 246, 0.20);
+
+    /* Skeleton */
+    --ff-skeleton-base: #E5E7EB;
+    --ff-skeleton-shine: #F1F5F9;
 
     --ff-gradient-primary: linear-gradient(135deg, #7c3aed, #8b5cf6);
     --ff-gradient-bg-light: linear-gradient(180deg, #f8f9fc, #f1f3f9);
@@ -249,10 +273,15 @@
     font: inherit;
   }
 
-  @keyframes ff-fade-up {
+  /* ════════════════════════════════════════════════
+     GLOBAL MOTION SYSTEM — FocusForge Design Tokens
+     ════════════════════════════════════════════════ */
+
+  /* ── Page transition ─────────────────────────── */
+  @keyframes ff-page-enter {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(var(--ff-motion-dist-md));
     }
 
     to {
@@ -261,6 +290,191 @@
     }
   }
 
+  @keyframes ff-page-exit {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  /* Alias kept for backwards compat */
+  @keyframes ff-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(var(--ff-motion-dist-md));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Element entrance (section items) ─────────── */
+  @keyframes ff-section-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Overlay / backdrop ───────────────────────── */
+  @keyframes ff-fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* ── Modal (desktop) ─────────────────────────── */
+  @keyframes ff-modal-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(var(--ff-motion-dist-md));
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* ── Bottom sheet (mobile) ───────────────────── */
+  @keyframes ff-sheet-enter {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Sidebar nav indicator ───────────────────── */
+  @keyframes ff-nav-slide-in {
+    from {
+      opacity: 0.6;
+      transform: translateX(-6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* ── Toast ───────────────────────────────────── */
+  @keyframes ff-toast-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ff-toast-exit {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* ── Dropdown ────────────────────────────────── */
+  @keyframes ff-dropdown-enter {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* ── Error shake ─────────────────────────────── */
+  @keyframes ff-shake {
+
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+
+    20% {
+      transform: translateX(-4px);
+    }
+
+    40% {
+      transform: translateX(4px);
+    }
+
+    60% {
+      transform: translateX(-3px);
+    }
+
+    80% {
+      transform: translateX(3px);
+    }
+  }
+
+  /* ── Skeleton shimmer ────────────────────────── */
+  @keyframes ff-shimmer {
+    from {
+      background-position: -200% center;
+    }
+
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  /* ── Progress ring ───────────────────────────── */
+  @keyframes ff-ring-fill {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* ── Chart bar grow ─────────────────────────── */
+  @keyframes ff-bar-grow {
+    from {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+
+    to {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+  }
+
+  /* ── Pulse glow ─────────────────────────────── */
   @keyframes ff-glow {
 
     0%,
@@ -286,11 +500,257 @@
   }
 }
 
+/* ════════════════════════════════════════════════
+   GLOBAL MOTION UTILITY CLASSES
+   ════════════════════════════════════════════════ */
 @layer components {
+
+  /* ── Page / section entrance ─────────────────── */
+  .ff-page-enter {
+    animation: ff-page-enter 160ms var(--ff-ease-standard) both;
+  }
+
+  .ff-section-enter {
+    animation: ff-section-enter 170ms var(--ff-ease-standard) both;
+  }
+
+  /* Stagger delays — tighter so items appear nearly together */
+  .ff-stagger>*:nth-child(1) {
+    animation-delay: 0ms;
+  }
+
+  .ff-stagger>*:nth-child(2) {
+    animation-delay: 25ms;
+  }
+
+  .ff-stagger>*:nth-child(3) {
+    animation-delay: 50ms;
+  }
+
+  .ff-stagger>*:nth-child(4) {
+    animation-delay: 75ms;
+  }
+
+  .ff-stagger>*:nth-child(5) {
+    animation-delay: 100ms;
+  }
+
+  .ff-stagger>*:nth-child(6) {
+    animation-delay: 125ms;
+  }
+
+  .ff-stagger>*:nth-child(7) {
+    animation-delay: 150ms;
+  }
+
+  .ff-stagger>*:nth-child(8) {
+    animation-delay: 175ms;
+  }
+
+  .ff-stagger>*:nth-child(n+9) {
+    animation-delay: 200ms;
+  }
+
+  /* ── Backdrop fade ───────────────────────────── */
+  .ff-backdrop {
+    animation: ff-fade-in 180ms var(--ff-ease-standard) both;
+  }
+
+  /* ── Desktop modal enter ─────────────────────── */
+  .ff-modal-enter {
+    animation: ff-modal-enter 200ms var(--ff-ease-spring) both;
+  }
+
+  /* ── Mobile / bottom sheet ───────────────────── */
+  .ff-sheet-enter {
+    animation: ff-sheet-enter 220ms var(--ff-ease-spring) both;
+  }
+
+  /* ── Toast ───────────────────────────────────── */
+  .ff-toast {
+    animation: ff-toast-enter 180ms var(--ff-ease-standard) both;
+    border-radius: 12px;
+    background: #111827;
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .ff-toast-exit {
+    animation: ff-toast-exit 140ms var(--ff-ease-standard) both;
+  }
+
+  /* ── Dropdown menu ───────────────────────────── */
+  .ff-dropdown {
+    animation: ff-dropdown-enter 140ms var(--ff-ease-spring) both;
+    border-radius: 12px;
+    border: 1px solid var(--ff-border);
+    background: var(--ff-surface-elevated);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+    overflow: hidden;
+  }
+
+  /* ── Tooltip ─────────────────────────────────── */
+  .ff-tooltip {
+    animation: ff-fade-in 120ms ease both;
+    border-radius: 8px;
+    background: #111827;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 10px;
+    pointer-events: none;
+  }
+
+  /* ── Skeleton ────────────────────────────────── */
+  .ff-skeleton {
+    background: linear-gradient(90deg,
+        var(--ff-skeleton-base, #E5E7EB) 25%,
+        var(--ff-skeleton-shine, #F1F5F9) 50%,
+        var(--ff-skeleton-base, #E5E7EB) 75%);
+    background-size: 200% 100%;
+    animation: ff-shimmer 1.2s ease-in-out infinite;
+    border-radius: 8px;
+  }
+
+  /* ── Error / shake ───────────────────────────── */
+  .ff-error-shake {
+    animation: ff-shake 240ms var(--ff-ease-standard) both;
+  }
+
+  .ff-error-border {
+    border-color: #EF4444 !important;
+  }
+
+  /* ── Empty state entrance ────────────────────── */
+  .ff-empty-state {
+    animation: ff-section-enter 200ms var(--ff-ease-standard) both;
+  }
+
+  /* ── Chart bar animate ───────────────────────── */
+  .ff-bar {
+    animation: ff-bar-grow 600ms var(--ff-ease-decelerate) both;
+    fill: #8B5CF6;
+  }
+
+  .ff-bar:hover {
+    fill: #A78BFA;
+  }
+
+  /* ── Card hover motion ───────────────────────── */
+  .ff-card-hover {
+    transition:
+      transform 160ms var(--ff-ease-standard),
+      box-shadow 160ms var(--ff-ease-standard),
+      border-color 160ms var(--ff-ease-standard);
+  }
+
+  .ff-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 0 0 1px rgba(124, 58, 237, 0.30),
+      0 0 24px var(--ff-motion-glow),
+      0 12px 28px rgba(0, 0, 0, 0.12);
+    border-color: var(--ff-motion-accent);
+  }
+
+  /* ── Global interactive hover glow ───────────── */
+  .ff-hover-glow {
+    transition: box-shadow 140ms var(--ff-ease-standard);
+  }
+
+  .ff-hover-glow:hover {
+    box-shadow: 0 0 12px var(--ff-motion-glow-hover);
+  }
+
+  /* ── Sidebar nav active item ─────────────────── */
+  .ff-nav-active {
+    background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+    color: #fff;
+    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.35),
+      0 0 16px rgba(139, 92, 246, 0.35),
+      0 4px 12px rgba(124, 58, 237, 0.25);
+    animation: ff-nav-slide-in 180ms var(--ff-ease-spring) both;
+  }
+
+  .ff-nav-active .ff-nav-icon {
+    color: #fff;
+  }
+
+  .ff-nav-item {
+    transition:
+      background-color 180ms var(--ff-ease-standard),
+      color 120ms var(--ff-ease-standard),
+      box-shadow 180ms var(--ff-ease-standard);
+  }
+
+  .ff-nav-item .ff-nav-icon {
+    color: #94A3B8;
+    transition: color 120ms var(--ff-ease-standard);
+  }
+
+  .ff-nav-item:hover .ff-nav-icon {
+    color: #8B5CF6;
+  }
+
+  /* ── Tab transition ──────────────────────────── */
+  .ff-tab {
+    transition:
+      background-color 150ms var(--ff-ease-standard),
+      color 150ms var(--ff-ease-standard),
+      opacity 150ms var(--ff-ease-standard);
+    opacity: 0.7;
+  }
+
+  .ff-tab:hover {
+    opacity: 0.9;
+  }
+
+  .ff-tab-active {
+    background: var(--ff-motion-accent);
+    color: #fff;
+    opacity: 1;
+  }
+
+  /* ── Button motion ───────────────────────────── */
+  .ff-btn-motion {
+    transition:
+      transform 120ms var(--ff-ease-standard),
+      box-shadow 120ms var(--ff-ease-standard),
+      filter 120ms var(--ff-ease-standard);
+  }
+
+  .ff-btn-motion:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px var(--ff-motion-glow-btn),
+      0 8px 20px rgba(0, 0, 0, 0.20);
+  }
+
+  .ff-btn-motion:active:not(:disabled) {
+    transform: scale(0.98);
+    transition-duration: 80ms;
+  }
+
+  /* ── Search focus transition ─────────────────── */
+  .ff-search-input {
+    transition:
+      border-color 120ms var(--ff-ease-standard),
+      box-shadow 120ms var(--ff-ease-standard),
+      width 120ms var(--ff-ease-standard);
+  }
+
+  .ff-search-input:focus {
+    border-color: var(--ff-motion-accent);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+  }
+
+  /* ── Page shell ──────────────────────────────── */
   .page-shell {
     min-height: 100vh;
     padding-top: 82px;
-    animation: ff-fade-up var(--ff-motion-duration) var(--ff-motion-easing) forwards;
+    animation: ff-page-enter 200ms var(--ff-ease-standard) both;
   }
 
   .page-container {

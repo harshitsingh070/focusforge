@@ -318,7 +318,9 @@ const Dashboard: React.FC = () => {
     [dispatch]
   );
 
-  if (loading && !data) {
+  // Only block with full-screen spinner on the very first load.
+  // On re-visits the cached Redux state renders immediately.
+  if (!data && !error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--ff-bg)] px-4 text-[var(--ff-text-900)]">
         <div className="w-full max-w-md rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
@@ -376,7 +378,7 @@ const Dashboard: React.FC = () => {
   const badgeUnlockLabel = getBadgeUnlockLabel(latestBadge, data.totalPoints);
 
   return (
-    <div className="min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
+    <div className="ff-page-enter min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
       <div className="flex h-screen overflow-hidden">
         <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 md:flex">
           <div className="flex flex-col gap-6">
@@ -386,7 +388,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="overflow-hidden">
                 <h1 className="truncate text-lg font-bold tracking-tight text-[var(--ff-text-900)]">FocusForge</h1>
-          
+
               </div>
             </div>
 
@@ -399,12 +401,12 @@ const Dashboard: React.FC = () => {
                     key={item.to}
                     type="button"
                     onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${active
-                      ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
+                    className={`ff-nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-left ${active
+                      ? 'ff-nav-active text-white'
                       : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
                       }`}
                   >
-                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                    <span className="ff-nav-icon material-symbols-outlined text-[20px]">{item.icon}</span>
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
                   </button>
                 );
@@ -502,8 +504,8 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
+            <section className="grid grid-cols-1 gap-6 md:grid-cols-3 ff-stagger">
+              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Total Points</p>
@@ -518,7 +520,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </article>
 
-              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
+              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Global Streak</p>
@@ -530,7 +532,7 @@ const Dashboard: React.FC = () => {
                 </div>
               </article>
 
-              <article className="group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow">
+              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                 <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
                 <div className="relative z-10 flex items-center justify-between">
                   <p className="text-sm font-medium text-[var(--ff-text-700)]">Active Goals</p>
@@ -565,7 +567,7 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="relative z-10 grid h-full grid-cols-7 items-end gap-2 pb-6">
-                      {weeklyBars.map((bar) => {
+                      {weeklyBars.map((bar, i) => {
                         const hasValue = bar.minutes > 0 && maxWeeklyMinutes > 0;
                         const heightPercent = hasValue ? Math.max(14, Math.round((bar.minutes / maxWeeklyMinutes) * 100)) : 12;
                         const isWeekend = bar.id === 'Sat' || bar.id === 'Sun';
@@ -586,10 +588,13 @@ const Dashboard: React.FC = () => {
                                   ? 'bg-[rgb(var(--ff-primary-rgb)/0.25)] hover:bg-[rgb(var(--ff-primary-rgb)/0.35)]'
                                   : 'bg-gradient-to-t from-[var(--ff-primary)] to-[var(--ff-primary-soft)] hover:brightness-110'
                                 }`}
-                              style={{ height: `${heightPercent}%` }}
+                              style={{
+                                height: `${heightPercent}%`,
+                                animation: `ff-bar-grow 600ms var(--ff-ease-decelerate) ${i * 60}ms both`,
+                              }}
                             >
                               {hoveredWeeklyId === bar.id && (
-                                <span className="absolute -top-[66px] left-1/2 z-20 w-max -translate-x-1/2 rounded border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] px-2.5 py-1.5 text-left text-[11px] leading-tight text-[var(--ff-text-700)] shadow-e2">
+                                <span className="ff-tooltip absolute -top-[66px] left-1/2 z-20 w-max -translate-x-1/2 rounded border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] px-2.5 py-1.5 text-left text-[11px] leading-tight text-[var(--ff-text-700)] shadow-e2">
                                   <p className="font-semibold text-[var(--ff-text-900)]">{bar.label}</p>
                                   <p>{bar.minutes} minutes logged</p>
                                   {visitSummaryByDay[bar.id].visits > 0 ? (
@@ -620,83 +625,85 @@ const Dashboard: React.FC = () => {
                 <div className="flex flex-col gap-4">
                   <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Active Goals</h3>
                   {visibleGoals.length === 0 ? (
-                    <div className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                    <div className="ff-empty-state rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                       <p className="text-sm text-[var(--ff-text-700)]">No active goals available yet. Create one to get started.</p>
                     </div>
                   ) : (
-                    visibleGoals.map((goal, index) => {
-                      const progressPercent = getProgressPercent(goal);
-                      const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
-                      const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
+                    <div className="ff-stagger flex flex-col gap-3">
+                      {visibleGoals.map((goal, index) => {
+                        const progressPercent = getProgressPercent(goal);
+                        const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
+                        const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
 
-                      return (
-                        <article
-                          key={goal.goalId}
-                          className="flex flex-col items-center justify-between gap-4 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 transition-all duration-normal ease-premium hover:border-[rgba(124,58,237,0.5)] hover:shadow-glow sm:flex-row"
-                          style={{ borderLeftWidth: 4, borderLeftColor: categoryColor }}
-                        >
-                          <div className="flex w-full items-center gap-4 sm:w-auto">
-                            <div className="relative h-12 w-12 shrink-0">
-                              <div
-                                className="h-12 w-12 rounded-full"
-                                style={{
-                                  background: `conic-gradient(${categoryColor} ${progressPercent * 3.6}deg, var(--ff-surface-hover) 0deg)`,
-                                }}
-                              />
-                              <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface)]" />
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ff-text-900)]">
-                                {progressPercent}%
-                              </span>
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
-                                <span
-                                  className="rounded border px-2 py-0.5 text-[10px] font-bold uppercase"
+                        return (
+                          <article
+                            key={goal.goalId}
+                            className="ff-card-hover ff-section-enter flex flex-col items-center justify-between gap-4 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 sm:flex-row"
+                            style={{ borderLeftWidth: 4, borderLeftColor: categoryColor }}
+                          >
+                            <div className="flex w-full items-center gap-4 sm:w-auto">
+                              <div className="relative h-12 w-12 shrink-0">
+                                <div
+                                  className="h-12 w-12 rounded-full"
                                   style={{
-                                    color: categoryColor,
-                                    backgroundColor: `${categoryColor}22`,
-                                    borderColor: `${categoryColor}55`,
+                                    background: `conic-gradient(${categoryColor} ${progressPercent * 3.6}deg, var(--ff-surface-hover) 0deg)`,
                                   }}
-                                >
-                                  {goal.category || 'General'}
+                                />
+                                <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface)]" />
+                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ff-text-900)]">
+                                  {progressPercent}%
                                 </span>
                               </div>
-                              <p className="text-sm text-[var(--ff-text-700)]">
-                                {remainingMinutes > 0 ? `${remainingMinutes} minutes left today` : 'Target complete for today'}
-                              </p>
-                              <p className="text-xs text-[var(--ff-text-500)]">
-                                {Math.max(goal.todayProgress, 0)} / {Math.max(goal.dailyTarget, 0)} minutes
-                              </p>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
+                                  <span
+                                    className="rounded border px-2 py-0.5 text-[10px] font-bold uppercase"
+                                    style={{
+                                      color: categoryColor,
+                                      backgroundColor: `${categoryColor}22`,
+                                      borderColor: `${categoryColor}55`,
+                                    }}
+                                  >
+                                    {goal.category || 'General'}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-[var(--ff-text-700)]">
+                                  {remainingMinutes > 0 ? `${remainingMinutes} minutes left today` : 'Target complete for today'}
+                                </p>
+                                <p className="text-xs text-[var(--ff-text-500)]">
+                                  {Math.max(goal.todayProgress, 0)} / {Math.max(goal.dailyTarget, 0)} minutes
+                                </p>
+                              </div>
                             </div>
-                          </div>
 
-                          <button
-                            type="button"
-                            className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] transition-[transform,background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
-                            onClick={() => {
-                              if (goal.completedToday) {
-                                navigate(`/goals/${goal.goalId}`);
-                                return;
-                              }
-                              setSelectedGoal(goal);
-                            }}
-                          >
-                            {goal.completedToday ? 'View Goal' : 'Log Activity'}
-                          </button>
-                        </article>
-                      );
-                    })
+                            <button
+                              type="button"
+                              className="ff-btn-motion w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] hover:bg-[var(--ff-surface-hover)] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
+                              onClick={() => {
+                                if (goal.completedToday) {
+                                  navigate(`/goals/${goal.goalId}`);
+                                  return;
+                                }
+                                setSelectedGoal(goal);
+                              }}
+                            >
+                              {goal.completedToday ? 'View Goal' : 'Log Activity'}
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               </div>
 
               <aside className="flex flex-col gap-6">
-                <article className="relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                <article className="ff-section-enter relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
                   <div className="pointer-events-none absolute inset-0 [background-image:var(--ff-gradient-card-accent)]" />
                   <h3 className="relative z-10 text-lg font-bold text-[var(--ff-text-900)]">Badge Momentum</h3>
                   <div className="relative z-10 mt-4 flex justify-center">
-                    <div className="flex h-24 w-24 rotate-12 items-center justify-center rounded-xl border border-[var(--ff-border)] bg-gradient-to-br from-amber-400 to-orange-600 shadow-e2">
+                    <div className="flex h-24 w-24 rotate-12 items-center justify-center rounded-xl border border-[var(--ff-border)] bg-gradient-to-br from-amber-400 to-orange-600 shadow-e2" style={{ animation: 'ff-section-enter 300ms var(--ff-ease-spring) 200ms both' }}>
                       <span className="material-symbols-outlined text-5xl text-white">emoji_events</span>
                     </div>
                   </div>
@@ -705,7 +712,14 @@ const Dashboard: React.FC = () => {
                     <p className="mt-1 text-sm text-[var(--ff-text-700)]">{badgeUnlockLabel}</p>
                   </div>
                   <div className="relative z-10 mt-4 h-2 w-full rounded-full bg-[var(--ff-surface-soft)]">
-                    <div className="h-2 rounded-full" style={{ width: `${badgeProgress}%`, backgroundImage: 'var(--ff-gradient-primary)' }} />
+                    <div
+                      className="h-2 rounded-full"
+                      style={{
+                        width: `${badgeProgress}%`,
+                        backgroundImage: 'var(--ff-gradient-primary)',
+                        transition: `width ${750}ms var(--ff-ease-decelerate)`,
+                      }}
+                    />
                   </div>
                 </article>
 
@@ -754,7 +768,7 @@ const Dashboard: React.FC = () => {
 
       {alertsOpen && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
+          className="ff-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           onMouseDown={(event) => {
@@ -763,7 +777,7 @@ const Dashboard: React.FC = () => {
             }
           }}
         >
-          <div className="w-full max-w-2xl rounded-[20px] border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-5 shadow-e3">
+          <div className="ff-modal-enter w-full max-w-2xl rounded-[20px] border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-5 shadow-e3">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Alerts</h2>
               <button
