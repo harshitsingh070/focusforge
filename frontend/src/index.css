@@ -90,20 +90,17 @@
 
     --ff-gradient-btn: linear-gradient(135deg, #7c3aed, #8b5cf6);
     --ff-gradient-btn-hover: linear-gradient(135deg, #8b5cf6, #a78bfa);
-
     /* ── Motion & Animation Tokens ─────────────────── */
-    /* Speed tiers */
     --ff-motion-fast: 120ms;
-    --ff-motion-normal: 180ms;
+    --ff-motion-standard: 180ms;
     --ff-motion-large: 220ms;
     --ff-motion-progress: 750ms;
-    --ff-motion-duration: var(--ff-motion-normal);
-
-    /* Global easing */
-    --ff-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-    --ff-ease-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+    --ff-ease-glass: cubic-bezier(.4, 0, .2, 1);
+    
+    --ff-motion-duration: var(--ff-motion-standard);
+    --ff-motion-easing: var(--ff-ease-glass);
+    --ff-ease-standard: var(--ff-ease-glass);
     --ff-ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
-    --ff-motion-easing: var(--ff-ease-standard);
 
     /* Distance rules */
     --ff-motion-dist-sm: 4px;
@@ -223,10 +220,13 @@
   :root.theme-dark body,
   :root.dark body {
     background-color: var(--ff-bg-dark);
+    /* 15s slow floating ambient background */
     background-image:
-      radial-gradient(ellipse 80% 50% at 78% 0%, rgba(124, 58, 237, 0.18), transparent),
-      radial-gradient(ellipse 60% 45% at 14% 85%, rgba(139, 92, 246, 0.12), transparent),
+      radial-gradient(circle at top right, rgba(124, 58, 237, 0.18), transparent),
+      radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.12), transparent),
       linear-gradient(180deg, #0f172a, #111827);
+    background-size: 200% 200%;
+    animation: ff-ambient-float 15s ease-in-out infinite alternate;
   }
 
   h1,
@@ -281,12 +281,12 @@
   @keyframes ff-page-enter {
     from {
       opacity: 0;
-      transform: translateY(var(--ff-motion-dist-md));
+      transform: translateY(12px) scale(0.98);
     }
 
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
     }
   }
 
@@ -507,7 +507,7 @@
 
   /* ── Page / section entrance ─────────────────── */
   .ff-page-enter {
-    animation: ff-page-enter 160ms var(--ff-ease-standard) both;
+    animation: ff-page-enter 200ms var(--ff-ease-standard) both;
   }
 
   .ff-section-enter {
@@ -1811,5 +1811,103 @@
 
   .chart-grid {
     color: #f3f4f6;
+  }
+}
+
+/* ════════════════════════════════════════════════
+   LIQUID GLASS UI SYSTEM
+   ════════════════════════════════════════════════ */
+@layer components {
+
+  /* ── Base Glass Surface (Layer 2 + Layer 3 Edge Highlight) ── */
+  .glass-surface {
+    background: var(--ff-glass-bg, rgba(255, 255, 255, 0.06));
+    border: 1px solid var(--ff-glass-border, rgba(255, 255, 255, 0.12));
+    /* Layer 3: Edge highlight inner shadow */
+    box-shadow: 
+      inset 0 1px 0 var(--ff-glass-edge, rgba(255, 255, 255, 0.08)),
+      0 8px 24px var(--ff-glass-shadow, rgba(0, 0, 0, 0.25));
+    border-radius: var(--ff-radius-xl, 20px);
+    overflow: hidden;
+  }
+
+  /* Only apply blur to these explicitly allowed surfaces */
+  .glass-blur-surface {
+    backdrop-filter: blur(var(--ff-glass-blur, 16px));
+    -webkit-backdrop-filter: blur(var(--ff-glass-blur, 16px));
+  }
+
+  /* ── Interactive Glass Card ────────────────────────────── */
+  .glass-card {
+    transition:
+      transform var(--ff-motion-standard, 160ms) var(--ff-motion-easing),
+      box-shadow var(--ff-motion-standard, 160ms) var(--ff-motion-easing),
+      border-color var(--ff-motion-standard, 160ms) var(--ff-motion-easing);
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px);
+    /* Layer Glow: Behind the panel */
+    box-shadow: 
+      inset 0 1px 0 var(--ff-glass-edge, rgba(255, 255, 255, 0.08)),
+      0 0 18px var(--ff-glass-glow, rgba(139, 92, 246, 0.35)),
+      0 12px 28px rgba(0, 0, 0, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+
+  /* ── Premium Glass (with Shimmer Reflection) ───────────── */
+  .glass-premium {
+    position: relative;
+    /* Uses base glass-surface styles natively */
+  }
+
+  .glass-premium::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      120deg, 
+      rgba(255, 255, 255, 0.08), 
+      rgba(255, 255, 255, 0.02), 
+      rgba(255, 255, 255, 0.08)
+    );
+    pointer-events: none;
+    animation: ff-liquid-shimmer 7s var(--ff-motion-easing) infinite;
+  }
+
+  @keyframes ff-liquid-shimmer {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 200%;
+    }
+  }
+
+  /* ── Component-specific overrides ──────────────────────── */
+  .glass-sidebar {
+    background: var(--ff-sidebar-bg, rgba(15, 23, 42, 0.85));
+    border-right: 1px solid var(--ff-glass-border);
+    /* Needs strong backdrop to hide layout scrolling */
+  }
+
+  .glass-header {
+    background: var(--ff-header-bg, rgba(17, 24, 39, 0.75));
+    border-bottom: 1px solid var(--ff-glass-border);
+    box-shadow: 0 4px 24px var(--ff-glass-shadow);
+  }
+
+  .glass-modal {
+    background: var(--ff-modal-bg, rgba(17, 24, 39, 0.85));
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid var(--ff-glass-border);
+    box-shadow: 
+      inset 0 1px 0 var(--ff-glass-edge),
+      0 24px 60px rgba(0, 0, 0, 0.5);
+    animation: ff-modal-enter 280ms var(--ff-ease-spring) both;
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { Provider, useSelector } from 'react-redux';
 import { RootState, store } from './store';
 import ForgotPassword from './components/Auth/ForgotPassword';
@@ -75,9 +76,11 @@ const AnimatedRoutes: React.FC = () => {
 const App: React.FC = () => {
   return (
     <Provider store={store}>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AnimatedRoutes />
-      </Router>
+      <ThemeProvider>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <AnimatedRoutes />
+        </Router>
+      </ThemeProvider>
     </Provider>
   );
 };

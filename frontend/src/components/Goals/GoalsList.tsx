@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { isAdminEmail } from '../../constants/admin';
 import { AppDispatch, RootState } from '../../store';
 import { deleteGoal, fetchGoalById, fetchGoals, updateGoal } from '../../store/goalsSlice';
 import { Goal, GoalRequest } from '../../types';
@@ -15,12 +16,15 @@ interface GoalWithMeta extends Goal {
   difficultyLevel: DifficultyLevel;
 }
 
-const navItems = [
+const baseNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
   { to: '/goals', label: 'Goals', icon: 'track_changes' },
-  { to: '/analytics', label: 'Statistics', icon: 'monitoring' },
+  { to: '/activity', label: 'Activity', icon: 'event_note' },
+  { to: '/analytics', label: 'Analytics', icon: 'monitoring' },
   { to: '/badges', label: 'Badges', icon: 'military_tech' },
+  { to: '/leaderboard', label: 'Leaderboard', icon: 'leaderboard' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
+  { to: '/rules', label: 'Rules', icon: 'gavel' },
 ];
 
 const TAB_ITEMS: Array<{ id: GoalTab; label: string }> = [
@@ -136,6 +140,9 @@ const GoalsList: React.FC = () => {
   const displayName = [user?.username, user?.email, 'FocusForge User'].find(
     (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
   ) as string;
+  const navItems = isAdminEmail(user?.email)
+    ? [...baseNavItems, { to: '/admin', label: 'Admin', icon: 'shield_person' }]
+    : baseNavItems;
   const initials = getInitials(displayName);
 
   const goalsWithMeta = useMemo<GoalWithMeta[]>(
@@ -179,22 +186,21 @@ const GoalsList: React.FC = () => {
   }, [activeTab, categoryFilter, goalsWithMeta, searchQuery]);
 
   return (
-    <div className="ff-page-enter min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
+    <div className="ff-page-enter min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
       <div className="flex h-screen overflow-hidden">
         {/* ── Sidebar ── */}
-        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 md:flex">
+        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm md:flex">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3 px-2">
-              <div className="rounded-[10px] bg-[var(--ff-primary-100)] p-2 dark:bg-[var(--ff-primary-900)]/40">
-                <span className="material-symbols-outlined text-2xl text-[var(--ff-primary)]">auto_awesome</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-md shadow-violet-500/30">
+                <span className="text-sm font-bold text-white">FF</span>
               </div>
               <div className="overflow-hidden">
-                <h1 className="truncate text-lg font-bold tracking-tight text-[var(--ff-text-900)]">FocusForge</h1>
-                <p className="text-xs font-medium text-[var(--ff-text-700)]">Dashboard</p>
+                <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">FocusForge</h1>
               </div>
             </div>
 
-            <nav className="mt-4 flex flex-col gap-2">
+            <nav className="mt-4 flex flex-col gap-1">
               {navItems.map((item) => {
                 const active = isActiveNav(location.pathname, item.to);
 
@@ -203,10 +209,11 @@ const GoalsList: React.FC = () => {
                     key={item.to}
                     type="button"
                     onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${active
-                      ? 'border border-[var(--ff-primary)] bg-[var(--ff-primary)] text-white'
-                      : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                      }`}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
+                      active
+                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                    }`}
                   >
                     <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
@@ -216,14 +223,14 @@ const GoalsList: React.FC = () => {
             </nav>
           </div>
 
-          <div className="mt-auto flex items-center gap-3 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ff-surface-hover)] text-xs font-bold text-[var(--ff-text-900)]">
+          <div className="mt-auto flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-3">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs font-bold text-white shadow-sm">
               {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-[#22C55E]" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[var(--ff-text-900)]">{displayName}</p>
-              <p className="truncate text-xs text-[var(--ff-text-700)]">Pro Member</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
+              <p className="truncate text-xs text-slate-500 dark:text-slate-400">Pro Member</p>
             </div>
           </div>
         </aside>
@@ -231,7 +238,7 @@ const GoalsList: React.FC = () => {
         {/* ── Main ── */}
         <main className="flex flex-1 flex-col overflow-y-auto">
           {/* Sticky page header */}
-          <header className="sticky top-0 z-20 bg-[var(--ff-surface-elevated)]/95 px-6 py-4 backdrop-blur-md sm:px-8">
+          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm">
             {/* Row 1: title + actions */}
             <div className="flex flex-wrap items-center justify-between gap-4">
               {/* Mobile hamburger */}
@@ -246,8 +253,8 @@ const GoalsList: React.FC = () => {
 
               {/* Title */}
               <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">My Goals</h2>
-                <p className="mt-0.5 text-sm text-[var(--ff-text-700)]">Track your progress and crush your targets.</p>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">My Goals</h2>
+                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Track your progress and crush your targets.</p>
               </div>
 
               {/* Search + New Goal */}
@@ -268,7 +275,7 @@ const GoalsList: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02]"
                 >
                   <span className="material-symbols-outlined text-[18px]">add</span>
                   New Goal
@@ -284,9 +291,9 @@ const GoalsList: React.FC = () => {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-fast ease-premium ${activeTab === tab.id
-                      ? 'bg-[var(--ff-primary)] text-white shadow-e1'
-                      : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
+                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${activeTab === tab.id
+                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                       }`}
                   >
                     {tab.label}
@@ -378,7 +385,7 @@ const GoalsList: React.FC = () => {
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="flex items-center gap-4 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] px-5 py-4 shadow-e1"
+                    className="flex items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md"
                   >
                     <div
                       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
@@ -405,7 +412,7 @@ const GoalsList: React.FC = () => {
                 <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
               </div>
             ) : (
-              <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filteredGoals.map((goal, index) => {
                   const difficultyStyle = DIFFICULTY_STYLE[goal.difficultyLevel];
                   const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
@@ -420,7 +427,7 @@ const GoalsList: React.FC = () => {
                   return (
                     <article
                       key={goal.id}
-                      className="ff-card-hover ff-section-enter flex h-full flex-col rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2"
+                      className="group ff-section-enter flex h-full flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800/50"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
@@ -493,13 +500,13 @@ const GoalsList: React.FC = () => {
                 })}
 
                 {filteredGoals.length === 0 && (
-                  <article className="col-span-full rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-12 text-center shadow-e2">
-                    <span className="material-symbols-outlined mb-3 block text-4xl text-[var(--ff-text-500)]">track_changes</span>
-                    <p className="text-sm font-medium text-[var(--ff-text-700)]">No goals match this view yet.</p>
+                  <article className="col-span-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
+                    <span className="material-symbols-outlined mb-3 block text-4xl text-slate-300 dark:text-slate-600">track_changes</span>
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No goals match this view yet.</p>
                     <button
                       type="button"
                       onClick={() => navigate('/goals/new')}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2 text-sm font-semibold text-white shadow-e1 hover:brightness-105"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-violet-500/30 hover:from-violet-500 hover:to-purple-500"
                     >
                       <span className="material-symbols-outlined text-[16px]">add</span>
                       Add your first goal

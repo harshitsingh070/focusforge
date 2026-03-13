@@ -1,72 +1,132 @@
 import React from 'react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AnalyticsHeatmapPoint } from '../../types';
 
 interface DailyChartProps {
   data: AnalyticsHeatmapPoint[];
 }
 
+const axisColor = 'var(--ff-analytics-axis)';
+const axisLineColor = 'var(--ff-analytics-axis-line)';
+const gridColor = 'var(--ff-analytics-grid)';
+const tooltipBg = 'var(--ff-analytics-tooltip-bg)';
+const tooltipBorder = 'var(--ff-analytics-tooltip-border)';
+const tooltipLabelColor = 'var(--ff-analytics-tooltip-label)';
+const tooltipItemColor = 'var(--ff-analytics-tooltip-item)';
+
 const DailyChart: React.FC<DailyChartProps> = ({ data }) => {
-  const chartData = data.slice(-7).map((entry) => ({
+  const chartData = data.slice(-10).map((entry) => ({
     day: entry.label,
     minutes: entry.minutes,
     points: entry.points,
+    intensity: Math.round(Math.max(0, Math.min(entry.level, 4)) * 25),
   }));
+  const hasData = chartData.length > 0;
 
   return (
-    <div className="card">
-      <h2 className="text-3xl font-bold tracking-tight text-slate-900">Daily Performance</h2>
-      <p className="mt-1 text-sm font-medium text-slate-500">Last 7 days of focus minutes and points earned.</p>
-      <div className="mt-4 h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="minutesArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="#3B82F6" stopOpacity={0.03} />
-              </linearGradient>
-              <linearGradient id="pointsArea" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22C55E" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="#22C55E" stopOpacity={0.03} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
-            <XAxis dataKey="day" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-            <Tooltip
-              cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
-              labelFormatter={(label) => `Day: ${label}`}
-              formatter={(value, series) => {
-                const numeric = Number(value) || 0;
-                if (String(series).toLowerCase().includes('minute')) {
-                  return [`${numeric.toLocaleString()} min`, 'Focus Minutes'];
-                }
-                return [numeric.toLocaleString(), 'Points'];
-              }}
-              labelStyle={{ color: '#0f172a', fontWeight: 700, marginBottom: 4 }}
-              itemStyle={{ color: '#334155', fontWeight: 600, fontSize: 12 }}
-              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
-            />
-            <Area
-              type="monotone"
-              dataKey="minutes"
-              stroke="#3B82F6"
-              strokeWidth={3}
-              fill="url(#minutesArea)"
-              dot={false}
-            />
-            <Area
-              type="monotone"
-              dataKey="points"
-              stroke="#22C55E"
-              strokeWidth={3}
-              fill="url(#pointsArea)"
-              dot={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
+    <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover">
+      <h2 className="ff-analytics-text text-[24px] font-semibold">Daily Performance</h2>
+      <p className="ff-analytics-soft mt-1 text-sm">Last 10 sessions: points, minutes, and intensity.</p>
+
+      {hasData ? (
+        <>
+          <div className="ff-analytics-chart-area">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="4 6" stroke={gridColor} vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tick={{ fill: axisColor, fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: axisLineColor }}
+                />
+                <YAxis
+                  tick={{ fill: axisColor, fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: axisLineColor }}
+                />
+                <Tooltip
+                  cursor={{ stroke: axisLineColor, strokeDasharray: '4 4' }}
+                  labelFormatter={(label) => `Day: ${String(label)}`}
+                  formatter={(value, name) => {
+                    const numeric = Number(value) || 0;
+                    if (name === 'Minutes') {
+                      return [`${numeric.toLocaleString()} min`, 'Minutes'];
+                    }
+                    if (name === 'Intensity') {
+                      return [`${numeric.toLocaleString()}%`, 'Intensity'];
+                    }
+                    return [numeric.toLocaleString(), 'Points'];
+                  }}
+                  labelStyle={{ color: tooltipLabelColor, fontWeight: 700, marginBottom: 4 }}
+                  itemStyle={{ color: tooltipItemColor, fontWeight: 600, fontSize: 12 }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: `1px solid ${tooltipBorder}`,
+                    background: tooltipBg,
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="points"
+                  name="Points"
+                  stroke="#8B5CF6"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#8B5CF6' }}
+                  isAnimationActive
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="minutes"
+                  name="Minutes"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#3B82F6' }}
+                  isAnimationActive
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="intensity"
+                  name="Intensity"
+                  stroke="#22C55E"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#22C55E' }}
+                  isAnimationActive
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="ff-analytics-soft mt-3 flex flex-wrap gap-4 text-xs">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#8B5CF6]" />
+              Points
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#3B82F6]" />
+              Minutes
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#22C55E]" />
+              Intensity
+            </span>
+          </div>
+        </>
+      ) : (
+        <p className="ff-analytics-surface-muted ff-analytics-soft mt-6 rounded-xl px-4 py-6 text-center text-sm">
+          No daily performance data available yet.
+        </p>
+      )}
+    </article>
   );
 };
 

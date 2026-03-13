@@ -121,23 +121,24 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="page-shell">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Navbar />
 
-      <main className="page-container">
-        <section className="section-heading">
+      <main className="mx-auto max-w-[1280px] px-4 sm:px-8 py-8 pt-24">
+        <section className="mb-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="section-title">Settings</h1>
-              <p className="section-subtitle">Manage your profile, privacy, and preferences.</p>
+              <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-1">Account</p>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Manage your profile, privacy, and preferences.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {hasUnsavedChanges && <span className="status-chip warn">Unsaved changes</span>}
+              {hasUnsavedChanges && <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</span>}
               <button
                 type="button"
                 onClick={handleReset}
                 disabled={!hasUnsavedChanges || loading}
-                className="btn-secondary disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200"
               >
                 Reset
               </button>
@@ -145,7 +146,7 @@ const Settings: React.FC = () => {
                 type="button"
                 onClick={handleSave}
                 disabled={!hasUnsavedChanges || loading}
-                className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-violet-500/30 hover:from-violet-500 hover:to-purple-500 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200"
               >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
@@ -153,15 +154,15 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        {error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+        {error && <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">{error}</div>}
         {profileFormError && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">
             {profileFormError}
           </div>
         )}
 
         {updateSuccess && (
-          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">
+          <div className="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-3 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
             Settings saved successfully.
           </div>
         )}
@@ -179,25 +180,25 @@ const Settings: React.FC = () => {
             <Preferences value={preferencesState} onChange={setPreferencesState} />
           </div>
 
-          <aside className="card h-fit xl:sticky xl:top-28">
-            <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Public Profile Preview</h2>
-            <p className="mt-1 text-sm text-[var(--ff-text-700)]">Quick summary of what your community can view.</p>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="soft-card p-3">
-                <p className="text-xs uppercase tracking-wide text-ink-muted">Username</p>
-                <p className="mt-1 font-semibold text-[var(--ff-text-900)]">{profileState.username || 'Not set'}</p>
+          <aside className="flex flex-col gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm h-fit xl:sticky xl:top-28">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Public Profile Preview</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">What your community can view.</p>
+            <div className="space-y-3">
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-3">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Username</p>
+                <p className="mt-1 font-semibold text-slate-900 dark:text-white">{profileState.username || 'Not set'}</p>
               </div>
-              <div className="soft-card p-3">
-                <p className="text-xs uppercase tracking-wide text-ink-muted">Visibility</p>
-                <p className="mt-1 font-semibold text-[var(--ff-text-900)]">{privacyState.showActivity}</p>
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-3">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Visibility</p>
+                <p className="mt-1 font-semibold text-slate-900 dark:text-white">{privacyState.showActivity}</p>
               </div>
-              <div className="soft-card p-3">
-                <p className="text-xs uppercase tracking-wide text-ink-muted">Theme</p>
-                <p className="mt-1 font-semibold capitalize text-[var(--ff-text-900)]">{preferencesState.theme}</p>
+              <div className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-3">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Theme</p>
+                <p className="mt-1 font-semibold capitalize text-slate-900 dark:text-white">{preferencesState.theme}</p>
               </div>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800">
-                <p className="font-semibold">Visibility reminder</p>
-                <p className="mt-1 text-xs">Leaderboard and achievements can be hidden based on privacy settings.</p>
+              <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-3">
+                <p className="font-semibold text-amber-800 dark:text-amber-400">Visibility reminder</p>
+                <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Leaderboard and achievements can be hidden based on privacy settings.</p>
               </div>
             </div>
           </aside>
@@ -207,7 +208,7 @@ const Settings: React.FC = () => {
           <button
             onClick={handleSave}
             disabled={!hasUnsavedChanges || loading}
-            className="btn-primary disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-violet-500/30 hover:from-violet-500 hover:to-purple-500 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-200"
           >
             {loading ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'No Changes to Save'}
           </button>

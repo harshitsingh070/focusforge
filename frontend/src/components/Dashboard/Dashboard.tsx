@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { isAdminEmail } from '../../constants/admin';
 import { AppDispatch, RootState } from '../../store';
 import { fetchDashboard } from '../../store/dashboardSlice';
 import { fetchNotifications, markNotificationRead } from '../../store/notificationsSlice';
@@ -12,12 +13,15 @@ import LogActivityModal from '../Activity/LogActivityModal';
 const DASHBOARD_REFRESH_INTERVAL_MS = 30000;
 const MAX_DASHBOARD_GOALS = 3;
 
-const navItems = [
+const baseNavItems = [
   { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
   { to: '/goals', label: 'Goals', icon: 'track_changes' },
-  { to: '/analytics', label: 'Statistics', icon: 'monitoring' },
+  { to: '/activity', label: 'Activity', icon: 'event_note' },
+  { to: '/analytics', label: 'Analytics', icon: 'monitoring' },
   { to: '/badges', label: 'Badges', icon: 'military_tech' },
+  { to: '/leaderboard', label: 'Leaderboard', icon: 'leaderboard' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
+  { to: '/rules', label: 'Rules', icon: 'gavel' },
 ];
 
 const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
@@ -353,6 +357,9 @@ const Dashboard: React.FC = () => {
   const displayName = [user?.username, data.username, 'FocusForge User'].find(
     (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
   ) as string;
+  const navItems = isAdminEmail(user?.email)
+    ? [...baseNavItems, { to: '/admin', label: 'Admin', icon: 'shield_person' }]
+    : baseNavItems;
   const firstName = displayName.split(/[\s@._-]+/).filter(Boolean)[0] || 'there';
   const initials = getInitials(displayName);
   const latestBadge = data.recentBadges[0];
@@ -378,21 +385,20 @@ const Dashboard: React.FC = () => {
   const badgeUnlockLabel = getBadgeUnlockLabel(latestBadge, data.totalPoints);
 
   return (
-    <div className="ff-page-enter min-h-screen bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] text-[var(--ff-text-900)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]">
+    <div className="ff-page-enter min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
       <div className="flex h-screen overflow-hidden">
-        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 md:flex">
+        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between p-4 shadow-sm border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 md:flex">
           <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3 px-2">
-              <div className="rounded-[10px] bg-[var(--ff-primary-100)] p-2 dark:bg-[var(--ff-primary-900)]/40">
-                <span className="material-symbols-outlined text-2xl text-[var(--ff-primary)]">auto_awesome</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-md shadow-violet-500/30">
+                <span className="text-sm font-bold text-white">FF</span>
               </div>
               <div className="overflow-hidden">
-                <h1 className="truncate text-lg font-bold tracking-tight text-[var(--ff-text-900)]">FocusForge</h1>
-
+                <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">FocusForge</h1>
               </div>
             </div>
 
-            <nav className="mt-4 flex flex-col gap-2">
+            <nav className="mt-4 flex flex-col gap-1">
               {navItems.map((item) => {
                 const active = isActiveNav(location.pathname, item.to);
 
@@ -401,12 +407,13 @@ const Dashboard: React.FC = () => {
                     key={item.to}
                     type="button"
                     onClick={() => navigate(item.to)}
-                    className={`ff-nav-item flex items-center gap-3 rounded-lg px-3 py-2.5 text-left ${active
-                      ? 'ff-nav-active text-white'
-                      : 'text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]'
-                      }`}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
+                      active
+                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                    }`}
                   >
-                    <span className="ff-nav-icon material-symbols-outlined text-[20px]">{item.icon}</span>
+                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
                     <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
                   </button>
                 );
@@ -414,20 +421,20 @@ const Dashboard: React.FC = () => {
             </nav>
           </div>
 
-          <div className="mt-auto flex items-center gap-3 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-[var(--ff-surface-hover)] text-xs font-bold text-[var(--ff-text-900)]">
+          <div className="mt-auto flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-3">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs font-bold text-white shadow-sm">
               {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--ff-surface-elevated)] bg-[#22C55E]" />
+              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-[var(--ff-text-900)]">{displayName}</p>
-              <p className="truncate text-xs text-[var(--ff-text-700)]">Pro Member</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
+              <p className="truncate text-xs text-slate-500 dark:text-slate-400">Pro Member</p>
             </div>
           </div>
         </aside>
 
         <main className="flex flex-1 flex-col overflow-y-auto">
-          <header className="sticky top-0 z-20 bg-[var(--ff-surface-elevated)]/95 px-4 py-4 backdrop-blur-md sm:px-8 sm:py-6">
+          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 sm:py-5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
                 <button
@@ -439,13 +446,13 @@ const Dashboard: React.FC = () => {
                   <span className="material-symbols-outlined text-[20px]">menu</span>
                 </button>
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)] sm:text-3xl">
+                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
                     Welcome back,{' '}
-                    <span className="[background-image:var(--ff-gradient-primary)] bg-clip-text text-transparent">
+                    <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
                       {firstName}
-                    </span>
+                    </span>{' '}👋
                   </h2>
-                  <p className="mt-1 text-sm text-[var(--ff-text-700)]">Let&apos;s crush today&apos;s productivity targets.</p>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Let&apos;s crush today&apos;s productivity targets.</p>
                 </div>
               </div>
 
@@ -453,21 +460,21 @@ const Dashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={openAlerts}
-                  className="relative rounded-full p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
                   aria-label="Notifications"
                 >
-                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="material-symbols-outlined text-xl">notifications</span>
                   {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--ff-primary)]" />
+                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-violet-600" />
                   )}
                 </button>
                 <button
                   type="button"
                   onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-[18px] py-[10px] font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:scale-[1.02] hover:brightness-105 hover:shadow-hover"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02] active:scale-[0.99]"
                 >
                   <span className="material-symbols-outlined text-sm">add</span>
-                  New Task
+                  New Goal
                 </button>
               </div>
             </div>
@@ -504,52 +511,33 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            <section className="grid grid-cols-1 gap-6 md:grid-cols-3 ff-stagger">
-              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
-                <div className="relative z-10 flex items-center justify-between">
-                  <p className="text-sm font-medium text-[var(--ff-text-700)]">Total Points</p>
-                  <span className="material-symbols-outlined text-xl text-[var(--ff-primary-soft)]">stars</span>
-                </div>
-                <div className="relative z-10 mt-2 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold tracking-tight text-[var(--ff-text-900)] font-numeric">{data.totalPoints.toLocaleString()}</p>
-                  <p className={`flex items-center text-sm font-medium ${statDeltaClass}`}>
-                    <span className="material-symbols-outlined text-[14px]">{statDeltaIcon}</span>
-                    <span className="font-numeric">{Math.abs(statDelta).toLocaleString()}</span>
-                  </p>
-                </div>
-              </article>
-
-              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
-                <div className="relative z-10 flex items-center justify-between">
-                  <p className="text-sm font-medium text-[var(--ff-text-700)]">Global Streak</p>
-                  <span className="material-symbols-outlined text-xl text-[var(--ff-primary-soft)]">local_fire_department</span>
-                </div>
-                <div className="relative z-10 mt-2 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold tracking-tight text-[var(--ff-text-900)] font-numeric">{data.globalStreak} days</p>
-                  <p className="text-sm font-medium text-emerald-400">{streakStatus}</p>
-                </div>
-              </article>
-
-              <article className="ff-card-hover ff-section-enter group relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[var(--ff-primary-100)]/70 blur-xl transition-colors dark:bg-[var(--ff-primary-900)]/30" />
-                <div className="relative z-10 flex items-center justify-between">
-                  <p className="text-sm font-medium text-[var(--ff-text-700)]">Active Goals</p>
-                  <span className="material-symbols-outlined text-xl text-[var(--ff-primary-soft)]">flag</span>
-                </div>
-                <div className="relative z-10 mt-2 flex items-baseline gap-2">
-                  <p className="text-3xl font-bold tracking-tight text-[var(--ff-text-900)] font-numeric">{data.activeGoals.length}</p>
-                  <p className="text-sm font-medium text-[var(--ff-text-500)]">In progress</p>
-                </div>
-              </article>
+            <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {[
+                { label: 'Total Points', value: data.totalPoints.toLocaleString(), icon: 'stars', iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-600 dark:text-violet-400', sub: statDelta !== 0 ? `${statDelta >= 0 ? '+' : ''}${Math.abs(statDelta).toLocaleString()} pts` : '' },
+                { label: 'Global Streak', value: `${data.globalStreak} days`, icon: 'local_fire_department', iconBg: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-500 dark:text-orange-400', sub: streakStatus },
+                { label: 'Active Goals', value: String(data.activeGoals.length), icon: 'flag', iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400', sub: 'In progress' },
+              ].map((stat) => (
+                <article key={stat.label} className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800/50">
+                  <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-violet-50 dark:bg-violet-900/20 blur-2xl" />
+                  <div className="relative z-10 flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
+                      <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
+                      {stat.sub && <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">{stat.sub}</p>}
+                    </div>
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
+                      <span className={`material-symbols-outlined text-xl ${stat.iconColor}`}>{stat.icon}</span>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </section>
 
             <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="flex flex-col gap-6 lg:col-span-2">
+              <div className="flex flex-col gap-5 lg:col-span-2">
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Weekly Progress</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Weekly Progress</h3>
                     <button
                       type="button"
                       onClick={() => navigate('/analytics')}
@@ -559,7 +547,7 @@ const Dashboard: React.FC = () => {
                     </button>
                   </div>
 
-                  <div className="relative h-64 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
+                  <div className="relative h-64 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                     <div className="pointer-events-none absolute inset-x-6 bottom-6 top-6 z-0 flex flex-col justify-between opacity-20">
                       {[0, 1, 2, 3].map((line) => (
                         <div key={line} className="w-full border-b border-[var(--ff-border)]" />
@@ -623,10 +611,10 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Active Goals</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active Goals</h3>
                   {visibleGoals.length === 0 ? (
-                    <div className="ff-empty-state rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                      <p className="text-sm text-[var(--ff-text-700)]">No active goals available yet. Create one to get started.</p>
+                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No active goals available yet. Create one to get started.</p>
                     </div>
                   ) : (
                     <div className="ff-stagger flex flex-col gap-3">
@@ -638,7 +626,7 @@ const Dashboard: React.FC = () => {
                         return (
                           <article
                             key={goal.goalId}
-                            className="ff-card-hover ff-section-enter flex flex-col items-center justify-between gap-4 rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-4 shadow-e1 sm:flex-row"
+                            className="ff-section-enter flex flex-col items-center justify-between gap-4 p-4 sm:flex-row rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                             style={{ borderLeftWidth: 4, borderLeftColor: categoryColor }}
                           >
                             <div className="flex w-full items-center gap-4 sm:w-auto">
@@ -649,14 +637,14 @@ const Dashboard: React.FC = () => {
                                     background: `conic-gradient(${categoryColor} ${progressPercent * 3.6}deg, var(--ff-surface-hover) 0deg)`,
                                   }}
                                 />
-                                <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface)]" />
-                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ff-text-900)]">
+                                <div className="absolute inset-[4px] rounded-full bg-white dark:bg-slate-900" />
+                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white">
                                   {progressPercent}%
                                 </span>
                               </div>
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <h4 className="font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
+                                  <h4 className="font-bold text-slate-900 dark:text-white">{goal.title}</h4>
                                   <span
                                     className="rounded border px-2 py-0.5 text-[10px] font-bold uppercase"
                                     style={{
@@ -668,10 +656,10 @@ const Dashboard: React.FC = () => {
                                     {goal.category || 'General'}
                                   </span>
                                 </div>
-                                <p className="text-sm text-[var(--ff-text-700)]">
+                                <p className="text-sm text-slate-600 dark:text-slate-400">
                                   {remainingMinutes > 0 ? `${remainingMinutes} minutes left today` : 'Target complete for today'}
                                 </p>
-                                <p className="text-xs text-[var(--ff-text-500)]">
+                                <p className="text-xs text-slate-500 dark:text-slate-500">
                                   {Math.max(goal.todayProgress, 0)} / {Math.max(goal.dailyTarget, 0)} minutes
                                 </p>
                               </div>
@@ -698,20 +686,20 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              <aside className="flex flex-col gap-6">
-                <article className="ff-section-enter relative overflow-hidden rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                  <div className="pointer-events-none absolute inset-0 [background-image:var(--ff-gradient-card-accent)]" />
-                  <h3 className="relative z-10 text-lg font-bold text-[var(--ff-text-900)]">Badge Momentum</h3>
+              <aside className="flex flex-col gap-4">
+                <article className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-900/10" />
+                  <h3 className="relative z-10 text-base font-bold text-slate-900 dark:text-white">Badge Momentum</h3>
                   <div className="relative z-10 mt-4 flex justify-center">
                     <div className="flex h-24 w-24 rotate-12 items-center justify-center rounded-xl border border-[var(--ff-border)] bg-gradient-to-br from-amber-400 to-orange-600 shadow-e2" style={{ animation: 'ff-section-enter 300ms var(--ff-ease-spring) 200ms both' }}>
                       <span className="material-symbols-outlined text-5xl text-white">emoji_events</span>
                     </div>
                   </div>
                   <div className="relative z-10 mt-4 text-center">
-                    <h4 className="text-xl font-bold text-[var(--ff-text-900)]">{badgeTitle}</h4>
-                    <p className="mt-1 text-sm text-[var(--ff-text-700)]">{badgeUnlockLabel}</p>
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">{badgeTitle}</h4>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{badgeUnlockLabel}</p>
                   </div>
-                  <div className="relative z-10 mt-4 h-2 w-full rounded-full bg-[var(--ff-surface-soft)]">
+                  <div className="relative z-10 mt-4 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
                     <div
                       className="h-2 rounded-full"
                       style={{
@@ -723,8 +711,8 @@ const Dashboard: React.FC = () => {
                   </div>
                 </article>
 
-                <article className="rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2">
-                  <h3 className="text-lg font-bold text-[var(--ff-text-900)]">Recent Activity</h3>
+                <article className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Activity</h3>
                   <div className="relative mt-4 flex flex-col gap-0">
                     <div className="absolute bottom-2 left-[11px] top-2 z-0 w-px bg-[var(--ff-line)]" />
 
@@ -736,18 +724,18 @@ const Dashboard: React.FC = () => {
                         <div key={activity.id} className="relative z-10 flex gap-4 pb-4 last:pb-0">
                           <div
                             className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 ${primary
-                              ? 'border-[var(--ff-primary)] bg-[var(--ff-surface-soft)]'
-                              : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
+                              ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
+                              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'
                               }`}
                           >
-                            {primary && <span className="h-2 w-2 rounded-full bg-[var(--ff-primary)]" />}
+                            {primary && <span className="h-2 w-2 rounded-full bg-violet-600" />}
                           </div>
                           <div>
-                            <p className={`${primary ? 'text-[var(--ff-text-900)]' : 'text-[var(--ff-text-700)]'} text-sm font-medium`}>
+                            <p className={`${primary ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'} text-sm font-medium`}>
                               {activityTitle}
                             </p>
-                            <p className="text-xs text-[var(--ff-text-700)]">{activityDetail}</p>
-                            <p className="text-[11px] text-[var(--ff-text-500)]">
+                            <p className="text-xs text-slate-500 dark:text-slate-500">{activityDetail}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500">
                               {getRelativeTime(activity.date)} - {formatDateTime(activity.date)}
                             </p>
                           </div>
@@ -756,7 +744,7 @@ const Dashboard: React.FC = () => {
                     })}
 
                     {data.recentActivities.length === 0 && (
-                      <p className="text-sm text-[var(--ff-text-700)]">No recent activity yet.</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity yet.</p>
                     )}
                   </div>
                 </article>
@@ -768,7 +756,7 @@ const Dashboard: React.FC = () => {
 
       {alertsOpen && (
         <div
-          className="ff-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm"
+          className="ff-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4 glass-blur-surface"
           role="dialog"
           aria-modal="true"
           onMouseDown={(event) => {
@@ -777,7 +765,7 @@ const Dashboard: React.FC = () => {
             }
           }}
         >
-          <div className="ff-modal-enter w-full max-w-2xl rounded-[20px] border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-5 shadow-e3">
+          <div className="ff-modal-enter w-full max-w-2xl p-5 glass-surface glass-modal glass-blur-surface">
             <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Alerts</h2>
               <button
@@ -848,4 +836,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-

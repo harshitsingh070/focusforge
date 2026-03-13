@@ -14,65 +14,114 @@ const formatWeekDate = (value: string) => {
   return parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 };
 
-const WeeklyChart: React.FC<WeeklyChartProps> = ({ data }) => (
-  <div className="card">
-    <h2 className="text-3xl font-bold tracking-tight text-slate-900">Weekly Aggregation</h2>
-    <p className="mt-1 text-sm font-medium text-slate-500">Points and focus minutes trend for recent days.</p>
-    <div className="mt-4 h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
-          <defs>
-            <linearGradient id="pointsStroke" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#8B5CF6" />
-            </linearGradient>
-            <linearGradient id="minutesStroke" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#F97316" />
-              <stop offset="100%" stopColor="#FB7185" />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="4 6" stroke="#dbe6f2" />
-          <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} tickFormatter={formatWeekDate} />
-          <YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-          <Tooltip
-            cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
-            labelFormatter={(label) => `Date: ${formatWeekDate(String(label))}`}
-            formatter={(value, series) => {
-              const numeric = Number(value) || 0;
-              if (String(series).toLowerCase().includes('minute')) {
-                return [`${numeric.toLocaleString()} min`, 'Focus Minutes'];
-              }
-              return [numeric.toLocaleString(), 'Points'];
-            }}
-            labelStyle={{ color: '#0f172a', fontWeight: 700, marginBottom: 4 }}
-            itemStyle={{ color: '#334155', fontWeight: 600, fontSize: 12 }}
-            contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
-          />
-          <Line
-            yAxisId="left"
-            type="monotone"
-            dataKey="points"
-            stroke="url(#pointsStroke)"
-            strokeWidth={3}
-            dot={{ r: 0 }}
-            activeDot={{ r: 5 }}
-            name="Points"
-          />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="minutes"
-            stroke="url(#minutesStroke)"
-            strokeWidth={3}
-            dot={{ r: 0 }}
-            activeDot={{ r: 5 }}
-            name="Minutes"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
+const axisColor = 'var(--ff-analytics-axis)';
+const axisLineColor = 'var(--ff-analytics-axis-line)';
+const gridColor = 'var(--ff-analytics-grid)';
+const tooltipBg = 'var(--ff-analytics-tooltip-bg)';
+const tooltipBorder = 'var(--ff-analytics-tooltip-border)';
+const tooltipLabelColor = 'var(--ff-analytics-tooltip-label)';
+const tooltipItemColor = 'var(--ff-analytics-tooltip-item)';
+
+const WeeklyChart: React.FC<WeeklyChartProps> = ({ data }) => {
+  const hasData = data.length > 0;
+
+  return (
+    <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover">
+      <h2 className="ff-analytics-text text-[24px] font-semibold">Weekly Trend</h2>
+      <p className="ff-analytics-soft mt-1 text-sm">Points and focus minutes trend for recent days.</p>
+
+      {hasData ? (
+        <>
+          <div className="ff-analytics-chart-area">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="4 6" stroke={gridColor} vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={formatWeekDate}
+                  tick={{ fill: axisColor, fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: axisLineColor }}
+                />
+                <YAxis
+                  yAxisId="points"
+                  tick={{ fill: axisColor, fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: axisLineColor }}
+                />
+                <YAxis
+                  yAxisId="minutes"
+                  orientation="right"
+                  tick={{ fill: axisColor, fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: axisLineColor }}
+                />
+                <Tooltip
+                  cursor={{ stroke: axisLineColor, strokeDasharray: '4 4' }}
+                  labelFormatter={(label) => `Date: ${formatWeekDate(String(label))}`}
+                  formatter={(value, name) => {
+                    const numeric = Number(value) || 0;
+                    if (name === 'Minutes') {
+                      return [`${numeric.toLocaleString()} min`, 'Minutes'];
+                    }
+                    return [numeric.toLocaleString(), 'Points'];
+                  }}
+                  labelStyle={{ color: tooltipLabelColor, fontWeight: 700, marginBottom: 4 }}
+                  itemStyle={{ color: tooltipItemColor, fontWeight: 600, fontSize: 12 }}
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: `1px solid ${tooltipBorder}`,
+                    background: tooltipBg,
+                  }}
+                />
+                <Line
+                  yAxisId="points"
+                  type="monotone"
+                  dataKey="points"
+                  name="Points"
+                  stroke="#8B5CF6"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#8B5CF6' }}
+                  isAnimationActive
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+                <Line
+                  yAxisId="minutes"
+                  type="monotone"
+                  dataKey="minutes"
+                  name="Minutes"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#3B82F6' }}
+                  isAnimationActive
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="ff-analytics-soft mt-3 flex flex-wrap gap-4 text-xs">
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#8B5CF6]" />
+              Points
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#3B82F6]" />
+              Minutes
+            </span>
+          </div>
+        </>
+      ) : (
+        <p className="ff-analytics-surface-muted ff-analytics-soft mt-6 rounded-xl px-4 py-6 text-center text-sm">
+          No weekly trend data available yet.
+        </p>
+      )}
+    </article>
+  );
+};
 
 export default WeeklyChart;
