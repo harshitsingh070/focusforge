@@ -108,7 +108,7 @@ const GoalsList: React.FC = () => {
     if (overlay && (overlay.type === 'detail' || overlay.type === 'edit')) {
       dispatch(fetchGoalById(overlay.goal.id));
     }
-  }, [dispatch, overlay?.goal.id, overlay?.type]);
+  }, [dispatch, overlay]);
 
 
 
@@ -154,87 +154,83 @@ const GoalsList: React.FC = () => {
 
   return (
     <>
-          {/* Sticky page header */}
-          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
-            {/* Row 1: title + actions */}
-            <div className="flex flex-wrap items-center justify-between gap-4 max-w-[1280px] mx-auto">
+      {/* ── Content area ── */}
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
 
-              {/* Title */}
-              <div className="flex-1 min-w-0">
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">My Goals</h2>
-                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Track your progress and crush your targets.</p>
-              </div>
-
-              {/* Search + New Goal */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="relative">
-                  <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
-                    search
-                  </span>
-                  <input
-                    id="goals-search"
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search goals..."
-                    className="w-52 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-all duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)] focus:w-64"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02]"
-                >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  New Goal
-                </button>
-              </div>
+          {/* Row 1: title + actions */}
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">My Goals</h2>
+              <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Track your progress and crush your targets.</p>
             </div>
 
-            {/* Row 2: Filter tabs + category dropdown */}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
-                {TAB_ITEMS.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${activeTab === tab.id
-                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
-                      }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Category dropdown */}
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="relative">
-                <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[var(--ff-text-500)]">
-                  category
+                <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
+                  search
                 </span>
-                <select
-                  id="goals-category-filter"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="appearance-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-1.5 pl-9 pr-8 text-sm font-medium text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium focus:border-[rgba(var(--ff-primary-rgb),0.55)] cursor-pointer"
-                >
-                  <option value="ALL">All Categories</option>
-                  {categoryOptions.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[var(--ff-text-500)]">
-                  expand_more
-                </span>
+                <input
+                  id="goals-search"
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search goals..."
+                  className="w-52 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-all duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)] focus:w-64"
+                />
               </div>
+              <button
+                type="button"
+                onClick={() => navigate('/goals/new')}
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02]"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                New Goal
+              </button>
             </div>
-          </header>
+          </div>
 
+          {/* Row 2: Filter tabs + category dropdown */}
+          <div className="relative mt-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {TAB_ITEMS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${activeTab === tab.id
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-          {/* ── Content area ── */}
-          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8">
+            <div className="relative">
+              <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[var(--ff-text-500)]">
+                category
+              </span>
+              <select
+                id="goals-category-filter"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="appearance-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-1.5 pl-9 pr-8 text-sm font-medium text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium focus:border-[rgba(var(--ff-primary-rgb),0.55)] cursor-pointer"
+              >
+                <option value="ALL">All Categories</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <span className="material-symbols-outlined pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[16px] text-[var(--ff-text-500)]">
+                expand_more
+              </span>
+            </div>
+          </div>
+        </section>
+
             {error && (
               <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-600 dark:text-rose-300">
                 {error}
@@ -399,7 +395,7 @@ const GoalsList: React.FC = () => {
                 )}
               </section>
             )}
-          </div>
+      </div>
 
       {/* ══════════════════════════════════════════
           OVERLAY PANELS — rendered over the Goals page

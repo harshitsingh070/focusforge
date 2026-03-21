@@ -44,7 +44,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
   return (
     <nav
       className={`
-        fixed top-0 left-0 right-0 z-50 transition-all duration-300
+        sticky top-0 z-40 w-full transition-all duration-300
         ${scrolled
           ? 'border-b border-slate-200/60 dark:border-slate-800/60 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-sm'
           : 'border-b border-slate-200/40 dark:border-slate-800/40 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md'

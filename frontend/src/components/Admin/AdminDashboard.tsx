@@ -213,22 +213,25 @@ const AdminDashboard: React.FC = () => {
   }, [data]);
 
   const renderHeader = (title: string, subtitle?: string) => (
-    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/85 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div>
-          <p className="font-display text-lg font-bold text-gray-900">{title}</p>
-          {subtitle && <p className="text-xs text-ink-muted">{subtitle}</p>}
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => loadOverview(true)} className="btn-secondary px-3 py-2" disabled={refreshing}>
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
-          <button onClick={handleLogout} className="btn-secondary px-3 py-2">
-            Logout
-          </button>
+    <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-lg font-bold text-slate-900 dark:text-slate-100">{title}</p>
+            {subtitle && <p className="text-xs text-slate-600 dark:text-slate-300">{subtitle}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => loadOverview(true)} className="btn-secondary px-3 py-2" disabled={refreshing}>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+            <button onClick={handleLogout} className="btn-secondary px-3 py-2">
+              Logout
+            </button>
+          </div>
         </div>
       </div>
-    </header>
+    </section>
   );
 
   if (loading) {

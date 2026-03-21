@@ -15,7 +15,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/40 bg-white/85 backdrop-blur-xl">
+    <header className="border-b border-white/40 bg-white/85 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/dashboard" className="font-display text-xl font-bold text-gray-900">
           FocusForge

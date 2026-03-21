@@ -41,15 +41,15 @@ const Analytics: React.FC = () => {
 
   return (
     <>
-      {/* Sticky header */}
-      <header className="sticky top-0 z-20 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 py-4 sm:px-8">
-        <div className="max-w-[1280px] mx-auto">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Performance Insights</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Consistency, streak quality, trust score, and category distribution.</p>
-        </div>
-      </header>
-
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+          <div className="relative">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Performance Insights</h2>
+            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Consistency, streak quality, trust score, and category distribution.</p>
+          </div>
+        </section>
+
         {error && data && (
           <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-3 text-sm text-red-600 dark:text-red-300 flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">error</span>{error}

@@ -74,14 +74,15 @@ const Settings: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 py-4 sm:px-8">
-        <div className="max-w-[800px] mx-auto">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Manage your account details and visual preferences.</p>
-        </div>
-      </header>
+      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-8 py-8 pb-24">
+        <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+          <div className="relative">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h2>
+            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Manage your account details and visual preferences.</p>
+          </div>
+        </section>
 
-      <div className="mx-auto w-full max-w-[800px] px-4 sm:px-8 py-8 pb-24">
         {error && <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">{error}</div>}
         {profileFormError && (
           <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">{profileFormError}</div>
@@ -113,7 +114,7 @@ const Settings: React.FC = () => {
 
       {/* Save bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 p-4 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[800px] items-center justify-between">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-between">
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</span>}
           </div>

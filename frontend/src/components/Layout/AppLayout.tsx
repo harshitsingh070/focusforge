@@ -45,24 +45,40 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     .map((t) => t[0]?.toUpperCase() || '')
     .join('') || 'FF';
 
+
   return (
     <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
-      <Navbar onToggleMobileSidebar={() => setMobileOpen((p) => !p)} />
-
-      <div className="flex h-[calc(100vh-72px)] mt-[72px]">
-        {/* ── Desktop Sidebar ── */}
+      <div className="flex h-screen">
+        {/* ── Desktop Sidebar — full height, sits at the left ── */}
         <aside
           className={`
             hidden md:flex flex-col justify-between shrink-0
-            sticky top-0 h-full
+            h-screen sticky top-0 z-50
             border-r border-slate-200/80 dark:border-slate-800
-            bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl
+            bg-white dark:bg-slate-900
             transition-all duration-300 ease-out
             ${collapsed ? 'w-[72px]' : 'w-[260px]'}
           `}
         >
+          {/* Logo area — matches Navbar height */}
+          <div className="flex h-[72px] shrink-0 items-center border-b border-slate-200/80 dark:border-slate-800 px-4">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-2.5 group"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-transform duration-300 group-hover:scale-105">
+                FF
+              </div>
+              {!collapsed && (
+                <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                  FocusForge
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Nav items */}
-          <div className="flex flex-col gap-1 p-3 pt-4 overflow-y-auto overflow-x-hidden">
+          <div className="flex-1 flex flex-col gap-1 p-3 pt-4 overflow-y-auto overflow-x-hidden">
             {navItems.map((item) => {
               const active = isActiveNav(location.pathname, item.to);
               return (
@@ -89,7 +105,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   )}
                   {/* Tooltip for collapsed mode */}
                   {collapsed && (
-                    <span className="absolute left-full ml-2 hidden group-hover:flex items-center rounded-lg bg-slate-900 dark:bg-slate-700 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg z-50 whitespace-nowrap">
+                    <span className="absolute left-full ml-2 hidden group-hover:flex items-center rounded-lg bg-slate-900 dark:bg-slate-700 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg z-[60] whitespace-nowrap">
                       {item.label}
                     </span>
                   )}
@@ -133,12 +149,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
         {/* ── Mobile Sidebar Overlay ── */}
         {mobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden">
+          <div className="fixed inset-0 z-[60] md:hidden">
             <div
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
-            <aside className="absolute left-0 top-[72px] bottom-0 w-[280px] border-r border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 animate-[ff-sheet-enter_220ms_ease_both] overflow-y-auto">
+            <aside className="absolute left-0 top-0 bottom-0 w-[280px] border-r border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 pt-20 animate-[ff-sheet-enter_220ms_ease_both] overflow-y-auto">
               {navItems.map((item) => {
                 const active = isActiveNav(location.pathname, item.to);
                 return (
@@ -175,13 +191,18 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         )}
 
-        {/* ── Main Content ── */}
-        <main
-          className="flex-1 overflow-y-auto transition-all duration-300 ease-out"
-        
-        >
-          {children}
-        </main>
+        {/* ── Right column: Navbar + Main Content ── */}
+        <div className="flex-1 flex flex-col min-w-0 h-screen">
+          {/* Navbar sits at the top of the right column */}
+          <div className="shrink-0">
+            <Navbar onToggleMobileSidebar={() => setMobileOpen((p) => !p)} />
+          </div>
+
+          {/* Main content scrolls independently */}
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );

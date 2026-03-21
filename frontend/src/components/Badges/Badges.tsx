@@ -39,14 +39,15 @@ const Badges: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 py-4 sm:px-8">
-        <div className="max-w-[1280px] mx-auto">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your Badges</h2>
-          <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Track earned milestones and unlock your next achievements.</p>
-        </div>
-      </header>
-
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+          <div className="relative">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your Badges</h2>
+            <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Track earned milestones and unlock your next achievements.</p>
+          </div>
+        </section>
+
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="flex flex-col rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 p-6 shadow-lg shadow-blue-500/25 transition-all duration-200 hover:-translate-y-0.5">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/70">Total Badges</p>

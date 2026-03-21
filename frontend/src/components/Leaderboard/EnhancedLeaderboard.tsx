@@ -92,26 +92,28 @@ const EnhancedLeaderboard: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-[1280px] px-4 sm:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">🏆 Leaderboard</h2>
-              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Compete on consistency, not volume. Auto-refreshes every 30s.</p>
+              <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Compete on consistency, not volume. Auto-refreshes every 30s.</p>
             </div>
             <div className="flex gap-2">
               {PERIODS.map((p) => (
-                <button key={p.id} onClick={() => setSelectedPeriod(p.id)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${selectedPeriod === p.id ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm shadow-violet-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}>
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPeriod(p.id)}
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${selectedPeriod === p.id ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm shadow-violet-500/30' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}
+                >
                   {p.label}
                 </button>
               ))}
             </div>
           </div>
-        </div>
-      </header>
+        </section>
 
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
         <FilterBar selectedPeriod={selectedPeriod} selectedCategory={selectedCategory} onPeriodChange={setSelectedPeriod} onCategoryChange={setSelectedCategory} />
         <TrendChart trends={trends} />
 

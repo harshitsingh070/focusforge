@@ -75,6 +75,13 @@ const getProgressPercent = (goal: GoalProgress) => {
   return clamp(Math.round((p / t) * 100), 0, 100);
 };
 
+const getGoalPriorityBucket = (goal: GoalProgress) => {
+  const hasLoggedToday = (Number(goal.todayProgress) || 0) > 0;
+  if (!hasLoggedToday) return 0; // show goals with no logs today first
+  if (!goal.completedToday) return 1; // then partially logged goals
+  return 2; // completed goals last
+};
+
 const getBadgeProgressPercent = (badge?: Badge) => {
   if (!badge) return 70;
   if (Number.isFinite(badge.progressPercentage)) return clamp(Math.round(Number(badge.progressPercentage)), 0, 100);
@@ -101,7 +108,7 @@ const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { data, loading, error } = useSelector((state: RootState) => state.dashboard);
+  const { data, error } = useSelector((state: RootState) => state.dashboard);
   const { notifications, unreadCount, loading: notificationsLoading, error: notificationsError } = useSelector(
     (state: RootState) => state.notifications
   );
@@ -129,8 +136,18 @@ const Dashboard: React.FC = () => {
   const weeklyBars = useMemo(() => buildWeeklyBars(data?.weeklyProgress), [data?.weeklyProgress]);
   const prioritizedGoals = useMemo(
     () => [...(data?.activeGoals || [])].sort((a, b) => {
-      const cd = Number(a.completedToday) - Number(b.completedToday);
-      return cd !== 0 ? cd : getProgressPercent(b) - getProgressPercent(a);
+      const bucketDelta = getGoalPriorityBucket(a) - getGoalPriorityBucket(b);
+      if (bucketDelta !== 0) return bucketDelta;
+
+      // Within the same bucket, prioritize at-risk goals and then higher remaining workload.
+      const riskDelta = Number(b.atRisk) - Number(a.atRisk);
+      if (riskDelta !== 0) return riskDelta;
+
+      const remainingA = Math.max((Number(a.dailyTarget) || 0) - (Number(a.todayProgress) || 0), 0);
+      const remainingB = Math.max((Number(b.dailyTarget) || 0) - (Number(b.todayProgress) || 0), 0);
+      if (remainingA !== remainingB) return remainingB - remainingA;
+
+      return getProgressPercent(b) - getProgressPercent(a);
     }), [data?.activeGoals]
   );
   const prioritizedNotifications = useMemo<NotificationItem[]>(
@@ -206,41 +223,47 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
-      {/* Page header */}
-      <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 sm:py-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between max-w-[1280px] mx-auto">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-              Welcome back,{' '}
-              <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
-                {firstName}
-              </span>{' '}👋
-            </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Let&apos;s crush today&apos;s productivity targets.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={openAlerts}
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-              aria-label="Notifications"
-            >
-              <span className="material-symbols-outlined text-xl">notifications</span>
-              {unreadCount > 0 && (
-                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-[9px] font-bold text-white">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </button>
-            <Button variant="primary" icon="add" onClick={() => navigate('/goals/new')}>
-              New Goal
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Content */}
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 px-5 py-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:px-7 sm:py-6">
+          <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
+          <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-[2.75rem]">
+                Welcome back, {firstName} <span aria-hidden="true">👋</span>
+              </h2>
+              <p className="mt-1 text-base text-slate-600 dark:text-slate-300">You&apos;re in the top 5% of deep workers this week.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5 sm:justify-end">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-700 ring-1 ring-violet-200/70 dark:bg-slate-800/80 dark:text-slate-300 dark:ring-slate-700/60">
+                <span className="h-2 w-2 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.55)] dark:bg-violet-400 dark:shadow-[0_0_8px_rgba(167,139,250,0.75)]" />
+                Live Session Active
+              </div>
+              <button
+                type="button"
+                onClick={openAlerts}
+                className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white/80 text-slate-600 transition-all duration-200 hover:border-violet-300/70 hover:bg-violet-50 hover:text-violet-700 dark:border-slate-700/70 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:border-violet-400/40 dark:hover:bg-slate-700/80 dark:hover:text-violet-200"
+                aria-label="Notifications"
+              >
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-violet-500 px-1 text-[9px] font-bold text-slate-950">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              <Button
+                variant="primary"
+                icon="add"
+                onClick={() => navigate('/goals/new')}
+                className="rounded-full px-5 shadow-[0_8px_24px_rgba(139,92,246,0.35)]"
+              >
+                New Goal
+              </Button>
+            </div>
+          </div>
+        </section>
+
         {error && (
           <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-2.5 text-sm text-red-600 dark:text-red-300 flex items-center gap-2">
             <span className="material-symbols-outlined text-[16px]">error</span>
