@@ -1,222 +1,105 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { isAdminEmail } from '../../constants/admin';
+import { useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { fetchDashboard } from '../../store/dashboardSlice';
 import { fetchNotifications, markNotificationRead } from '../../store/notificationsSlice';
 import { fetchSettings } from '../../store/settingsSlice';
 import { Badge, GoalProgress, NotificationItem } from '../../types';
 import LogActivityModal from '../Activity/LogActivityModal';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
+import Modal from '../ui/Modal';
+import EmptyState from '../ui/EmptyState';
+import { CardSkeleton } from '../ui/Skeleton';
 
 const DASHBOARD_REFRESH_INTERVAL_MS = 30000;
 const MAX_DASHBOARD_GOALS = 3;
 
-const baseNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { to: '/goals', label: 'Goals', icon: 'track_changes' },
-  { to: '/activity', label: 'Activity', icon: 'event_note' },
-  { to: '/analytics', label: 'Analytics', icon: 'monitoring' },
-  { to: '/badges', label: 'Badges', icon: 'military_tech' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'leaderboard' },
-  { to: '/settings', label: 'Settings', icon: 'settings' },
-  { to: '/rules', label: 'Rules', icon: 'gavel' },
-];
-
 const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 type DayLabel = (typeof dayOrder)[number];
 type WeeklyBar = { id: DayLabel; label: DayLabel; minutes: number };
-type DayVisitSummary = { visits: number; lastVisitedAt: string | null };
 
 const fallbackGoalColors = ['#8B5CF6', '#7C3AED', '#3B82F6', '#22C55E'];
-
 const weekdayAliases: Record<string, DayLabel> = {
-  mon: 'Mon',
-  monday: 'Mon',
-  tue: 'Tue',
-  tues: 'Tue',
-  tuesday: 'Tue',
-  wed: 'Wed',
-  weds: 'Wed',
-  wednesday: 'Wed',
-  thu: 'Thu',
-  thur: 'Thu',
-  thurs: 'Thu',
-  thursday: 'Thu',
-  fri: 'Fri',
-  friday: 'Fri',
-  sat: 'Sat',
-  saturday: 'Sat',
-  sun: 'Sun',
-  sunday: 'Sun',
+  mon: 'Mon', monday: 'Mon', tue: 'Tue', tues: 'Tue', tuesday: 'Tue',
+  wed: 'Wed', weds: 'Wed', wednesday: 'Wed', thu: 'Thu', thur: 'Thu',
+  thurs: 'Thu', thursday: 'Thu', fri: 'Fri', friday: 'Fri', sat: 'Sat',
+  saturday: 'Sat', sun: 'Sun', sunday: 'Sun',
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const toMinutes = (value: unknown) => {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) {
-    return 0;
-  }
-  return Math.max(0, Math.round(parsed));
-};
+const toMinutes = (value: unknown) => { const p = Number(value); return Number.isFinite(p) ? Math.max(0, Math.round(p)) : 0; };
 
 const normalizeWeekdayLabel = (value: string): DayLabel | null => {
-  const normalized = (value || '').trim().toLowerCase();
-  if (!normalized) {
-    return null;
-  }
-
-  if (weekdayAliases[normalized]) {
-    return weekdayAliases[normalized];
-  }
-
-  const lettersOnly = normalized.replace(/[^a-z]/g, '');
-  if (lettersOnly.length >= 3 && weekdayAliases[lettersOnly.slice(0, 3)]) {
-    return weekdayAliases[lettersOnly.slice(0, 3)];
-  }
-
-  const parsedDate = new Date(value);
-  if (!Number.isNaN(parsedDate.getTime())) {
-    return dayOrder[(parsedDate.getDay() + 6) % 7];
-  }
-
+  const n = (value || '').trim().toLowerCase();
+  if (!n) return null;
+  if (weekdayAliases[n]) return weekdayAliases[n];
+  const lo = n.replace(/[^a-z]/g, '');
+  if (lo.length >= 3 && weekdayAliases[lo.slice(0, 3)]) return weekdayAliases[lo.slice(0, 3)];
+  const d = new Date(value);
+  if (!Number.isNaN(d.getTime())) return dayOrder[(d.getDay() + 6) % 7];
   return null;
 };
 
 const buildWeeklyBars = (weeklyProgress: Record<string, number> | undefined): WeeklyBar[] => {
-  const minutesByDay = new Map<DayLabel, number>(dayOrder.map((day) => [day, 0]));
-
-  Object.entries(weeklyProgress || {}).forEach(([rawDay, rawMinutes]) => {
-    const day = normalizeWeekdayLabel(rawDay);
-    if (!day) {
-      return;
-    }
-    minutesByDay.set(day, toMinutes(rawMinutes));
+  const m = new Map<DayLabel, number>(dayOrder.map((d) => [d, 0]));
+  Object.entries(weeklyProgress || {}).forEach(([raw, mins]) => {
+    const d = normalizeWeekdayLabel(raw);
+    if (d) m.set(d, toMinutes(mins));
   });
-
-  return dayOrder.map((day) => ({
-    id: day,
-    label: day,
-    minutes: minutesByDay.get(day) ?? 0,
-  }));
+  return dayOrder.map((d) => ({ id: d, label: d, minutes: m.get(d) ?? 0 }));
 };
 
 const getTodayLabel = (): DayLabel => dayOrder[(new Date().getDay() + 6) % 7];
 
-const getInitials = (value: string) => {
-  const tokens = (value || '')
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (tokens.length === 0) {
-    return 'FF';
-  }
-
-  return tokens.map((token) => token[0]?.toUpperCase() || '').join('');
+const getRelativeTime = (v?: string) => {
+  if (!v) return 'Recently';
+  const p = new Date(v);
+  return Number.isNaN(p.getTime()) ? 'Recently' : formatDistanceToNowStrict(p, { addSuffix: true });
 };
 
-const getRelativeTime = (value?: string) => {
-  if (!value) {
-    return 'Recently';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Recently';
-  }
-
-  return formatDistanceToNowStrict(parsed, { addSuffix: true });
+const formatDateTime = (v?: string) => {
+  if (!v) return 'Unknown time';
+  const p = new Date(v);
+  return Number.isNaN(p.getTime()) ? 'Unknown time' : format(p, 'MMM d, yyyy h:mm a');
 };
 
-const formatVisitTime = (value: string | null) => {
-  if (!value) {
-    return 'No visit recorded';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'No visit recorded';
-  }
-
-  return format(parsed, 'h:mm a');
-};
-
-const formatDateTime = (value?: string) => {
-  if (!value) {
-    return 'Unknown time';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return 'Unknown time';
-  }
-
-  return format(parsed, 'MMM d, yyyy h:mm a');
-};
-
-const toSortTime = (value?: string) => {
-  const parsed = Date.parse(value || '');
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+const toSortTime = (v?: string) => { const p = Date.parse(v || ''); return Number.isFinite(p) ? p : 0; };
 
 const getProgressPercent = (goal: GoalProgress) => {
-  const safeTarget = Math.max(Number(goal.dailyTarget) || 0, 0);
-  const safeProgress = Math.max(Number(goal.todayProgress) || 0, 0);
-
-  if (safeTarget <= 0) {
-    return goal.completedToday ? 100 : 0;
-  }
-
-  return clamp(Math.round((safeProgress / safeTarget) * 100), 0, 100);
+  const t = Math.max(Number(goal.dailyTarget) || 0, 0);
+  const p = Math.max(Number(goal.todayProgress) || 0, 0);
+  if (t <= 0) return goal.completedToday ? 100 : 0;
+  return clamp(Math.round((p / t) * 100), 0, 100);
 };
 
 const getBadgeProgressPercent = (badge?: Badge) => {
-  if (!badge) {
-    return 70;
-  }
-
-  if (Number.isFinite(badge.progressPercentage)) {
-    return clamp(Math.round(Number(badge.progressPercentage)), 0, 100);
-  }
-
+  if (!badge) return 70;
+  if (Number.isFinite(badge.progressPercentage)) return clamp(Math.round(Number(badge.progressPercentage)), 0, 100);
   if (Number.isFinite(badge.requiredValue) && Number(badge.requiredValue) > 0) {
-    const current = Number.isFinite(badge.currentValue) ? Number(badge.currentValue) : 0;
-    return clamp(Math.round((current / Number(badge.requiredValue)) * 100), 0, 100);
+    const c = Number.isFinite(badge.currentValue) ? Number(badge.currentValue) : 0;
+    return clamp(Math.round((c / Number(badge.requiredValue)) * 100), 0, 100);
   }
-
   return 70;
 };
 
 const getBadgeUnlockLabel = (badge: Badge | undefined, totalPoints: number) => {
-  if (!badge) {
-    return 'Unlock in 2,550 points';
-  }
-
-  const earnedAt = badge.awardedAt || badge.earnedAt;
-  if (earnedAt) {
-    return `Earned ${getRelativeTime(earnedAt)}`;
-  }
-
+  if (!badge) return 'Unlock in 2,550 points';
+  const ea = badge.awardedAt || badge.earnedAt;
+  if (ea) return `Earned ${getRelativeTime(ea)}`;
   if (Number.isFinite(badge.requiredValue) && Number(badge.requiredValue) > 0) {
-    const current = Number.isFinite(badge.currentValue) ? Number(badge.currentValue) : totalPoints;
-    const remaining = Math.max(0, Math.round(Number(badge.requiredValue) - current));
-    return `Unlock in ${remaining.toLocaleString()} points`;
+    const c = Number.isFinite(badge.currentValue) ? Number(badge.currentValue) : totalPoints;
+    const r = Math.max(0, Math.round(Number(badge.requiredValue) - c));
+    return `Unlock in ${r.toLocaleString()} points`;
   }
-
   return 'Unlock in 2,550 points';
 };
-
-const isActiveNav = (pathname: string, route: string) =>
-  pathname === route || (route !== '/dashboard' && pathname.startsWith(route));
 
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const location = useLocation();
-
   const { user } = useSelector((state: RootState) => state.auth);
   const { data, loading, error } = useSelector((state: RootState) => state.dashboard);
   const { notifications, unreadCount, loading: notificationsLoading, error: notificationsError } = useSelector(
@@ -224,7 +107,6 @@ const Dashboard: React.FC = () => {
   );
 
   const [selectedGoal, setSelectedGoal] = useState<GoalProgress | null>(null);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [hoveredWeeklyId, setHoveredWeeklyId] = useState<DayLabel | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [markingNotificationId, setMarkingNotificationId] = useState<number | null>(null);
@@ -234,103 +116,55 @@ const Dashboard: React.FC = () => {
     dispatch(fetchNotifications());
   }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(fetchSettings());
-  }, [dispatch]);
+  useEffect(() => { dispatch(fetchSettings()); }, [dispatch]);
 
   useEffect(() => {
     refreshDashboard();
-    const timerId = window.setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        refreshDashboard();
-      }
+    const id = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refreshDashboard();
     }, DASHBOARD_REFRESH_INTERVAL_MS);
-
-    return () => window.clearInterval(timerId);
+    return () => window.clearInterval(id);
   }, [refreshDashboard]);
 
-  useEffect(() => {
-    setMobileNavOpen(false);
-  }, [location.pathname]);
-
   const weeklyBars = useMemo(() => buildWeeklyBars(data?.weeklyProgress), [data?.weeklyProgress]);
-  const visitSummaryByDay = useMemo<Record<DayLabel, DayVisitSummary>>(() => {
-    const summary = dayOrder.reduce<Record<DayLabel, DayVisitSummary>>((acc, day) => {
-      acc[day] = { visits: 0, lastVisitedAt: null };
-      return acc;
-    }, {} as Record<DayLabel, DayVisitSummary>);
-
-    (data?.recentActivities || []).forEach((activity) => {
-      const parsed = new Date(activity.date);
-      if (Number.isNaN(parsed.getTime())) {
-        return;
-      }
-
-      const day = dayOrder[(parsed.getDay() + 6) % 7];
-      const current = summary[day];
-      const currentTimestamp = current.lastVisitedAt ? Date.parse(current.lastVisitedAt) : 0;
-      const parsedTimestamp = parsed.getTime();
-
-      summary[day] = {
-        visits: current.visits + 1,
-        lastVisitedAt: parsedTimestamp > currentTimestamp ? parsed.toISOString() : current.lastVisitedAt,
-      };
-    });
-
-    return summary;
-  }, [data?.recentActivities]);
   const prioritizedGoals = useMemo(
-    () =>
-      [...(data?.activeGoals || [])].sort((a, b) => {
-        const completionDiff = Number(a.completedToday) - Number(b.completedToday);
-        if (completionDiff !== 0) {
-          return completionDiff;
-        }
-
-        return getProgressPercent(b) - getProgressPercent(a);
-      }),
-    [data?.activeGoals]
+    () => [...(data?.activeGoals || [])].sort((a, b) => {
+      const cd = Number(a.completedToday) - Number(b.completedToday);
+      return cd !== 0 ? cd : getProgressPercent(b) - getProgressPercent(a);
+    }), [data?.activeGoals]
   );
   const prioritizedNotifications = useMemo<NotificationItem[]>(
-    () =>
-      [...notifications]
-        .sort((a, b) => {
-          const readDiff = Number(a.isRead) - Number(b.isRead);
-          if (readDiff !== 0) {
-            return readDiff;
-          }
-          return toSortTime(b.createdAt) - toSortTime(a.createdAt);
-        })
-        .slice(0, 12),
+    () => [...notifications]
+      .sort((a, b) => {
+        const rd = Number(a.isRead) - Number(b.isRead);
+        return rd !== 0 ? rd : toSortTime(b.createdAt) - toSortTime(a.createdAt);
+      })
+      .slice(0, 12),
     [notifications]
   );
 
-  const openAlerts = useCallback(() => {
-    setAlertsOpen(true);
-    dispatch(fetchNotifications());
-  }, [dispatch]);
+  const openAlerts = useCallback(() => { setAlertsOpen(true); dispatch(fetchNotifications()); }, [dispatch]);
 
   const handleMarkNotificationRead = useCallback(
     async (notificationId: number) => {
       setMarkingNotificationId(notificationId);
-      try {
-        await dispatch(markNotificationRead(notificationId)).unwrap();
-      } finally {
-        setMarkingNotificationId(null);
-      }
-    },
-    [dispatch]
+      try { await dispatch(markNotificationRead(notificationId)).unwrap(); }
+      finally { setMarkingNotificationId(null); }
+    }, [dispatch]
   );
 
-  // Only block with full-screen spinner on the very first load.
-  // On re-visits the cached Redux state renders immediately.
+  // Loading state with skeleton
   if (!data && !error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--ff-bg)] px-4 text-[var(--ff-text-900)]">
-        <div className="w-full max-w-md rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
-          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" />
-          <h1 className="mt-4 text-2xl font-bold">Loading dashboard</h1>
-          <p className="mt-1 text-sm text-[var(--ff-text-700)]">Preparing your productivity overview.</p>
+      <div className="p-4 sm:p-8 max-w-[1280px] mx-auto space-y-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <CardSkeleton /><CardSkeleton /><CardSkeleton />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-4">
+            <CardSkeleton /><CardSkeleton />
+          </div>
+          <CardSkeleton />
         </div>
       </div>
     );
@@ -338,500 +172,390 @@ const Dashboard: React.FC = () => {
 
   if (!data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--ff-bg)] px-4 text-[var(--ff-text-900)]">
-        <div className="w-full max-w-md rounded-lg border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-8 text-center shadow-e2">
-          <h1 className="text-2xl font-bold">Dashboard unavailable</h1>
-          <p className="mt-2 text-sm text-rose-500">{error || 'Unable to load dashboard data right now.'}</p>
-          <button
-            type="button"
-            className="mt-5 rounded-[10px] bg-[var(--ff-primary)] px-[18px] py-[10px] text-sm font-semibold text-white transition-[transform,background-color,filter,box-shadow] duration-normal ease-premium hover:bg-[var(--ff-primary-hover)] hover:brightness-105 hover:shadow-hover"
-            onClick={refreshDashboard}
-          >
-            Retry
-          </button>
-        </div>
+      <div className="flex items-center justify-center py-20 px-4">
+        <Card className="max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard unavailable</h1>
+          <p className="mt-2 text-sm text-red-500">{error || 'Unable to load dashboard data right now.'}</p>
+          <div className="mt-5">
+            <Button variant="primary" onClick={refreshDashboard}>Retry</Button>
+          </div>
+        </Card>
       </div>
     );
   }
 
   const displayName = [user?.username, data.username, 'FocusForge User'].find(
-    (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
+    (c) => typeof c === 'string' && c.trim().length > 0
   ) as string;
-  const navItems = isAdminEmail(user?.email)
-    ? [...baseNavItems, { to: '/admin', label: 'Admin', icon: 'shield_person' }]
-    : baseNavItems;
   const firstName = displayName.split(/[\s@._-]+/).filter(Boolean)[0] || 'there';
-  const initials = getInitials(displayName);
   const latestBadge = data.recentBadges[0];
-
-  const maxWeeklyMinutes = Math.max(...weeklyBars.map((bar) => bar.minutes), 0);
+  const maxWeeklyMinutes = Math.max(...weeklyBars.map((b) => b.minutes), 0);
   const todayLabel = getTodayLabel();
-  const todayIndex = weeklyBars.findIndex((bar) => bar.id === todayLabel);
+  const todayIndex = weeklyBars.findIndex((b) => b.id === todayLabel);
   const todayMinutes = todayIndex >= 0 ? weeklyBars[todayIndex].minutes : 0;
   const yesterdayMinutes = todayIndex > 0 ? weeklyBars[todayIndex - 1].minutes : 0;
   const minuteDelta = todayMinutes - yesterdayMinutes;
-  const recentPointDelta = data.recentActivities
-    .slice(0, 6)
-    .reduce((sum, activity) => sum + (Number.isFinite(activity.points) ? Number(activity.points) : 0), 0);
+  const recentPointDelta = data.recentActivities.slice(0, 6)
+    .reduce((sum, a) => sum + (Number.isFinite(a.points) ? Number(a.points) : 0), 0);
   const statDelta = recentPointDelta !== 0 ? recentPointDelta : minuteDelta;
-  const statDeltaIcon = statDelta >= 0 ? 'arrow_upward' : 'arrow_downward';
-  const statDeltaClass = statDelta >= 0 ? 'text-emerald-400' : 'text-rose-400';
   const streakStatus = data.globalStreak > 0 ? 'Active streak' : 'Start your streak';
-
   const visibleGoals = prioritizedGoals.slice(0, MAX_DASHBOARD_GOALS);
-
   const badgeProgress = getBadgeProgressPercent(latestBadge);
   const badgeTitle = latestBadge?.name || 'Productivity Master';
   const badgeUnlockLabel = getBadgeUnlockLabel(latestBadge, data.totalPoints);
 
   return (
-    <div className="ff-page-enter min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
-      <div className="flex h-screen overflow-hidden">
-        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between p-4 shadow-sm border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 md:flex">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-3 px-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-md shadow-violet-500/30">
-                <span className="text-sm font-bold text-white">FF</span>
-              </div>
-              <div className="overflow-hidden">
-                <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">FocusForge</h1>
-              </div>
-            </div>
-
-            <nav className="mt-4 flex flex-col gap-1">
-              {navItems.map((item) => {
-                const active = isActiveNav(location.pathname, item.to);
-
-                return (
-                  <button
-                    key={item.to}
-                    type="button"
-                    onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
-                      active
-                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                    <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
+    <>
+      {/* Page header */}
+      <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 sm:py-5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between max-w-[1280px] mx-auto">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+              Welcome back,{' '}
+              <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
+                {firstName}
+              </span>{' '}👋
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Let&apos;s crush today&apos;s productivity targets.</p>
           </div>
-
-          <div className="mt-auto flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs font-bold text-white shadow-sm">
-              {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
-              <p className="truncate text-xs text-slate-500 dark:text-slate-400">Pro Member</p>
-            </div>
-          </div>
-        </aside>
-
-        <main className="flex flex-1 flex-col overflow-y-auto">
-          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 sm:py-5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-start gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMobileNavOpen((current) => !current)}
-                  className="mt-1 rounded-[10px] border border-[var(--ff-border)] p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] md:hidden"
-                  aria-label="Toggle navigation"
-                >
-                  <span className="material-symbols-outlined text-[20px]">menu</span>
-                </button>
-                <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-                    Welcome back,{' '}
-                    <span className="bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text text-transparent">
-                      {firstName}
-                    </span>{' '}👋
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Let&apos;s crush today&apos;s productivity targets.</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={openAlerts}
-                  className="relative flex h-9 w-9 items-center justify-center rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-                  aria-label="Notifications"
-                >
-                  <span className="material-symbols-outlined text-xl">notifications</span>
-                  {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-violet-600" />
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/goals/new')}
-                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02] active:scale-[0.99]"
-                >
-                  <span className="material-symbols-outlined text-sm">add</span>
-                  New Goal
-                </button>
-              </div>
-            </div>
-          </header>
-
-          {mobileNavOpen && (
-            <div className="border-b border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-3 shadow-e1 md:hidden">
-              <div className="grid grid-cols-2 gap-2">
-                {navItems.map((item) => {
-                  const active = isActiveNav(location.pathname, item.to);
-                  return (
-                    <button
-                      key={item.to}
-                      type="button"
-                      onClick={() => navigate(item.to)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${active
-                        ? 'bg-[var(--ff-primary)] font-semibold text-white'
-                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                        }`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
-            {error && (
-              <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-600 dark:text-rose-300">
-                {error}
-              </div>
-            )}
-
-            <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {[
-                { label: 'Total Points', value: data.totalPoints.toLocaleString(), icon: 'stars', iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-600 dark:text-violet-400', sub: statDelta !== 0 ? `${statDelta >= 0 ? '+' : ''}${Math.abs(statDelta).toLocaleString()} pts` : '' },
-                { label: 'Global Streak', value: `${data.globalStreak} days`, icon: 'local_fire_department', iconBg: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-500 dark:text-orange-400', sub: streakStatus },
-                { label: 'Active Goals', value: String(data.activeGoals.length), icon: 'flag', iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400', sub: 'In progress' },
-              ].map((stat) => (
-                <article key={stat.label} className="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800/50">
-                  <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-violet-50 dark:bg-violet-900/20 blur-2xl" />
-                  <div className="relative z-10 flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-                      <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
-                      {stat.sub && <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">{stat.sub}</p>}
-                    </div>
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
-                      <span className={`material-symbols-outlined text-xl ${stat.iconColor}`}>{stat.icon}</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </section>
-
-            <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="flex flex-col gap-5 lg:col-span-2">
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Weekly Progress</h3>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/analytics')}
-                      className="text-sm font-medium text-[var(--ff-primary)] transition-colors hover:text-[var(--ff-primary-hover)]"
-                    >
-                      View Details
-                    </button>
-                  </div>
-
-                  <div className="relative h-64 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-                    <div className="pointer-events-none absolute inset-x-6 bottom-6 top-6 z-0 flex flex-col justify-between opacity-20">
-                      {[0, 1, 2, 3].map((line) => (
-                        <div key={line} className="w-full border-b border-[var(--ff-border)]" />
-                      ))}
-                    </div>
-
-                    <div className="relative z-10 grid h-full grid-cols-7 items-end gap-2 pb-6">
-                      {weeklyBars.map((bar, i) => {
-                        const hasValue = bar.minutes > 0 && maxWeeklyMinutes > 0;
-                        const heightPercent = hasValue ? Math.max(14, Math.round((bar.minutes / maxWeeklyMinutes) * 100)) : 12;
-                        const isWeekend = bar.id === 'Sat' || bar.id === 'Sun';
-
-                        return (
-                          <button
-                            key={bar.id}
-                            type="button"
-                            onMouseEnter={() => setHoveredWeeklyId(bar.id)}
-                            onMouseLeave={() => setHoveredWeeklyId(null)}
-                            className="group relative flex h-full items-end justify-center"
-                            aria-label={`${bar.label}: ${bar.minutes} minutes`}
-                          >
-                            <div
-                              className={`relative w-[70%] rounded-t-md transition-colors ${!hasValue
-                                ? 'bg-[var(--ff-surface-hover)] opacity-55'
-                                : isWeekend
-                                  ? 'bg-[rgb(var(--ff-primary-rgb)/0.25)] hover:bg-[rgb(var(--ff-primary-rgb)/0.35)]'
-                                  : 'bg-gradient-to-t from-[var(--ff-primary)] to-[var(--ff-primary-soft)] hover:brightness-110'
-                                }`}
-                              style={{
-                                height: `${heightPercent}%`,
-                                animation: `ff-bar-grow 600ms var(--ff-ease-decelerate) ${i * 60}ms both`,
-                              }}
-                            >
-                              {hoveredWeeklyId === bar.id && (
-                                <span className="ff-tooltip absolute -top-[66px] left-1/2 z-20 w-max -translate-x-1/2 rounded border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] px-2.5 py-1.5 text-left text-[11px] leading-tight text-[var(--ff-text-700)] shadow-e2">
-                                  <p className="font-semibold text-[var(--ff-text-900)]">{bar.label}</p>
-                                  <p>{bar.minutes} minutes logged</p>
-                                  {visitSummaryByDay[bar.id].visits > 0 ? (
-                                    <p className="text-[var(--ff-text-500)]">
-                                      {visitSummaryByDay[bar.id].visits} visit
-                                      {visitSummaryByDay[bar.id].visits > 1 ? 's' : ''}{' '}
-                                      at {formatVisitTime(visitSummaryByDay[bar.id].lastVisitedAt)}
-                                    </p>
-                                  ) : (
-                                    <p className="text-[var(--ff-text-500)]">No visit recorded</p>
-                                  )}
-                                </span>
-                              )}
-                            </div>
-                            <p
-                              className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs ${hasValue ? 'text-[var(--ff-text-700)]' : 'text-[var(--ff-text-500)]'
-                                }`}
-                            >
-                              {bar.label}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active Goals</h3>
-                  {visibleGoals.length === 0 ? (
-                    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No active goals available yet. Create one to get started.</p>
-                    </div>
-                  ) : (
-                    <div className="ff-stagger flex flex-col gap-3">
-                      {visibleGoals.map((goal, index) => {
-                        const progressPercent = getProgressPercent(goal);
-                        const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
-                        const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
-
-                        return (
-                          <article
-                            key={goal.goalId}
-                            className="ff-section-enter flex flex-col items-center justify-between gap-4 p-4 sm:flex-row rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                            style={{ borderLeftWidth: 4, borderLeftColor: categoryColor }}
-                          >
-                            <div className="flex w-full items-center gap-4 sm:w-auto">
-                              <div className="relative h-12 w-12 shrink-0">
-                                <div
-                                  className="h-12 w-12 rounded-full"
-                                  style={{
-                                    background: `conic-gradient(${categoryColor} ${progressPercent * 3.6}deg, var(--ff-surface-hover) 0deg)`,
-                                  }}
-                                />
-                                <div className="absolute inset-[4px] rounded-full bg-white dark:bg-slate-900" />
-                                <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white">
-                                  {progressPercent}%
-                                </span>
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-bold text-slate-900 dark:text-white">{goal.title}</h4>
-                                  <span
-                                    className="rounded border px-2 py-0.5 text-[10px] font-bold uppercase"
-                                    style={{
-                                      color: categoryColor,
-                                      backgroundColor: `${categoryColor}22`,
-                                      borderColor: `${categoryColor}55`,
-                                    }}
-                                  >
-                                    {goal.category || 'General'}
-                                  </span>
-                                </div>
-                                <p className="text-sm text-slate-600 dark:text-slate-400">
-                                  {remainingMinutes > 0 ? `${remainingMinutes} minutes left today` : 'Target complete for today'}
-                                </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-500">
-                                  {Math.max(goal.todayProgress, 0)} / {Math.max(goal.dailyTarget, 0)} minutes
-                                </p>
-                              </div>
-                            </div>
-
-                            <button
-                              type="button"
-                              className="ff-btn-motion w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-[18px] py-[10px] text-sm font-semibold text-[var(--ff-text-900)] hover:bg-[var(--ff-surface-hover)] sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
-                              onClick={() => {
-                                if (goal.completedToday) {
-                                  navigate(`/goals/${goal.goalId}`);
-                                  return;
-                                }
-                                setSelectedGoal(goal);
-                              }}
-                            >
-                              {goal.completedToday ? 'View Goal' : 'Log Activity'}
-                            </button>
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <aside className="flex flex-col gap-4">
-                <article className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50/50 to-transparent dark:from-violet-900/10" />
-                  <h3 className="relative z-10 text-base font-bold text-slate-900 dark:text-white">Badge Momentum</h3>
-                  <div className="relative z-10 mt-4 flex justify-center">
-                    <div className="flex h-24 w-24 rotate-12 items-center justify-center rounded-xl border border-[var(--ff-border)] bg-gradient-to-br from-amber-400 to-orange-600 shadow-e2" style={{ animation: 'ff-section-enter 300ms var(--ff-ease-spring) 200ms both' }}>
-                      <span className="material-symbols-outlined text-5xl text-white">emoji_events</span>
-                    </div>
-                  </div>
-                  <div className="relative z-10 mt-4 text-center">
-                    <h4 className="text-xl font-bold text-slate-900 dark:text-white">{badgeTitle}</h4>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{badgeUnlockLabel}</p>
-                  </div>
-                  <div className="relative z-10 mt-4 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800">
-                    <div
-                      className="h-2 rounded-full"
-                      style={{
-                        width: `${badgeProgress}%`,
-                        backgroundImage: 'var(--ff-gradient-primary)',
-                        transition: `width ${750}ms var(--ff-ease-decelerate)`,
-                      }}
-                    />
-                  </div>
-                </article>
-
-                <article className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Recent Activity</h3>
-                  <div className="relative mt-4 flex flex-col gap-0">
-                    <div className="absolute bottom-2 left-[11px] top-2 z-0 w-px bg-[var(--ff-line)]" />
-
-                    {data.recentActivities.slice(0, 3).map((activity, index) => {
-                      const primary = index === 0;
-                      const activityTitle = activity.goalTitle || 'Goal Activity';
-                      const activityDetail = activity.minutes > 0 ? `${activity.minutes} minutes logged` : 'Activity logged';
-                      return (
-                        <div key={activity.id} className="relative z-10 flex gap-4 pb-4 last:pb-0">
-                          <div
-                            className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 ${primary
-                              ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20'
-                              : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'
-                              }`}
-                          >
-                            {primary && <span className="h-2 w-2 rounded-full bg-violet-600" />}
-                          </div>
-                          <div>
-                            <p className={`${primary ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'} text-sm font-medium`}>
-                              {activityTitle}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-500">{activityDetail}</p>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500">
-                              {getRelativeTime(activity.date)} - {formatDateTime(activity.date)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {data.recentActivities.length === 0 && (
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity yet.</p>
-                    )}
-                  </div>
-                </article>
-              </aside>
-            </section>
-          </div>
-        </main>
-      </div>
-
-      {alertsOpen && (
-        <div
-          className="ff-backdrop fixed inset-0 z-[80] flex items-center justify-center bg-black/35 p-4 glass-blur-surface"
-          role="dialog"
-          aria-modal="true"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setAlertsOpen(false);
-            }
-          }}
-        >
-          <div className="ff-modal-enter w-full max-w-2xl p-5 glass-surface glass-modal glass-blur-surface">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Alerts</h2>
-              <button
-                type="button"
-                className="rounded-[10px] border border-[var(--ff-border)] px-3 py-1.5 text-sm font-semibold text-[var(--ff-text-700)] transition-colors duration-fast ease-premium hover:bg-[var(--ff-surface-hover)] hover:text-[var(--ff-text-900)]"
-                onClick={() => setAlertsOpen(false)}
-              >
-                Close
-              </button>
-            </div>
-
-            {notificationsLoading && notifications.length === 0 ? (
-              <p className="text-sm text-[var(--ff-text-700)]">Loading alerts...</p>
-            ) : notificationsError ? (
-              <p className="text-sm text-rose-300">{notificationsError}</p>
-            ) : prioritizedNotifications.length === 0 ? (
-              <p className="text-sm text-[var(--ff-text-700)]">You have no alerts right now.</p>
-            ) : (
-              <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
-                {prioritizedNotifications.map((notification) => (
-                  <article
-                    key={notification.id}
-                    className={`rounded-xl border p-3 ${notification.isRead
-                      ? 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
-                      : 'border-[rgb(var(--ff-primary-rgb)/0.45)] bg-[rgb(var(--ff-primary-rgb)/0.10)]'
-                      }`}
-                  >
-                    <p className="text-sm font-bold text-[var(--ff-text-900)]">{notification.title || 'Alert'}</p>
-                    <p className="mt-1 text-xs text-[var(--ff-text-700)]">{notification.message}</p>
-                    <p className="mt-2 text-[11px] text-[var(--ff-text-500)]">
-                      {getRelativeTime(notification.createdAt)} - {formatDateTime(notification.createdAt)}
-                    </p>
-
-                    {!notification.isRead && (
-                      <button
-                        type="button"
-                        className="mt-3 rounded-[10px] border border-[rgb(var(--ff-primary-rgb)/0.45)] bg-[rgb(var(--ff-primary-rgb)/0.15)] px-3 py-1.5 text-xs font-semibold text-[var(--ff-text-900)] transition-colors duration-fast ease-premium hover:bg-[rgb(var(--ff-primary-rgb)/0.25)] disabled:cursor-not-allowed disabled:opacity-60"
-                        disabled={markingNotificationId === notification.id}
-                        onClick={() => handleMarkNotificationRead(notification.id)}
-                      >
-                        {markingNotificationId === notification.id ? 'Marking...' : 'Mark read'}
-                      </button>
-                    )}
-                  </article>
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={openAlerts}
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
+              aria-label="Notifications"
+            >
+              <span className="material-symbols-outlined text-xl">notifications</span>
+              {unreadCount > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-[9px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <Button variant="primary" icon="add" onClick={() => navigate('/goals/new')}>
+              New Goal
+            </Button>
           </div>
         </div>
-      )}
+      </header>
 
+      {/* Content */}
+      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        {error && (
+          <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 px-4 py-2.5 text-sm text-red-600 dark:text-red-300 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            {error}
+          </div>
+        )}
+
+        {/* KPI Stats */}
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[
+            {
+              label: 'Total Points', value: data.totalPoints.toLocaleString(), icon: 'stars',
+              iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-600 dark:text-violet-400',
+              sub: statDelta !== 0 ? `${statDelta >= 0 ? '+' : ''}${Math.abs(statDelta).toLocaleString()} pts` : '',
+              subColor: statDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500',
+            },
+            {
+              label: 'Global Streak', value: `${data.globalStreak} days`, icon: 'local_fire_department',
+              iconBg: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-500 dark:text-orange-400',
+              sub: streakStatus, subColor: 'text-orange-600 dark:text-orange-400',
+            },
+            {
+              label: 'Active Goals', value: String(data.activeGoals.length), icon: 'flag',
+              iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400',
+              sub: 'In progress', subColor: 'text-emerald-600 dark:text-emerald-400',
+            },
+          ].map((stat) => (
+            <Card key={stat.label} hover>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
+                  <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
+                  {stat.sub && <p className={`mt-1 text-xs font-semibold ${stat.subColor}`}>{stat.sub}</p>}
+                </div>
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
+                  <span className={`material-symbols-outlined text-xl ${stat.iconColor}`}>{stat.icon}</span>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </section>
+
+        {/* Main content grid */}
+        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left column */}
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            {/* Weekly Progress */}
+            <Card>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Weekly Progress</h3>
+                <button
+                  type="button"
+                  onClick={() => navigate('/analytics')}
+                  className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+                >
+                  View Details →
+                </button>
+              </div>
+              <div className="relative h-56">
+                {/* Grid lines */}
+                <div className="absolute inset-0 flex flex-col justify-between opacity-[0.08]">
+                  {[0, 1, 2, 3].map((l) => <div key={l} className="w-full border-b border-slate-900 dark:border-white" />)}
+                </div>
+                {/* Bars */}
+                <div className="relative z-10 grid h-full grid-cols-7 items-end gap-2 sm:gap-3 pb-6">
+                  {weeklyBars.map((bar, i) => {
+                    const hasValue = bar.minutes > 0 && maxWeeklyMinutes > 0;
+                    const heightPercent = hasValue ? Math.max(14, Math.round((bar.minutes / maxWeeklyMinutes) * 100)) : 10;
+                    const isToday = bar.id === todayLabel;
+                    return (
+                      <button
+                        key={bar.id}
+                        type="button"
+                        onMouseEnter={() => setHoveredWeeklyId(bar.id)}
+                        onMouseLeave={() => setHoveredWeeklyId(null)}
+                        className="group relative flex h-full items-end justify-center"
+                        aria-label={`${bar.label}: ${bar.minutes} minutes`}
+                      >
+                        <div
+                          className={`
+                            relative w-[65%] sm:w-[60%] rounded-lg transition-all duration-200
+                            ${!hasValue
+                              ? 'bg-slate-100 dark:bg-slate-800 opacity-60'
+                              : isToday
+                                ? 'bg-gradient-to-t from-violet-600 to-violet-400 shadow-md shadow-violet-500/20'
+                                : 'bg-gradient-to-t from-violet-500/60 to-violet-400/40 dark:from-violet-500/40 dark:to-violet-400/20'
+                            }
+                            ${hasValue ? 'hover:brightness-110 hover:shadow-lg' : ''}
+                          `}
+                          style={{
+                            height: `${heightPercent}%`,
+                            animation: `ff-bar-grow 600ms cubic-bezier(.4,0,.2,1) ${i * 60}ms both`,
+                          }}
+                        >
+                          {hoveredWeeklyId === bar.id && (
+                            <span className="absolute -top-12 left-1/2 z-20 w-max -translate-x-1/2 rounded-lg bg-slate-900 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-xl">
+                              <strong>{bar.label}</strong>: {bar.minutes} min
+                            </span>
+                          )}
+                        </div>
+                        <p className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium ${isToday ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {bar.label}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </Card>
+
+            {/* Active Goals */}
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Active Goals</h3>
+              {visibleGoals.length === 0 ? (
+                <EmptyState
+                  icon="track_changes"
+                  title="No active goals"
+                  description="Create your first goal to start tracking progress."
+                  actionLabel="Create Goal"
+                  onAction={() => navigate('/goals/new')}
+                />
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {visibleGoals.map((goal, index) => {
+                    const progressPercent = getProgressPercent(goal);
+                    const categoryColor = goal.categoryColor?.trim() || fallbackGoalColors[index % fallbackGoalColors.length];
+                    const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
+
+                    return (
+                      <Card key={goal.goalId} hover accent={categoryColor}>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            {/* Progress ring */}
+                            <div className="relative h-12 w-12 shrink-0">
+                              <svg className="h-12 w-12 -rotate-90" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="3"
+                                  className="text-slate-100 dark:text-slate-800" />
+                                <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3" strokeLinecap="round"
+                                  stroke={categoryColor}
+                                  strokeDasharray={`${progressPercent * 1.256} 125.6`}
+                                  className="transition-all duration-700" />
+                              </svg>
+                              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white">
+                                {progressPercent}%
+                              </span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-slate-900 dark:text-white">{goal.title}</h4>
+                                <span className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase"
+                                  style={{ color: categoryColor, backgroundColor: `${categoryColor}15`, borderColor: `${categoryColor}40` }}>
+                                  {goal.category || 'General'}
+                                </span>
+                              </div>
+                              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                                {remainingMinutes > 0 ? `${remainingMinutes} min left today` : '✓ Target complete'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant={goal.completedToday ? 'secondary' : 'primary'}
+                            size="sm"
+                            onClick={() => {
+                              if (goal.completedToday) { navigate(`/goals/${goal.goalId}`); return; }
+                              setSelectedGoal(goal);
+                            }}
+                          >
+                            {goal.completedToday ? 'View Goal' : 'Log Activity'}
+                          </Button>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right sidebar */}
+          <aside className="flex flex-col gap-5">
+            {/* Badge Momentum */}
+            <Card>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50/50 dark:from-violet-900/10 to-transparent rounded-2xl" />
+              <div className="relative z-10">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Badge Momentum</h3>
+                <div className="mt-5 flex justify-center">
+                  <div className="flex h-20 w-20 rotate-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-lg shadow-orange-500/25 transition-transform hover:scale-105">
+                    <span className="material-symbols-outlined text-4xl text-white">emoji_events</span>
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
+                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">{badgeTitle}</h4>
+                  <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{badgeUnlockLabel}</p>
+                </div>
+                <div className="mt-4 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-2 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 transition-all duration-700"
+                    style={{ width: `${badgeProgress}%` }}
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Recent Activity</h3>
+              {data.recentActivities.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity yet.</p>
+              ) : (
+                <div className="relative flex flex-col gap-0">
+                  <div className="absolute bottom-2 left-[11px] top-2 z-0 w-px bg-slate-200 dark:bg-slate-700" />
+                  {data.recentActivities.slice(0, 4).map((activity, index) => {
+                    const primary = index === 0;
+                    return (
+                      <div key={activity.id} className="relative z-10 flex gap-3 pb-4 last:pb-0">
+                        <div className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 shrink-0 ${
+                          primary
+                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
+                        }`}>
+                          {primary && <span className="h-2 w-2 rounded-full bg-violet-600" />}
+                        </div>
+                        <div className="min-w-0">
+                          <p className={`text-sm font-medium truncate ${primary ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                            {activity.goalTitle || 'Goal Activity'}
+                          </p>
+                          <p className="text-xs text-slate-400 dark:text-slate-500">
+                            {activity.minutes > 0 ? `${activity.minutes} min` : 'Logged'} · {getRelativeTime(activity.date)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { icon: 'add_circle', label: 'New Goal', to: '/goals/new' },
+                  { icon: 'monitoring', label: 'Analytics', to: '/analytics' },
+                  { icon: 'military_tech', label: 'Badges', to: '/badges' },
+                  { icon: 'leaderboard', label: 'Rankings', to: '/leaderboard' },
+                ].map((action) => (
+                  <button
+                    key={action.to}
+                    onClick={() => navigate(action.to)}
+                    className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 py-3 px-2 text-slate-600 dark:text-slate-400 transition-all duration-200 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-500/30"
+                  >
+                    <span className="material-symbols-outlined text-[20px]">{action.icon}</span>
+                    <span className="text-xs font-medium">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          </aside>
+        </section>
+      </div>
+
+      {/* Notifications Modal */}
+      <Modal open={alertsOpen} onClose={() => setAlertsOpen(false)} title="Notifications" maxWidth="2xl">
+        {notificationsLoading && notifications.length === 0 ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400 py-4">Loading notifications...</p>
+        ) : notificationsError ? (
+          <p className="text-sm text-red-500 py-4">{notificationsError}</p>
+        ) : prioritizedNotifications.length === 0 ? (
+          <EmptyState icon="notifications_off" title="All caught up" description="You have no notifications right now." />
+        ) : (
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+            {prioritizedNotifications.map((n) => (
+              <article
+                key={n.id}
+                className={`rounded-xl border p-4 transition-colors ${
+                  n.isRead
+                    ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'
+                    : 'border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10'
+                }`}
+              >
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{n.title || 'Alert'}</p>
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{n.message}</p>
+                <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+                  {getRelativeTime(n.createdAt)} · {formatDateTime(n.createdAt)}
+                </p>
+                {!n.isRead && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2"
+                    disabled={markingNotificationId === n.id}
+                    onClick={() => handleMarkNotificationRead(n.id)}
+                    loading={markingNotificationId === n.id}
+                  >
+                    Mark read
+                  </Button>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </Modal>
+
+      {/* Log Activity Modal */}
       {selectedGoal && (
         <LogActivityModal
           goalId={selectedGoal.goalId}
           goalTitle={selectedGoal.title}
           dailyTarget={selectedGoal.dailyTarget}
-          onBadgesEarned={() => {
-            refreshDashboard();
-          }}
-          onClose={() => {
-            setSelectedGoal(null);
-            refreshDashboard();
-          }}
+          onBadgesEarned={() => refreshDashboard()}
+          onClose={() => { setSelectedGoal(null); refreshDashboard(); }}
         />
       )}
-    </div>
+    </>
   );
 };
 

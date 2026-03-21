@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../Layout/Navbar';
 
 type BadgeRule = {
   name: string;
@@ -169,10 +168,7 @@ const PlatformRules: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 [font-family:'Inter',sans-serif]">
-      <Navbar />
-
-      <main className="mx-auto max-w-[1100px] px-4 sm:px-8 py-8 pt-24">
+    <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-8 py-8">
 
         {/* ── Page Header ── */}
         <div className="mb-10">
@@ -333,7 +329,6 @@ const PlatformRules: React.FC = () => {
           </div>
         </div>
 
-      </main>
     </div>
   );
 };

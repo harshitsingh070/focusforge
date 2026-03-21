@@ -22,6 +22,7 @@ import ActivityLog from './components/Activity/ActivityLog';
 import PrivateRoute from './components/Layout/PrivateRoute';
 import AdminRoute from './components/Layout/AdminRoute';
 import AdminDashboard from './components/Admin/AdminDashboard';
+import AppLayout from './components/Layout/AppLayout';
 import { isAdminEmail } from './constants/admin';
 
 const PublicHomeRoute: React.FC = () => {
@@ -31,10 +32,17 @@ const PublicHomeRoute: React.FC = () => {
 };
 
 /**
+ * PrivateLayout — wraps children in AppLayout for authenticated pages.
+ */
+const PrivateLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <PrivateRoute>
+    <AppLayout>{children}</AppLayout>
+  </PrivateRoute>
+);
+
+/**
  * AnimatedRoutes — wraps all routes in a keyed div so every top-level
  * pathname change triggers a fresh CSS ff-page-enter animation.
- * The key is the first path segment (e.g. "goals", "dashboard") so
- * nested routes (/goals → /goals/1) don't double-animate.
  */
 const AnimatedRoutes: React.FC = () => {
   const location = useLocation();
@@ -49,23 +57,26 @@ const AnimatedRoutes: React.FC = () => {
       }}
     >
       <Routes location={location}>
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/rules" element={<PlatformRules />} />
 
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/goals/new" element={<PrivateRoute><NewGoal /></PrivateRoute>} />
-        <Route path="/goals" element={<PrivateRoute><GoalsList /></PrivateRoute>} />
-        <Route path="/goals/:id" element={<PrivateRoute><GoalDetail /></PrivateRoute>} />
-        <Route path="/goals/:id/edit" element={<PrivateRoute><EditGoal /></PrivateRoute>} />
-        <Route path="/goals/:id/log" element={<PrivateRoute><GoalLogActivity /></PrivateRoute>} />
-        <Route path="/leaderboard" element={<PrivateRoute><EnhancedLeaderboard /></PrivateRoute>} />
-        <Route path="/badges" element={<PrivateRoute><Badges /></PrivateRoute>} />
-        <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        <Route path="/activity" element={<PrivateRoute><ActivityLog /></PrivateRoute>} />
-        <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        {/* Private routes — wrapped in AppLayout */}
+        <Route path="/dashboard" element={<PrivateLayout><Dashboard /></PrivateLayout>} />
+        <Route path="/goals/new" element={<PrivateLayout><NewGoal /></PrivateLayout>} />
+        <Route path="/goals" element={<PrivateLayout><GoalsList /></PrivateLayout>} />
+        <Route path="/goals/:id" element={<PrivateLayout><GoalDetail /></PrivateLayout>} />
+        <Route path="/goals/:id/edit" element={<PrivateLayout><EditGoal /></PrivateLayout>} />
+        <Route path="/goals/:id/log" element={<PrivateLayout><GoalLogActivity /></PrivateLayout>} />
+        <Route path="/leaderboard" element={<PrivateLayout><EnhancedLeaderboard /></PrivateLayout>} />
+        <Route path="/badges" element={<PrivateLayout><Badges /></PrivateLayout>} />
+        <Route path="/analytics" element={<PrivateLayout><Analytics /></PrivateLayout>} />
+        <Route path="/settings" element={<PrivateLayout><Settings /></PrivateLayout>} />
+        <Route path="/activity" element={<PrivateLayout><ActivityLog /></PrivateLayout>} />
+        <Route path="/admin" element={<AdminRoute><AppLayout><AdminDashboard /></AppLayout></AdminRoute>} />
+
         <Route path="/" element={<PublicHomeRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

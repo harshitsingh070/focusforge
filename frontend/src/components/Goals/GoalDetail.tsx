@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { fetchGoalById, setSelectedGoal } from '../../store/goalsSlice';
-import Navbar from '../Layout/Navbar';
 
 const DIFFICULTY_LABEL: Record<number, string> = { 1: 'Very Easy', 2: 'Easy', 3: 'Balanced', 4: 'Hard', 5: 'Very Hard' };
 
@@ -50,12 +49,7 @@ const GoalDetail: React.FC = () => {
   }
 
   return (
-    <div
-      className="min-h-screen pt-[82px] bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]"
-    >
-      <Navbar />
-
-      <main className="ff-page-enter mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Back */}
         <button
           onClick={() => navigate('/goals')}
@@ -196,8 +190,7 @@ const GoalDetail: React.FC = () => {
             </button>
           </div>
         )}
-      </main>
-    </div>
+    </main>
   );
 };
 

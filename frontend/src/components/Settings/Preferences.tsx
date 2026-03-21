@@ -6,61 +6,120 @@ interface PreferencesProps {
   onChange: (value: UserPreferences) => void;
 }
 
-const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => (
-  <section className="card">
-    <h2 className="text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Preferences</h2>
-    <p className="mt-1 text-sm text-[var(--ff-text-700)]">Set your defaults for reminders and appearance.</p>
-
-    <div className="mt-4 space-y-3">
-      <div className="soft-card p-3">
-        <label htmlFor="pref-theme" className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">
-          Theme
-        </label>
-        <select
-          id="pref-theme"
-          className="select-field"
-          value={value.theme}
-          onChange={(event) => onChange({ ...value, theme: event.target.value as UserPreferences['theme'] })}
-        >
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </div>
-
-      <div className="soft-card p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-[var(--ff-text-900)]">Email reminders</p>
-            <p className="text-sm text-ink-muted">Receive inactivity reminders over email.</p>
-          </div>
-          <button
-            type="button"
-            className="ff-toggle"
-            data-on={String(value.emailReminders)}
-            aria-pressed={value.emailReminders}
-            onClick={() => onChange({ ...value, emailReminders: !value.emailReminders })}
-          />
+const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
+  return (
+    <>
+      <section className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Preferences</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Set your defaults for reminders and appearance.</p>
         </div>
-      </div>
-
-      <div className="soft-card p-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold text-[var(--ff-text-900)]">Weekly summary</p>
-            <p className="text-sm text-ink-muted">Enable a weekly performance summary.</p>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
+                <span className="material-symbols-outlined block text-[20px]">notifications</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Email reminders</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Receive inactivity reminders over email.</p>
+              </div>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={value.emailReminders}
+                onChange={() => onChange({ ...value, emailReminders: !value.emailReminders })}
+              />
+              <div className="peer h-5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-violet-600 peer-checked:after:translate-x-full peer-focus:outline-none rtl:peer-checked:after:-translate-x-full"></div>
+            </label>
           </div>
-          <button
-            type="button"
-            className="ff-toggle"
-            data-on={String(value.weeklySummary)}
-            aria-pressed={value.weeklySummary}
-            onClick={() => onChange({ ...value, weeklySummary: !value.weeklySummary })}
-          />
+
+          <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
+                <span className="material-symbols-outlined block text-[20px]">mail</span>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Weekly summary</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Enable a weekly performance summary.</p>
+              </div>
+            </div>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={value.weeklySummary}
+                onChange={() => onChange({ ...value, weeklySummary: !value.weeklySummary })}
+              />
+              <div className="peer h-5 w-10 rounded-full bg-slate-300 dark:bg-slate-700 after:absolute after:start-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-violet-600 peer-checked:after:translate-x-full peer-focus:outline-none rtl:peer-checked:after:-translate-x-full"></div>
+            </label>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
-);
+      </section>
+
+      <section className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+        <div className="mb-6">
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Theme</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="group cursor-pointer" onClick={() => onChange({ ...value, theme: 'light' })}>
+            <div className={`relative flex aspect-video w-full flex-col gap-1.5 overflow-hidden rounded-xl p-2 transition-all ${value.theme === 'light' ? 'border-2 border-violet-600 ring-4 ring-violet-600/10 bg-slate-200' : 'border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900'}`}>
+              <div className="flex gap-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-700"></div>
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-700"></div>
+              </div>
+              <div className="flex-1 rounded-md bg-white border border-slate-200"></div>
+              {value.theme === 'light' && (
+                <div className="absolute right-2 top-2">
+                  <span className="material-symbols-outlined block text-base text-violet-600 [font-variation-settings:'FILL'1]">check_circle</span>
+                </div>
+              )}
+            </div>
+            <p className={`mt-3 text-center text-xs ${value.theme === 'light' ? 'font-bold text-violet-600' : 'font-medium text-slate-500'}`}>Light</p>
+          </div>
+
+          <div className="group cursor-pointer" onClick={() => onChange({ ...value, theme: 'dark' })}>
+            <div className={`relative flex aspect-video w-full flex-col gap-1.5 overflow-hidden rounded-xl p-2 transition-all ${value.theme === 'dark' ? 'border-2 border-violet-600 ring-4 ring-violet-600/10 bg-slate-900' : 'border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900'}`}>
+              <div className="flex gap-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-700"></div>
+                <div className="h-1.5 w-1.5 rounded-full bg-slate-700"></div>
+              </div>
+              <div className="flex-1 rounded-md border border-slate-800/50 bg-slate-950"></div>
+              {value.theme === 'dark' && (
+                <div className="absolute right-2 top-2">
+                  <span className="material-symbols-outlined block text-base text-violet-600 [font-variation-settings:'FILL'1]">check_circle</span>
+                </div>
+              )}
+            </div>
+            <p className={`mt-3 text-center text-xs ${value.theme === 'dark' ? 'font-bold text-violet-600' : 'font-medium text-slate-500'}`}>Dark</p>
+          </div>
+
+          <div className="group cursor-pointer" onClick={() => onChange({ ...value, theme: 'system' })}>
+            <div className={`relative flex aspect-video w-full flex-col gap-1.5 overflow-hidden rounded-xl transition-all ${value.theme === 'system' ? 'border-2 border-violet-600 ring-4 ring-violet-600/10' : 'border border-slate-200 dark:border-slate-800'}`}>
+              <div className="flex h-full">
+                <div className="flex w-1/2 flex-col gap-1.5 bg-slate-200 p-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-400"></div>
+                  <div className="flex-1 rounded-bl-md rounded-tl-md bg-white border-y border-l border-slate-300"></div>
+                </div>
+                <div className="flex w-1/2 flex-col gap-1.5 bg-slate-900 p-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-slate-700"></div>
+                  <div className="flex-1 rounded-br-md rounded-tr-md border-y border-r border-slate-800 bg-slate-950"></div>
+                </div>
+              </div>
+              {value.theme === 'system' && (
+                <div className="absolute right-2 top-2">
+                  <span className="material-symbols-outlined block text-base text-violet-600 [font-variation-settings:'FILL'1]">check_circle</span>
+                </div>
+              )}
+            </div>
+            <p className={`mt-3 text-center text-xs ${value.theme === 'system' ? 'font-bold text-violet-600' : 'font-medium text-slate-500'}`}>System</p>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
 
 export default Preferences;

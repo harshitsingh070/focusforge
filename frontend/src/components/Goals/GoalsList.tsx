@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { isAdminEmail } from '../../constants/admin';
+import { useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { deleteGoal, fetchGoalById, fetchGoals, updateGoal } from '../../store/goalsSlice';
 import { Goal, GoalRequest } from '../../types';
@@ -16,16 +15,7 @@ interface GoalWithMeta extends Goal {
   difficultyLevel: DifficultyLevel;
 }
 
-const baseNavItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { to: '/goals', label: 'Goals', icon: 'track_changes' },
-  { to: '/activity', label: 'Activity', icon: 'event_note' },
-  { to: '/analytics', label: 'Analytics', icon: 'monitoring' },
-  { to: '/badges', label: 'Badges', icon: 'military_tech' },
-  { to: '/leaderboard', label: 'Leaderboard', icon: 'leaderboard' },
-  { to: '/settings', label: 'Settings', icon: 'settings' },
-  { to: '/rules', label: 'Rules', icon: 'gavel' },
-];
+
 
 const TAB_ITEMS: Array<{ id: GoalTab; label: string }> = [
   { id: 'ACTIVE', label: 'Active' },
@@ -56,19 +46,6 @@ const DIFFICULTY_STYLE: Record<DifficultyLevel, { background: string; color: str
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const getInitials = (value: string) => {
-  const tokens = (value || '')
-    .split(/[\s@._-]+/)
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (tokens.length === 0) {
-    return 'FF';
-  }
-
-  return tokens.map((token) => token[0]?.toUpperCase() || '').join('');
-};
-
 const estimateProgress = (goal: Goal): number => {
   const streakBase = goal.longestStreak > 0 ? goal.currentStreak / goal.longestStreak : goal.currentStreak > 0 ? 0.55 : 0;
   const targetScore = clamp((goal.dailyMinimumMinutes || 0) / 90, 0, 1);
@@ -94,17 +71,15 @@ const getDifficultyLevel = (difficulty: number): DifficultyLevel => {
   return 'Hard';
 };
 
-const isActiveNav = (pathname: string, route: string) => pathname === route || (route !== '/dashboard' && pathname.startsWith(route));
+
 
 const GoalsList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { goals, loading, error } = useSelector((state: RootState) => state.goals);
-  const { user } = useSelector((state: RootState) => state.auth);
 
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const [activeTab, setActiveTab] = useState<GoalTab>('ACTIVE');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -126,9 +101,7 @@ const GoalsList: React.FC = () => {
     dispatch(fetchGoals());
   }, [dispatch]);
 
-  useEffect(() => {
-    setMobileNavOpen(false);
-  }, [location.pathname]);
+
 
   // Fetch full goal detail when detail/edit overlay opens
   useEffect(() => {
@@ -137,13 +110,7 @@ const GoalsList: React.FC = () => {
     }
   }, [dispatch, overlay?.goal.id, overlay?.type]);
 
-  const displayName = [user?.username, user?.email, 'FocusForge User'].find(
-    (candidate) => typeof candidate === 'string' && candidate.trim().length > 0
-  ) as string;
-  const navItems = isAdminEmail(user?.email)
-    ? [...baseNavItems, { to: '/admin', label: 'Admin', icon: 'shield_person' }]
-    : baseNavItems;
-  const initials = getInitials(displayName);
+
 
   const goalsWithMeta = useMemo<GoalWithMeta[]>(
     () =>
@@ -186,70 +153,11 @@ const GoalsList: React.FC = () => {
   }, [activeTab, categoryFilter, goalsWithMeta, searchQuery]);
 
   return (
-    <div className="ff-page-enter min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
-      <div className="flex h-screen overflow-hidden">
-        {/* ── Sidebar ── */}
-        <aside className="hidden w-[260px] flex-shrink-0 flex-col justify-between border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm md:flex">
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center gap-3 px-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-md shadow-violet-500/30">
-                <span className="text-sm font-bold text-white">FF</span>
-              </div>
-              <div className="overflow-hidden">
-                <h1 className="truncate text-base font-bold tracking-tight text-slate-900 dark:text-white">FocusForge</h1>
-              </div>
-            </div>
-
-            <nav className="mt-4 flex flex-col gap-1">
-              {navItems.map((item) => {
-                const active = isActiveNav(location.pathname, item.to);
-
-                return (
-                  <button
-                    key={item.to}
-                    type="button"
-                    onClick={() => navigate(item.to)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all duration-150 ${
-                      active
-                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
-                    <span className={`text-sm ${active ? 'font-semibold' : 'font-medium'}`}>{item.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-
-          <div className="mt-auto flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-xs font-bold text-white shadow-sm">
-              {initials}
-              <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
-              <p className="truncate text-xs text-slate-500 dark:text-slate-400">Pro Member</p>
-            </div>
-          </div>
-        </aside>
-
-        {/* ── Main ── */}
-        <main className="flex flex-1 flex-col overflow-y-auto">
+    <>
           {/* Sticky page header */}
-          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <header className="sticky top-0 z-20 px-4 py-4 sm:px-8 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-800/60">
             {/* Row 1: title + actions */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              {/* Mobile hamburger */}
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen((c) => !c)}
-                className="rounded-[10px] border border-[var(--ff-border)] p-2 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)] md:hidden"
-                aria-label="Toggle navigation"
-              >
-                <span className="material-symbols-outlined text-[20px]">menu</span>
-              </button>
+            <div className="flex flex-wrap items-center justify-between gap-4 max-w-[1280px] mx-auto">
 
               {/* Title */}
               <div className="flex-1 min-w-0">
@@ -324,30 +232,6 @@ const GoalsList: React.FC = () => {
             </div>
           </header>
 
-          {/* Mobile nav drawer */}
-          {mobileNavOpen && (
-            <div className="border-b border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-3 shadow-e1 md:hidden">
-              <div className="grid grid-cols-2 gap-2">
-                {navItems.map((item) => {
-                  const active = isActiveNav(location.pathname, item.to);
-                  return (
-                    <button
-                      key={item.to}
-                      type="button"
-                      onClick={() => navigate(item.to)}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${active
-                        ? 'bg-[var(--ff-primary)] font-semibold text-white'
-                        : 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                        }`}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           {/* ── Content area ── */}
           <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8">
@@ -516,8 +400,6 @@ const GoalsList: React.FC = () => {
               </section>
             )}
           </div>
-        </main>
-      </div>
 
       {/* ══════════════════════════════════════════
           OVERLAY PANELS — rendered over the Goals page
@@ -733,7 +615,7 @@ const GoalsList: React.FC = () => {
           })()}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

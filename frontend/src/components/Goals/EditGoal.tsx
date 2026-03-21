@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { deleteGoal, fetchGoalById, updateGoal } from '../../store/goalsSlice';
 import { GoalRequest } from '../../types';
-import Navbar from '../Layout/Navbar';
 
 const EditGoal: React.FC = () => {
   const { id } = useParams();
@@ -89,10 +88,8 @@ const EditGoal: React.FC = () => {
   const isArchived = selectedGoal ? !selectedGoal.isActive : false;
 
   return (
-    <div className="page-shell">
-      <Navbar />
-
-      <main className="page-container max-w-2xl">
+    <>
+    <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-10">
         {/* ── Page heading ── */}
         <section className="section-heading">
           <p className="status-chip">Goal Edit</p>
@@ -245,7 +242,7 @@ const EditGoal: React.FC = () => {
             </button>
           </div>
         </div>
-      </main>
+    </main>
 
       {/* ── Delete confirmation modal ── */}
       {showDeleteModal && (
@@ -291,7 +288,7 @@ const EditGoal: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

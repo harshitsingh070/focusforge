@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { AppDispatch } from '../../store';
 import { createGoal } from '../../store/goalsSlice';
 import { GoalRequest } from '../../types';
-import Navbar from '../Layout/Navbar';
 
 const categories = [
   { id: 1, name: 'Coding', color: '#0f766e' },
@@ -74,12 +73,7 @@ const NewGoal: React.FC = () => {
   };
 
   return (
-    <div
-      className="min-h-screen pt-[82px] bg-[var(--ff-bg)] [background-image:var(--ff-gradient-bg-light),var(--ff-gradient-highlight)] [font-family:'Inter',sans-serif] dark:[background-image:var(--ff-gradient-bg-dark)]"
-    >
-      <Navbar />
-
-      <main className="ff-page-enter mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10">
         {/* Back */}
         <button
           onClick={handleCancel}
@@ -294,8 +288,7 @@ const NewGoal: React.FC = () => {
             </button>
           </div>
         </form>
-      </main>
-    </div>
+    </main>
   );
 };
 
