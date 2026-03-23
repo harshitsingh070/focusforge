@@ -24,13 +24,13 @@ const DailyChart: React.FC<DailyChartProps> = ({ data }) => {
   const hasData = chartData.length > 0;
 
   return (
-    <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover">
+    <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
       <h2 className="ff-analytics-text text-[24px] font-semibold">Daily Performance</h2>
       <p className="ff-analytics-soft mt-1 text-sm">Last 10 sessions: points, minutes, and intensity.</p>
 
       {hasData ? (
         <>
-          <div className="ff-analytics-chart-area">
+          <div className="ff-analytics-chart-area mt-5 h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="4 6" stroke={gridColor} vertical={false} />

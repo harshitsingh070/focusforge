@@ -1,5 +1,4 @@
 .ff-analytics-page {
-  --ff-analytics-main-bg: linear-gradient(180deg, #f8f9fc, #f1f3f9);
   --ff-analytics-ambient-primary: radial-gradient(circle at top right, rgba(124, 58, 237, 0.1), transparent);
   --ff-analytics-ambient-secondary: radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.08), transparent);
 
@@ -30,20 +29,13 @@
   --ff-analytics-tooltip-label: #0f172a;
   --ff-analytics-tooltip-item: #334155;
 
-  min-height: 100vh;
+  min-height: 100%;
   color: var(--ff-analytics-text);
-  background-color: #f8f9fc;
-  background-image:
-    var(--ff-analytics-ambient-secondary),
-    var(--ff-analytics-ambient-primary),
-    var(--ff-analytics-main-bg);
-  background-repeat: no-repeat, no-repeat, no-repeat;
-  background-position: left bottom, right top, center;
+  background: transparent;
 }
 
 :root.theme-dark .ff-analytics-page,
 :root.dark .ff-analytics-page {
-  --ff-analytics-main-bg: linear-gradient(180deg, #0f172a, #111827);
   --ff-analytics-ambient-primary: radial-gradient(circle at top right, rgba(124, 58, 237, 0.18), transparent);
   --ff-analytics-ambient-secondary: radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.12), transparent);
 
@@ -170,17 +162,30 @@
 
 .ff-analytics-card-hover {
   transition:
-    transform 160ms var(--ff-ease-standard),
     box-shadow 160ms var(--ff-ease-standard),
     border-color 160ms var(--ff-ease-standard);
 }
 
 .ff-analytics-card-hover:hover {
-  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.28);
   box-shadow:
     0 0 0 1px rgba(139, 92, 246, 0.32),
     0 14px 32px rgba(0, 0, 0, 0.25),
     0 0 28px rgba(139, 92, 246, 0.25);
+}
+
+.ff-analytics-metric-hover {
+  transition:
+    box-shadow 160ms var(--ff-ease-standard),
+    filter 160ms var(--ff-ease-standard);
+}
+
+.ff-analytics-metric-hover:hover {
+  filter: brightness(1.04);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 18px 38px rgba(15, 23, 42, 0.22),
+    0 0 28px rgba(255, 255, 255, 0.16);
 }
 
 .ff-analytics-chart-card {
@@ -330,6 +335,10 @@
   }
 
   .ff-analytics-card-hover {
+    transition: none;
+  }
+
+  .ff-analytics-metric-hover {
     transition: none;
   }
 

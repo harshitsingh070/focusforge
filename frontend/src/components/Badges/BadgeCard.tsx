@@ -12,7 +12,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
 
   return (
     <article
-      className={`card overflow-hidden ${
+      className={`card ff-glow-surface overflow-hidden ${
         badge.earned
           ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 to-white'
           : 'border-slate-200 bg-gradient-to-br from-slate-50 to-white'
@@ -31,7 +31,7 @@ const BadgeCard: React.FC<BadgeCardProps> = ({ badge }) => {
       {badge.ruleText && <p className="mt-2 text-xs text-ink-muted">Rule: {badge.ruleText}</p>}
 
       {badge.earned ? (
-        <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-100/70 p-3 ff-badge-earned">
+        <div className="ff-glow-surface-soft mt-4 rounded-xl border border-emerald-200 bg-emerald-100/70 p-3 ff-badge-earned">
           <p className="text-sm font-semibold text-emerald-800">Unlocked</p>
           {badge.earnedReason && <p className="mt-1 text-xs text-emerald-700">{badge.earnedReason}</p>}
           {badge.pointsBonus ? <p className="mt-1 text-xs text-emerald-700">Bonus: +{badge.pointsBonus} points</p> : null}

@@ -13,7 +13,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   width,
   height,
 }) => {
-  const baseClass = 'animate-pulse bg-slate-200 dark:bg-slate-700/50';
+  const baseClass = 'ff-skeleton';
   const variantClass = {
     rectangular: 'rounded-xl',
     circular: 'rounded-full',
@@ -30,7 +30,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
 
 /** Pre-built skeleton layouts */
 export const CardSkeleton: React.FC = () => (
-  <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-4">
+  <div className="card card-static space-y-4 p-6">
     <div className="flex items-center justify-between">
       <Skeleton variant="text" className="h-4 w-24" />
       <Skeleton variant="circular" className="h-10 w-10" />

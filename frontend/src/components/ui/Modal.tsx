@@ -5,7 +5,7 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 }
 
 const widthMap = {
@@ -14,6 +14,7 @@ const widthMap = {
   lg: 'max-w-lg',
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
 };
 
 const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, maxWidth = 'lg' }) => {
@@ -49,27 +50,28 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, title, children, maxWidth 
       }}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-[ff-fade-in_180ms_ease_both]" />
+      <div
+        className="absolute inset-0 animate-[ff-fade-in_180ms_ease_both] backdrop-blur-md"
+        style={{ background: 'var(--ff-ui-overlay)' }}
+      />
 
       {/* Panel */}
       <div
         className={`
-          relative z-10 w-full ${widthMap[maxWidth]}
+          ff-modal-panel relative z-10 w-full ${widthMap[maxWidth]}
           max-h-[92vh] overflow-y-auto
-          rounded-t-2xl sm:rounded-2xl
-          border border-slate-200/80 dark:border-slate-800
-          bg-white dark:bg-slate-900
+          rounded-t-[1.75rem] sm:rounded-[1.75rem]
           p-6 shadow-2xl
           animate-[ff-modal-enter_200ms_cubic-bezier(0.22,1,0.36,1)_both]
         `}
       >
         {title && (
           <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h2>
+            <h2 className="text-xl font-bold tracking-[-0.03em]" style={{ color: 'var(--ff-ui-text)' }}>{title}</h2>
             <button
               type="button"
               onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+              className="ff-modal-close flex h-9 w-9 items-center justify-center"
               aria-label="Close"
             >
               <span className="material-symbols-outlined text-[18px]">close</span>

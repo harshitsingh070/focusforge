@@ -10,7 +10,7 @@ interface BadgeGridProps {
 const BadgeGrid: React.FC<BadgeGridProps> = ({ badges, emptyMessage = 'No badges found for this filter.' }) => {
   if (badges.length === 0) {
     return (
-      <div className="card text-center">
+      <div className="card ff-glow-surface-soft text-center">
         <p className="text-ink-muted">{emptyMessage}</p>
       </div>
     );

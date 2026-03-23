@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Provider, useSelector } from 'react-redux';
 import { RootState, store } from './store';
@@ -24,6 +24,7 @@ import AdminRoute from './components/Layout/AdminRoute';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import AppLayout from './components/Layout/AppLayout';
 import { isAdminEmail } from './constants/admin';
+import NavProgress from './components/ui/NavProgress';
 
 const PublicHomeRoute: React.FC = () => {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -31,56 +32,59 @@ const PublicHomeRoute: React.FC = () => {
   return <Navigate to={isAdminEmail(user?.email) ? '/admin' : '/dashboard'} replace />;
 };
 
-/**
- * PrivateLayout — wraps children in AppLayout for authenticated pages.
- */
-const PrivateLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+const PrivateAppShell: React.FC = () => (
   <PrivateRoute>
-    <AppLayout>{children}</AppLayout>
+    <AppLayout>
+      <Outlet />
+    </AppLayout>
   </PrivateRoute>
 );
 
-/**
- * AnimatedRoutes — wraps all routes in a keyed div so every top-level
- * pathname change triggers a fresh CSS ff-page-enter animation.
- */
-const AnimatedRoutes: React.FC = () => {
-  const location = useLocation();
-  const routeKey = '/' + (location.pathname.split('/')[1] || '');
+const AdminAppShell: React.FC = () => (
+  <AdminRoute>
+    <AppLayout>
+      <Outlet />
+    </AppLayout>
+  </AdminRoute>
+);
 
+const AnimatedRoutes: React.FC = () => {
   return (
-    <div
-      key={routeKey}
-      style={{
-        animation: 'ff-page-enter 160ms cubic-bezier(0.4,0,0.2,1) both',
-        willChange: 'transform, opacity',
-      }}
-    >
-      <Routes location={location}>
+    <>
+      {/* Top glowing progress bar on every navigation */}
+      <NavProgress />
+
+      <Routes>
         {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/rules" element={<PlatformRules />} />
 
-        {/* Private routes — wrapped in AppLayout */}
-        <Route path="/dashboard" element={<PrivateLayout><Dashboard /></PrivateLayout>} />
-        <Route path="/goals/new" element={<PrivateLayout><NewGoal /></PrivateLayout>} />
-        <Route path="/goals" element={<PrivateLayout><GoalsList /></PrivateLayout>} />
-        <Route path="/goals/:id" element={<PrivateLayout><GoalDetail /></PrivateLayout>} />
-        <Route path="/goals/:id/edit" element={<PrivateLayout><EditGoal /></PrivateLayout>} />
-        <Route path="/goals/:id/log" element={<PrivateLayout><GoalLogActivity /></PrivateLayout>} />
-        <Route path="/leaderboard" element={<PrivateLayout><EnhancedLeaderboard /></PrivateLayout>} />
-        <Route path="/badges" element={<PrivateLayout><Badges /></PrivateLayout>} />
-        <Route path="/analytics" element={<PrivateLayout><Analytics /></PrivateLayout>} />
-        <Route path="/settings" element={<PrivateLayout><Settings /></PrivateLayout>} />
-        <Route path="/activity" element={<PrivateLayout><ActivityLog /></PrivateLayout>} />
-        <Route path="/admin" element={<AdminRoute><AppLayout><AdminDashboard /></AppLayout></AdminRoute>} />
+        {/* Private app shell */}
+        <Route element={<PrivateAppShell />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/goals/new" element={<NewGoal />} />
+          <Route path="/goals" element={<GoalsList />} />
+          <Route path="/goals/:id" element={<GoalDetail />} />
+          <Route path="/goals/:id/edit" element={<EditGoal />} />
+          <Route path="/goals/:id/log" element={<GoalLogActivity />} />
+          <Route path="/leaderboard" element={<EnhancedLeaderboard />} />
+          <Route path="/badges" element={<Badges />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/activity" element={<ActivityLog />} />
+        </Route>
+
+        {/* Admin shell */}
+        <Route element={<AdminAppShell />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
 
         <Route path="/" element={<PublicHomeRoute />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </div>
+    </>
   );
 };
 

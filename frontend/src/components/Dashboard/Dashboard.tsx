@@ -6,6 +6,7 @@ import { AppDispatch, RootState } from '../../store';
 import { fetchDashboard } from '../../store/dashboardSlice';
 import { fetchNotifications, markNotificationRead } from '../../store/notificationsSlice';
 import { fetchSettings } from '../../store/settingsSlice';
+import { useGoalComposer } from '../../contexts/GoalComposerContext';
 import { Badge, GoalProgress, NotificationItem } from '../../types';
 import LogActivityModal from '../Activity/LogActivityModal';
 import Button from '../ui/Button';
@@ -13,6 +14,7 @@ import Card from '../ui/Card';
 import Modal from '../ui/Modal';
 import EmptyState from '../ui/EmptyState';
 import { CardSkeleton } from '../ui/Skeleton';
+import styles from './Dashboard.module.css';
 
 const DASHBOARD_REFRESH_INTERVAL_MS = 30000;
 const MAX_DASHBOARD_GOALS = 3;
@@ -107,6 +109,7 @@ const getBadgeUnlockLabel = (badge: Badge | undefined, totalPoints: number) => {
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { openGoalComposer } = useGoalComposer();
   const { user } = useSelector((state: RootState) => state.auth);
   const { data, error } = useSelector((state: RootState) => state.dashboard);
   const { notifications, unreadCount, loading: notificationsLoading, error: notificationsError } = useSelector(
@@ -206,7 +209,7 @@ const Dashboard: React.FC = () => {
   ) as string;
   const firstName = displayName.split(/[\s@._-]+/).filter(Boolean)[0] || 'there';
   const latestBadge = data.recentBadges[0];
-  const maxWeeklyMinutes = Math.max(...weeklyBars.map((b) => b.minutes), 0);
+  const maxWeeklyMinutes = Math.max(...weeklyBars.map((entry) => entry.minutes), 0);
   const todayLabel = getTodayLabel();
   const todayIndex = weeklyBars.findIndex((b) => b.id === todayLabel);
   const todayMinutes = todayIndex >= 0 ? weeklyBars[todayIndex].minutes : 0;
@@ -224,7 +227,7 @@ const Dashboard: React.FC = () => {
   return (
     <>
       {/* Content */}
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+      <div className={`${styles.dashboardThemeScope} mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8`}>
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 px-5 py-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:px-7 sm:py-6">
           <div className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
           <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -255,7 +258,7 @@ const Dashboard: React.FC = () => {
               <Button
                 variant="primary"
                 icon="add"
-                onClick={() => navigate('/goals/new')}
+                onClick={openGoalComposer}
                 className="rounded-full px-5 shadow-[0_8px_24px_rgba(139,92,246,0.35)]"
               >
                 New Goal
@@ -276,30 +279,33 @@ const Dashboard: React.FC = () => {
           {[
             {
               label: 'Total Points', value: data.totalPoints.toLocaleString(), icon: 'stars',
-              iconBg: 'bg-violet-100 dark:bg-violet-900/30', iconColor: 'text-violet-600 dark:text-violet-400',
+              cardClass: styles.dashboardStatCardViolet,
+              iconClass: styles.dashboardStatIconViolet,
               sub: statDelta !== 0 ? `${statDelta >= 0 ? '+' : ''}${Math.abs(statDelta).toLocaleString()} pts` : '',
-              subColor: statDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500',
+              subColor: statDelta >= 0 ? styles.dashboardStatSubPositive : styles.dashboardStatSubNegative,
             },
             {
               label: 'Global Streak', value: `${data.globalStreak} days`, icon: 'local_fire_department',
-              iconBg: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-500 dark:text-orange-400',
-              sub: streakStatus, subColor: 'text-orange-600 dark:text-orange-400',
+              cardClass: styles.dashboardStatCardAmber,
+              iconClass: styles.dashboardStatIconAmber,
+              sub: streakStatus, subColor: styles.dashboardStatSubWarm,
             },
             {
               label: 'Active Goals', value: String(data.activeGoals.length), icon: 'flag',
-              iconBg: 'bg-emerald-100 dark:bg-emerald-900/30', iconColor: 'text-emerald-600 dark:text-emerald-400',
-              sub: 'In progress', subColor: 'text-emerald-600 dark:text-emerald-400',
+              cardClass: styles.dashboardStatCardEmerald,
+              iconClass: styles.dashboardStatIconEmerald,
+              sub: 'In progress', subColor: styles.dashboardStatSubPositive,
             },
           ].map((stat) => (
-            <Card key={stat.label} hover>
-              <div className="flex items-start justify-between">
+            <Card key={stat.label} className={`${styles.dashboardStatCard} ${stat.cardClass}`}>
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
-                  <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{stat.value}</p>
-                  {stat.sub && <p className={`mt-1 text-xs font-semibold ${stat.subColor}`}>{stat.sub}</p>}
+                  <p className={styles.dashboardStatLabel}>{stat.label}</p>
+                  <p className={styles.dashboardStatValue}>{stat.value}</p>
+                  {stat.sub && <p className={`${styles.dashboardStatSub} ${stat.subColor}`}>{stat.sub}</p>}
                 </div>
-                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.iconBg} transition-transform duration-200 group-hover:scale-110`}>
-                  <span className={`material-symbols-outlined text-xl ${stat.iconColor}`}>{stat.icon}</span>
+                <div className={`${styles.dashboardStatIconShell} ${stat.iconClass}`}>
+                  <span className="material-symbols-outlined text-[20px]">{stat.icon}</span>
                 </div>
               </div>
             </Card>
@@ -311,27 +317,27 @@ const Dashboard: React.FC = () => {
           {/* Left column */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             {/* Weekly Progress */}
-            <Card>
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Weekly Progress</h3>
+            <Card className={styles.dashboardPanelCard}>
+              <div className="mb-5 flex items-center justify-between">
+                <h3 className={styles.dashboardPanelTitle}>Weekly Progress</h3>
                 <button
                   type="button"
                   onClick={() => navigate('/analytics')}
-                  className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+                  className={styles.dashboardChartLink}
                 >
-                  View Details →
+                  View Details
                 </button>
               </div>
               <div className="relative h-56">
-                {/* Grid lines */}
-                <div className="absolute inset-0 flex flex-col justify-between opacity-[0.08]">
-                  {[0, 1, 2, 3].map((l) => <div key={l} className="w-full border-b border-slate-900 dark:border-white" />)}
+                <div className="absolute inset-0 flex flex-col justify-between opacity-[0.18]">
+                  {[0, 1, 2, 3].map((l) => <div key={l} className={styles.dashboardChartGridLine} />)}
                 </div>
-                {/* Bars */}
-                <div className="relative z-10 grid h-full grid-cols-7 items-end gap-2 sm:gap-3 pb-6">
+                <div className="relative z-10 grid h-full grid-cols-7 items-end gap-2 pb-6 sm:gap-3">
                   {weeklyBars.map((bar, i) => {
-                    const hasValue = bar.minutes > 0 && maxWeeklyMinutes > 0;
-                    const heightPercent = hasValue ? Math.max(14, Math.round((bar.minutes / maxWeeklyMinutes) * 100)) : 10;
+                    const hasValue = bar.minutes > 0;
+                    const heightPercent = hasValue && maxWeeklyMinutes > 0
+                      ? Math.max(14, Math.round((bar.minutes / maxWeeklyMinutes) * 100))
+                      : 10;
                     const isToday = bar.id === todayLabel;
                     return (
                       <button
@@ -343,28 +349,25 @@ const Dashboard: React.FC = () => {
                         aria-label={`${bar.label}: ${bar.minutes} minutes`}
                       >
                         <div
-                          className={`
-                            relative w-[65%] sm:w-[60%] rounded-lg transition-all duration-200
-                            ${!hasValue
-                              ? 'bg-slate-100 dark:bg-slate-800 opacity-60'
+                          className={`${styles.dashboardChartBar} ${
+                            !hasValue
+                              ? styles.dashboardChartBarEmpty
                               : isToday
-                                ? 'bg-gradient-to-t from-violet-600 to-violet-400 shadow-md shadow-violet-500/20'
-                                : 'bg-gradient-to-t from-violet-500/60 to-violet-400/40 dark:from-violet-500/40 dark:to-violet-400/20'
-                            }
-                            ${hasValue ? 'hover:brightness-110 hover:shadow-lg' : ''}
-                          `}
+                                ? styles.dashboardChartBarToday
+                                : styles.dashboardChartBarStandard
+                          }`}
                           style={{
                             height: `${heightPercent}%`,
                             animation: `ff-bar-grow 600ms cubic-bezier(.4,0,.2,1) ${i * 60}ms both`,
                           }}
                         >
                           {hoveredWeeklyId === bar.id && (
-                            <span className="absolute -top-12 left-1/2 z-20 w-max -translate-x-1/2 rounded-lg bg-slate-900 dark:bg-slate-700 px-3 py-2 text-xs text-white shadow-xl">
+                            <span className={styles.dashboardChartTooltip}>
                               <strong>{bar.label}</strong>: {bar.minutes} min
                             </span>
                           )}
                         </div>
-                        <p className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-medium ${isToday ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                        <p className={`${styles.dashboardChartLabel} ${isToday ? styles.dashboardChartLabelActive : ''}`}>
                           {bar.label}
                         </p>
                       </button>
@@ -376,14 +379,14 @@ const Dashboard: React.FC = () => {
 
             {/* Active Goals */}
             <div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Active Goals</h3>
+              <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">Active Goals</h3>
               {visibleGoals.length === 0 ? (
                 <EmptyState
                   icon="track_changes"
                   title="No active goals"
                   description="Create your first goal to start tracking progress."
                   actionLabel="Create Goal"
-                  onAction={() => navigate('/goals/new')}
+                  onAction={openGoalComposer}
                 />
               ) : (
                 <div className="flex flex-col gap-3">
@@ -393,39 +396,40 @@ const Dashboard: React.FC = () => {
                     const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
 
                     return (
-                      <Card key={goal.goalId} hover accent={categoryColor}>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4">
-                            {/* Progress ring */}
-                            <div className="relative h-12 w-12 shrink-0">
-                              <svg className="h-12 w-12 -rotate-90" viewBox="0 0 48 48">
-                                <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="3"
-                                  className="text-slate-100 dark:text-slate-800" />
-                                <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3" strokeLinecap="round"
-                                  stroke={categoryColor}
-                                  strokeDasharray={`${progressPercent * 1.256} 125.6`}
-                                  className="transition-all duration-700" />
-                              </svg>
-                              <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-slate-900 dark:text-white">
-                                {progressPercent}%
+                      <Card key={goal.goalId} className={styles.dashboardGoalCard}>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className={styles.dashboardGoalTitle}>{goal.title}</h4>
+                              <span
+                                className={styles.dashboardGoalBadge}
+                                style={{ color: categoryColor, backgroundColor: `${categoryColor}1c`, borderColor: `${categoryColor}40` }}
+                              >
+                                {goal.category || 'General'}
                               </span>
                             </div>
-                            <div>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-bold text-slate-900 dark:text-white">{goal.title}</h4>
-                                <span className="rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase"
-                                  style={{ color: categoryColor, backgroundColor: `${categoryColor}15`, borderColor: `${categoryColor}40` }}>
-                                  {goal.category || 'General'}
-                                </span>
-                              </div>
-                              <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-                                {remainingMinutes > 0 ? `${remainingMinutes} min left today` : '✓ Target complete'}
-                              </p>
-                            </div>
+                            <p className={styles.dashboardGoalMeta}>
+                              {remainingMinutes > 0 ? `${remainingMinutes} min left today` : 'Target complete'}
+                            </p>
                           </div>
+                          <span className={styles.dashboardGoalPercent}>{progressPercent}%</span>
+                        </div>
+
+                        <div className={styles.dashboardGoalTrack}>
+                          <div
+                            className={styles.dashboardGoalFill}
+                            style={{ width: `${Math.max(progressPercent, 8)}%`, background: categoryColor }}
+                          />
+                        </div>
+
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <p className={styles.dashboardGoalProgressNote}>
+                            {goal.todayProgress}/{goal.dailyTarget} minutes logged today
+                          </p>
                           <Button
                             variant={goal.completedToday ? 'secondary' : 'primary'}
                             size="sm"
+                            className={goal.completedToday ? styles.dashboardGoalButtonSecondary : styles.dashboardGoalButtonPrimary}
                             onClick={() => {
                               if (goal.completedToday) { navigate(`/goals/${goal.goalId}`); return; }
                               setSelectedGoal(goal);
@@ -445,22 +449,21 @@ const Dashboard: React.FC = () => {
           {/* Right sidebar */}
           <aside className="flex flex-col gap-5">
             {/* Badge Momentum */}
-            <Card>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50/50 dark:from-violet-900/10 to-transparent rounded-2xl" />
+            <Card className={styles.dashboardPanelCard}>
               <div className="relative z-10">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">Badge Momentum</h3>
+                <h3 className={styles.dashboardPanelTitle}>Badge Momentum</h3>
                 <div className="mt-5 flex justify-center">
-                  <div className="flex h-20 w-20 rotate-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-600 shadow-lg shadow-orange-500/25 transition-transform hover:scale-105">
+                  <div className={styles.dashboardBadgeGlyph}>
                     <span className="material-symbols-outlined text-4xl text-white">emoji_events</span>
                   </div>
                 </div>
                 <div className="mt-4 text-center">
-                  <h4 className="text-lg font-bold text-slate-900 dark:text-white">{badgeTitle}</h4>
-                  <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{badgeUnlockLabel}</p>
+                  <h4 className={styles.dashboardPanelHeadline}>{badgeTitle}</h4>
+                  <p className={styles.dashboardPanelSubtle}>{badgeUnlockLabel}</p>
                 </div>
-                <div className="mt-4 h-2 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                <div className={styles.dashboardGoalTrack}>
                   <div
-                    className="h-2 rounded-full bg-gradient-to-r from-violet-600 to-purple-500 transition-all duration-700"
+                    className={styles.dashboardGoalFill}
                     style={{ width: `${badgeProgress}%` }}
                   />
                 </div>
@@ -468,29 +471,28 @@ const Dashboard: React.FC = () => {
             </Card>
 
             {/* Recent Activity */}
-            <Card>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-4">Recent Activity</h3>
+            <Card className={styles.dashboardPanelCard}>
+              <h3 className={styles.dashboardPanelTitle}>Recent Activity</h3>
               {data.recentActivities.length === 0 ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">No recent activity yet.</p>
+                <p className={styles.dashboardPanelSubtle}>No recent activity yet.</p>
               ) : (
                 <div className="relative flex flex-col gap-0">
-                  <div className="absolute bottom-2 left-[11px] top-2 z-0 w-px bg-slate-200 dark:bg-slate-700" />
+                  <div className={styles.dashboardActivityLine} />
                   {data.recentActivities.slice(0, 4).map((activity, index) => {
                     const primary = index === 0;
                     return (
                       <div key={activity.id} className="relative z-10 flex gap-3 pb-4 last:pb-0">
-                        <div className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 shrink-0 ${
-                          primary
-                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/30'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'
-                        }`}>
-                          {primary && <span className="h-2 w-2 rounded-full bg-violet-600" />}
+                        <div className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 shrink-0 ${primary
+                            ? styles.dashboardActivityDotPrimary
+                            : styles.dashboardActivityDot
+                          }`}>
+                          {primary && <span className={styles.dashboardActivityPulse} />}
                         </div>
                         <div className="min-w-0">
-                          <p className={`text-sm font-medium truncate ${primary ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                          <p className={`truncate text-sm font-medium ${primary ? styles.dashboardActivityTitlePrimary : styles.dashboardActivityTitle}`}>
                             {activity.goalTitle || 'Goal Activity'}
                           </p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500">
+                          <p className={styles.dashboardActivityMeta}>
                             {activity.minutes > 0 ? `${activity.minutes} min` : 'Logged'} · {getRelativeTime(activity.date)}
                           </p>
                         </div>
@@ -502,22 +504,31 @@ const Dashboard: React.FC = () => {
             </Card>
 
             {/* Quick Actions */}
-            <Card>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">Quick Actions</h3>
+            <Card className={styles.dashboardPanelCard}>
+              <h3 className={styles.dashboardPanelTitle}>Quick Actions</h3>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: 'add_circle', label: 'New Goal', to: '/goals/new' },
+                  { icon: 'add_circle', label: 'New Goal', onClick: openGoalComposer },
                   { icon: 'monitoring', label: 'Analytics', to: '/analytics' },
                   { icon: 'military_tech', label: 'Badges', to: '/badges' },
                   { icon: 'leaderboard', label: 'Rankings', to: '/leaderboard' },
                 ].map((action) => (
                   <button
-                    key={action.to}
-                    onClick={() => navigate(action.to)}
-                    className="flex flex-col items-center gap-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 py-3 px-2 text-slate-600 dark:text-slate-400 transition-all duration-200 hover:bg-violet-50 dark:hover:bg-violet-500/10 hover:text-violet-600 dark:hover:text-violet-400 hover:border-violet-200 dark:hover:border-violet-500/30"
+                    key={action.label}
+                    onClick={() => {
+                      if (action.onClick) {
+                        action.onClick();
+                        return;
+                      }
+
+                      if (action.to) {
+                        navigate(action.to);
+                      }
+                    }}
+                    className={styles.dashboardQuickAction}
                   >
-                    <span className="material-symbols-outlined text-[20px]">{action.icon}</span>
-                    <span className="text-xs font-medium">{action.label}</span>
+                    <span className={`material-symbols-outlined ${styles.dashboardQuickActionIcon}`}>{action.icon}</span>
+                    <span className={styles.dashboardQuickActionLabel}>{action.label}</span>
                   </button>
                 ))}
               </div>
@@ -539,11 +550,10 @@ const Dashboard: React.FC = () => {
             {prioritizedNotifications.map((n) => (
               <article
                 key={n.id}
-                className={`rounded-xl border p-4 transition-colors ${
-                  n.isRead
+                className={`rounded-xl border p-4 transition-colors ${n.isRead
                     ? 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'
                     : 'border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10'
-                }`}
+                  }`}
               >
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{n.title || 'Alert'}</p>
                 <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{n.message}</p>

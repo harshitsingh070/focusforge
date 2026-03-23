@@ -113,7 +113,7 @@ const Settings: React.FC = () => {
       </div>
 
       {/* Save bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 p-4 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 p-4 backdrop-blur-md transition-[left] duration-300 md:[left:var(--ff-sidebar-width)]">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between">
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</span>}

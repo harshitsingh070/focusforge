@@ -13,7 +13,7 @@ const Progress: React.FC<ProgressProps> = ({ earnedCount, totalCount }) => {
   } as React.CSSProperties;
 
   return (
-    <div className="card border-transparent text-white" style={{ background: 'linear-gradient(135deg,#A855F7,#6D28D9)' }}>
+    <div className="card ff-glow-vibrant border-transparent text-white" style={{ background: 'linear-gradient(135deg,#A855F7,#6D28D9)' }}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-white/80">Completion</p>

@@ -9,7 +9,7 @@ interface UpcomingBadgesProps {
 const UpcomingBadges: React.FC<UpcomingBadgesProps> = ({ badges }) => {
   if (!badges || badges.length === 0) {
     return (
-      <div className={styles.sidebarCard}>
+      <div className={`${styles.sidebarCard} ff-glow-surface`}>
         <h3 className={styles.sidebarCardTitle}>Upcoming Badges</h3>
         <p style={{ fontSize: '0.875rem', color: '#9ca3af', textAlign: 'center', padding: '1.5rem 0' }}>
           No badges available.
@@ -19,13 +19,14 @@ const UpcomingBadges: React.FC<UpcomingBadgesProps> = ({ badges }) => {
   }
 
   return (
-    <div className={styles.sidebarCard}>
+    <div className={`${styles.sidebarCard} ff-glow-surface`}>
       <h3 className={styles.sidebarCardTitle}>Upcoming Badges</h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {badges.slice(0, 3).map((badge) => (
           <div
             key={badge.id}
+            className="ff-glow-surface-soft"
             style={{
               display: 'flex',
               alignItems: 'center',

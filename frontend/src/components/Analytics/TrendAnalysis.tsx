@@ -42,13 +42,13 @@ const TrendAnalysis: React.FC<TrendAnalysisProps> = ({ monthlyTrends, streakHist
 
   return (
     <>
-      <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover">
+      <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <h2 className="ff-analytics-text text-[24px] font-semibold">Monthly Consistency</h2>
         <p className="ff-analytics-soft mt-1 text-sm">Points, minutes, and active-day quality over recent months.</p>
 
         {hasMonthlyData ? (
           <>
-            <div className="ff-analytics-chart-area">
+            <div className="ff-analytics-chart-area mt-5 h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={monthlyTrends}>
                   <CartesianGrid strokeDasharray="4 6" stroke={gridColor} vertical={false} />
@@ -144,13 +144,13 @@ const TrendAnalysis: React.FC<TrendAnalysisProps> = ({ monthlyTrends, streakHist
         )}
       </article>
 
-      <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover">
+      <article className="ff-analytics-glass ff-analytics-chart-card ff-analytics-card-hover rounded-2xl border border-slate-200/80 bg-white/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <h2 className="ff-analytics-text text-[24px] font-semibold">Streak Quality</h2>
         <p className="ff-analytics-soft mt-1 text-sm">Daily streak path compared with rolling average.</p>
 
         {hasStreakData ? (
           <>
-            <div className="ff-analytics-chart-area">
+            <div className="ff-analytics-chart-area mt-5 h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={streakChartData}>
                   <CartesianGrid strokeDasharray="4 6" stroke={gridColor} vertical={false} />

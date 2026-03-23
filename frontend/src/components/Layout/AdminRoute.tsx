@@ -1,11 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { isAdminEmail } from '../../constants/admin';
 
 interface AdminRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
@@ -19,7 +19,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>;
+  return <>{children ?? <Outlet />}</>;
 };
 
 export default AdminRoute;

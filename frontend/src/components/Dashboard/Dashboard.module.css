@@ -504,3 +504,763 @@
     padding: 1.5rem 1rem;
   }
 }
+
+.dashboardThemeScope {
+  --ff-dashboard-card-top: #ffffff;
+  --ff-dashboard-card-bottom: #f3f6fb;
+  --ff-dashboard-card-tint: rgba(129, 140, 248, 0.12);
+  --ff-dashboard-card-border: rgba(148, 163, 184, 0.2);
+  --ff-dashboard-card-shadow:
+    0 18px 34px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --ff-dashboard-card-shadow-hover:
+    0 22px 42px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(99, 102, 241, 0.08),
+    0 0 18px rgba(99, 102, 241, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --ff-dashboard-card-highlight: rgba(255, 255, 255, 0.88);
+  --ff-dashboard-card-orb: rgba(129, 140, 248, 0.1);
+  --ff-dashboard-text: #111827;
+  --ff-dashboard-text-soft: rgba(51, 65, 85, 0.78);
+  --ff-dashboard-text-muted: rgba(71, 85, 105, 0.78);
+  --ff-dashboard-track: rgba(148, 163, 184, 0.22);
+  --ff-dashboard-grid: rgba(15, 23, 42, 0.08);
+  --ff-dashboard-link-bg: rgba(255, 255, 255, 0.74);
+  --ff-dashboard-link-border: rgba(129, 140, 248, 0.14);
+  --ff-dashboard-link-color: #5b21b6;
+  --ff-dashboard-link-shadow: 0 10px 24px rgba(99, 102, 241, 0.08);
+  --ff-dashboard-action-bg: rgba(255, 255, 255, 0.72);
+  --ff-dashboard-action-hover: rgba(245, 243, 255, 0.96);
+  --ff-dashboard-empty-bar: rgba(203, 213, 225, 0.82);
+  --ff-dashboard-tooltip-bg: rgba(15, 23, 42, 0.92);
+  --ff-dashboard-tooltip-border: rgba(255, 255, 255, 0.08);
+  --ff-dashboard-icon-shell-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(241, 245, 249, 0.92));
+  --ff-dashboard-icon-shell-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 8px 18px rgba(15, 23, 42, 0.08);
+  --ff-dashboard-button-secondary-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.88));
+  --ff-dashboard-button-secondary-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.92));
+  --ff-dashboard-stat-violet-top: #ffffff;
+  --ff-dashboard-stat-violet-bottom: #f4f1ff;
+  --ff-dashboard-stat-amber-top: #fffaf1;
+  --ff-dashboard-stat-amber-bottom: #f8f1e8;
+  --ff-dashboard-stat-emerald-top: #f7fffc;
+  --ff-dashboard-stat-emerald-bottom: #eef8f4;
+}
+
+:global(:root.theme-dark) .dashboardThemeScope,
+:global(:root.dark) .dashboardThemeScope {
+  --ff-dashboard-card-top: #181c2b;
+  --ff-dashboard-card-bottom: #121623;
+  --ff-dashboard-card-tint: rgba(129, 140, 248, 0.12);
+  --ff-dashboard-card-border: rgba(255, 255, 255, 0.07);
+  --ff-dashboard-card-shadow:
+    0 18px 34px rgba(4, 8, 20, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --ff-dashboard-card-shadow-hover:
+    0 22px 42px rgba(4, 8, 20, 0.5),
+    0 0 0 1px rgba(196, 181, 253, 0.05),
+    0 0 20px rgba(139, 92, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --ff-dashboard-card-highlight: rgba(255, 255, 255, 0.05);
+  --ff-dashboard-card-orb: rgba(167, 139, 250, 0.1);
+  --ff-dashboard-text: #f8fafc;
+  --ff-dashboard-text-soft: rgba(226, 232, 240, 0.72);
+  --ff-dashboard-text-muted: rgba(226, 232, 240, 0.62);
+  --ff-dashboard-track: rgba(148, 163, 184, 0.18);
+  --ff-dashboard-grid: rgba(255, 255, 255, 0.08);
+  --ff-dashboard-link-bg: rgba(255, 255, 255, 0.035);
+  --ff-dashboard-link-border: rgba(196, 181, 253, 0.12);
+  --ff-dashboard-link-color: #c4b5fd;
+  --ff-dashboard-link-shadow: 0 0 14px rgba(139, 92, 246, 0.08);
+  --ff-dashboard-action-bg: rgba(255, 255, 255, 0.03);
+  --ff-dashboard-action-hover: rgba(139, 92, 246, 0.055);
+  --ff-dashboard-empty-bar: rgba(148, 163, 184, 0.1);
+  --ff-dashboard-tooltip-bg: rgba(17, 24, 39, 0.88);
+  --ff-dashboard-tooltip-border: rgba(255, 255, 255, 0.08);
+  --ff-dashboard-icon-shell-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+  --ff-dashboard-icon-shell-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(15, 23, 42, 0.12);
+  --ff-dashboard-button-secondary-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  --ff-dashboard-button-secondary-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.05));
+  --ff-dashboard-stat-violet-top: #201d34;
+  --ff-dashboard-stat-violet-bottom: #151827;
+  --ff-dashboard-stat-amber-top: #231d30;
+  --ff-dashboard-stat-amber-bottom: #161723;
+  --ff-dashboard-stat-emerald-top: #1b2131;
+  --ff-dashboard-stat-emerald-bottom: #141722;
+}
+
+.dashboardStatCard,
+.dashboardPanelCard,
+.dashboardGoalCard,
+.dashboardSummaryCard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--ff-dashboard-card-border) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 18%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at top right, var(--ff-dashboard-card-tint), transparent 34%),
+    linear-gradient(180deg, var(--ff-dashboard-card-top) 0%, var(--ff-dashboard-card-bottom) 100%) !important;
+  box-shadow: var(--ff-dashboard-card-shadow) !important;
+  backdrop-filter: blur(14px) saturate(1.05);
+  -webkit-backdrop-filter: blur(14px) saturate(1.05);
+  transition:
+    border-color 220ms var(--ff-motion-easing),
+    box-shadow 220ms var(--ff-motion-easing),
+    filter 220ms var(--ff-motion-easing);
+}
+
+.dashboardStatCard {
+  min-height: 168px;
+}
+
+.dashboardStatCard:hover,
+.dashboardPanelCard:hover,
+.dashboardGoalCard:hover,
+.dashboardSummaryCard:hover {
+  border-color: var(--ff-dashboard-link-border) !important;
+  box-shadow: var(--ff-dashboard-card-shadow-hover) !important;
+}
+
+.dashboardStatCard::before,
+.dashboardPanelCard::before,
+.dashboardGoalCard::before,
+.dashboardSummaryCard::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--ff-dashboard-card-highlight), rgba(255, 255, 255, 0.01) 16%, rgba(255, 255, 255, 0) 38%);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboardStatCard::after,
+.dashboardPanelCard::after,
+.dashboardGoalCard::after,
+.dashboardSummaryCard::after {
+  content: '';
+  position: absolute;
+  right: -22%;
+  top: -28%;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, var(--ff-dashboard-card-orb), rgba(167, 139, 250, 0));
+  filter: blur(16px);
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboardStatCard > *,
+.dashboardPanelCard > *,
+.dashboardGoalCard > *,
+.dashboardSummaryCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboardStatCardViolet {
+  --ff-dashboard-card-tint: rgba(168, 85, 247, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 18%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at top right, var(--ff-dashboard-card-tint), transparent 32%),
+    linear-gradient(180deg, var(--ff-dashboard-stat-violet-top) 0%, var(--ff-dashboard-stat-violet-bottom) 100%) !important;
+}
+
+.dashboardStatCardAmber {
+  --ff-dashboard-card-tint: rgba(251, 191, 36, 0.16);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 18%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at top right, var(--ff-dashboard-card-tint), transparent 32%),
+    linear-gradient(180deg, var(--ff-dashboard-stat-amber-top) 0%, var(--ff-dashboard-stat-amber-bottom) 100%) !important;
+}
+
+.dashboardStatCardEmerald {
+  --ff-dashboard-card-tint: rgba(16, 185, 129, 0.15);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012) 18%, rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at top right, var(--ff-dashboard-card-tint), transparent 32%),
+    linear-gradient(180deg, var(--ff-dashboard-stat-emerald-top) 0%, var(--ff-dashboard-stat-emerald-bottom) 100%) !important;
+}
+
+.dashboardStatLabel {
+  color: var(--ff-dashboard-text-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.dashboardStatValue {
+  margin-top: 1rem;
+  color: var(--ff-dashboard-text);
+  font-size: clamp(2rem, 3vw, 2.65rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.dashboardStatSub {
+  margin-top: 1.05rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.dashboardStatSubPositive {
+  color: #6ee7b7;
+}
+
+.dashboardStatSubNegative {
+  color: #fca5a5;
+}
+
+.dashboardStatSubWarm {
+  color: #fbbf24;
+}
+
+.dashboardStatIconShell {
+  display: grid;
+  height: 3rem;
+  width: 3rem;
+  place-items: center;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--ff-dashboard-icon-shell-bg);
+  color: #f8fafc;
+  box-shadow: var(--ff-dashboard-icon-shell-shadow);
+}
+
+.dashboardStatIconViolet {
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.18);
+}
+
+.dashboardStatIconAmber {
+  color: #fde68a;
+  background: rgba(251, 191, 36, 0.16);
+}
+
+.dashboardStatIconEmerald {
+  color: #86efac;
+  background: rgba(16, 185, 129, 0.16);
+}
+
+.dashboardSummaryCard {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.75rem;
+  padding: 1.75rem;
+}
+
+.dashboardSummaryTitle {
+  color: var(--ff-dashboard-text);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.dashboardSummarySubtitle {
+  margin-top: 0.35rem;
+  color: var(--ff-dashboard-text-soft);
+  font-size: 0.92rem;
+}
+
+.dashboardStatusChip {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    border-color 180ms var(--ff-motion-easing),
+    filter 180ms var(--ff-motion-easing),
+    box-shadow 180ms var(--ff-motion-easing);
+}
+
+.dashboardStatusChip:hover {
+  filter: brightness(1.04);
+}
+
+.dashboardStatusChipActive {
+  color: #bbf7d0;
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.22);
+}
+
+.dashboardStatusChipSuccess {
+  color: #ecfccb;
+  background: rgba(132, 204, 22, 0.16);
+  border-color: rgba(132, 204, 22, 0.22);
+}
+
+.dashboardStatusChipFocus {
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.22);
+}
+
+.dashboardStatusChipNeutral {
+  color: #d8b4fe;
+  background: rgba(139, 92, 246, 0.14);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.dashboardSummaryList {
+  margin-top: 1.7rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboardSummaryRow {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.dashboardSummaryRowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboardSummaryRowLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ff-dashboard-text);
+  font-size: 0.96rem;
+  font-weight: 600;
+}
+
+.dashboardSummaryRowValue {
+  color: var(--ff-dashboard-text);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.dashboardSummaryTrack,
+.dashboardGoalTrack {
+  height: 0.5rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ff-dashboard-track);
+}
+
+.dashboardSummaryFill,
+.dashboardGoalFill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  box-shadow: 0 0 16px rgba(167, 139, 250, 0.2);
+  transition: width 500ms ease-out;
+}
+
+.dashboardSummaryFooter {
+  margin-top: 1.65rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboardSummaryFooterMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #fb923c;
+}
+
+.dashboardSummaryFooterTitle {
+  color: var(--ff-dashboard-text);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.dashboardSummaryFooterText {
+  margin-top: 0.2rem;
+  color: var(--ff-dashboard-text-muted);
+  font-size: 0.82rem;
+}
+
+.dashboardSummaryFooterStat {
+  color: var(--ff-dashboard-text-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.dashboardSummaryEmpty {
+  margin-top: 1.6rem;
+  border-radius: 1.1rem;
+  border: 1px dashed var(--ff-dashboard-card-border);
+  background: rgba(255, 255, 255, 0.24);
+  padding: 1rem 1.1rem;
+  color: var(--ff-dashboard-text-soft);
+  font-size: 0.92rem;
+}
+
+:global(:root.theme-dark) .dashboardSummaryEmpty,
+:global(:root.dark) .dashboardSummaryEmpty {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dashboardGoalCard {
+  border-radius: 1.5rem !important;
+  padding-top: 1.2rem !important;
+  padding-bottom: 1.2rem !important;
+}
+
+.dashboardGoalTitle {
+  color: var(--ff-dashboard-text);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboardGoalBadge {
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.24rem 0.58rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.dashboardGoalMeta {
+  margin-top: 0.62rem;
+  color: var(--ff-dashboard-text-muted);
+  font-size: 0.84rem;
+}
+
+.dashboardGoalPercent {
+  color: var(--ff-dashboard-text);
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.dashboardGoalTrack {
+  margin-top: 1.05rem;
+  height: 0.46rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dashboardGoalProgressNote {
+  color: var(--ff-dashboard-text-soft);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.dashboardGoalButtonPrimary,
+.dashboardGoalButtonSecondary {
+  border-radius: 999px !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.dashboardGoalButtonPrimary:hover,
+.dashboardGoalButtonPrimary:active,
+.dashboardGoalButtonSecondary:hover,
+.dashboardGoalButtonSecondary:active {
+  transform: none !important;
+}
+
+.dashboardGoalButtonPrimary {
+  background: linear-gradient(135deg, #9563ef, #7843e6) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 0 0 1px rgba(196, 181, 253, 0.12),
+    0 10px 22px rgba(124, 58, 237, 0.18) !important;
+}
+
+.dashboardGoalButtonPrimary:hover {
+  filter: brightness(1.05);
+  box-shadow:
+    0 0 0 1px rgba(196, 181, 253, 0.14),
+    0 12px 26px rgba(124, 58, 237, 0.22) !important;
+}
+
+.dashboardGoalButtonSecondary {
+  border-color: var(--ff-dashboard-card-border) !important;
+  background: var(--ff-dashboard-button-secondary-bg) !important;
+  color: var(--ff-dashboard-text) !important;
+}
+
+.dashboardGoalButtonSecondary:hover {
+  background: var(--ff-dashboard-button-secondary-hover) !important;
+}
+
+.dashboardPanelCard {
+  border-radius: 1.5rem !important;
+}
+
+.dashboardPanelTitle {
+  margin: 0 0 1rem 0;
+  color: var(--ff-dashboard-text);
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.dashboardPanelHeadline {
+  color: var(--ff-dashboard-text);
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.dashboardPanelSubtle {
+  margin-top: 0.35rem;
+  color: var(--ff-dashboard-text-muted);
+  font-size: 0.84rem;
+}
+
+.dashboardChartLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ff-dashboard-link-border);
+  border-radius: 999px;
+  background: var(--ff-dashboard-link-bg);
+  padding: 0.38rem 0.78rem;
+  color: var(--ff-dashboard-link-color);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition:
+    color 180ms var(--ff-motion-easing),
+    border-color 180ms var(--ff-motion-easing),
+    box-shadow 180ms var(--ff-motion-easing),
+    background-color 180ms var(--ff-motion-easing);
+}
+
+.dashboardChartLink:hover {
+  color: var(--ff-dashboard-link-color);
+  border-color: var(--ff-dashboard-link-border);
+  background: var(--ff-dashboard-link-bg);
+  box-shadow: var(--ff-dashboard-link-shadow);
+}
+
+.dashboardChartGridLine {
+  width: 100%;
+  border-bottom: 1px solid var(--ff-dashboard-grid);
+}
+
+.dashboardChartBar {
+  position: relative;
+  overflow: hidden;
+  width: 58%;
+  border-radius: 1rem 1rem 0.5rem 0.5rem;
+  transition:
+    filter 180ms var(--ff-motion-easing),
+    box-shadow 180ms var(--ff-motion-easing);
+}
+
+.dashboardChartBar::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 0.16rem;
+  height: 0.08rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  opacity: 0.78;
+}
+
+.dashboardChartBar:hover {
+  filter: brightness(1.06);
+}
+
+.dashboardChartBarStandard {
+  background: linear-gradient(180deg, rgba(167, 139, 250, 0.92), rgba(109, 40, 217, 0.7));
+  box-shadow: 0 10px 20px rgba(109, 40, 217, 0.2);
+}
+
+.dashboardChartBarToday {
+  background: linear-gradient(180deg, #b8a4fc, #8b5cf6);
+  box-shadow:
+    0 0 18px rgba(167, 139, 250, 0.22),
+    0 12px 24px rgba(124, 58, 237, 0.18);
+}
+
+.dashboardChartBarEmpty {
+  background: var(--ff-dashboard-empty-bar);
+  box-shadow: none;
+}
+
+.dashboardChartTooltip {
+  position: absolute;
+  left: 50%;
+  top: -3rem;
+  z-index: 20;
+  width: max-content;
+  transform: translateX(-50%);
+  border-radius: 0.9rem;
+  border: 1px solid var(--ff-dashboard-tooltip-border);
+  background: var(--ff-dashboard-tooltip-bg);
+  padding: 0.55rem 0.8rem;
+  color: #f8fafc;
+  font-size: 0.74rem;
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.dashboardChartLabel {
+  position: absolute;
+  bottom: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--ff-dashboard-text-muted);
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dashboardChartLabelActive {
+  color: #c4b5fd;
+}
+
+.dashboardBadgeGlyph {
+  display: grid;
+  height: 4.7rem;
+  width: 4.7rem;
+  place-items: center;
+  border-radius: 1.2rem;
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+  box-shadow:
+    0 14px 24px rgba(249, 115, 22, 0.18),
+    0 0 0 1px rgba(253, 224, 71, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dashboardActivityLine {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 11px;
+  top: 0.5rem;
+  z-index: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(196, 181, 253, 0.06), rgba(196, 181, 253, 0.18), rgba(196, 181, 253, 0.05));
+}
+
+.dashboardActivityDot,
+.dashboardActivityDotPrimary {
+  border-color: var(--ff-dashboard-card-border);
+  background: var(--ff-dashboard-action-bg);
+}
+
+.dashboardActivityDotPrimary {
+  border-color: rgba(139, 92, 246, 0.48);
+  background: rgba(139, 92, 246, 0.16);
+}
+
+.dashboardActivityPulse {
+  height: 0.45rem;
+  width: 0.45rem;
+  border-radius: 999px;
+  background: #a78bfa;
+  box-shadow: 0 0 10px rgba(167, 139, 250, 0.45);
+}
+
+.dashboardActivityTitlePrimary {
+  color: var(--ff-dashboard-text);
+}
+
+.dashboardActivityTitle {
+  color: var(--ff-dashboard-text-soft);
+}
+
+.dashboardActivityMeta {
+  color: var(--ff-dashboard-text-muted);
+  font-size: 0.75rem;
+}
+
+.dashboardQuickAction {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--ff-dashboard-card-border);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+    var(--ff-dashboard-action-bg);
+  padding: 0.95rem 0.65rem;
+  color: var(--ff-dashboard-text-soft);
+  transition:
+    border-color 180ms var(--ff-motion-easing),
+    background-color 180ms var(--ff-motion-easing),
+    box-shadow 180ms var(--ff-motion-easing),
+    color 180ms var(--ff-motion-easing);
+}
+
+.dashboardQuickAction::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0));
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.dashboardQuickAction:hover {
+  border-color: var(--ff-dashboard-link-border);
+  background:
+    linear-gradient(180deg, rgba(167, 139, 250, 0.1), rgba(139, 92, 246, 0.05)),
+    var(--ff-dashboard-action-hover);
+  box-shadow:
+    0 0 12px rgba(139, 92, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  color: var(--ff-dashboard-text);
+}
+
+.dashboardQuickActionIcon {
+  font-size: 1.15rem;
+  position: relative;
+  z-index: 1;
+}
+
+.dashboardQuickActionLabel {
+  font-size: 0.76rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .dashboardSummaryCard {
+    padding: 1.35rem;
+  }
+
+  .dashboardSummaryFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboardStatCard {
+    min-height: auto;
+  }
+
+  .dashboardChartLink {
+    padding-inline: 0.68rem;
+  }
+}

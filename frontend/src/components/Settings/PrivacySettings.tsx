@@ -11,22 +11,22 @@ const toggleOptions: Array<{
   label: string;
   description: string;
 }> = [
-  {
-    key: 'showLeaderboard',
-    label: 'Show on leaderboard',
-    description: 'Include your profile in ranking tables.',
-  },
-  {
-    key: 'showBadges',
-    label: 'Show badges',
-    description: 'Display earned badges publicly.',
-  },
-  {
-    key: 'showProgress',
-    label: 'Show progress',
-    description: 'Share streak and progress trends.',
-  },
-];
+    {
+      key: 'showLeaderboard',
+      label: 'Show on leaderboard',
+      description: 'Include your profile in ranking tables.',
+    },
+    {
+      key: 'showBadges',
+      label: 'Show badges',
+      description: 'Display earned badges publicly.',
+    },
+    {
+      key: 'showProgress',
+      label: 'Show progress',
+      description: 'Share streak and progress trends.',
+    },
+  ];
 
 const PrivacySettings: React.FC<PrivacySettingsProps> = ({ value, onChange }) => {
   return (
@@ -46,11 +46,10 @@ const PrivacySettings: React.FC<PrivacySettingsProps> = ({ value, onChange }) =>
           return (
             <label
               key={option.key}
-              className={`flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all ${
-                checked
+              className={`flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all ${checked
                   ? 'border-violet-600 bg-violet-50 dark:bg-violet-600/10'
                   : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950'
-              }`}
+                }`}
             >
               <input
                 type="radio"

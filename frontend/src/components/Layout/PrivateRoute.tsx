@@ -1,11 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { isAdminEmail } from '../../constants/admin';
 
 interface PrivateRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
@@ -19,7 +19,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     return <Navigate to="/admin" replace />;
   }
 
-  return <>{children}</>;
+  return <>{children ?? <Outlet />}</>;
 };
 
 export default PrivateRoute;

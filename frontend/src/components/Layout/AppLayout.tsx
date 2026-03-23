@@ -4,7 +4,9 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { isAdminEmail } from '../../constants/admin';
 import { NAV_ITEMS, ADMIN_NAV_ITEM, isActiveNav } from '../../constants/navigation';
+import { GoalComposerProvider } from '../../contexts/GoalComposerContext';
 import Navbar from './Navbar';
+import PageReveal from '../ui/PageReveal';
 
 const SIDEBAR_COLLAPSED_KEY = 'ff-sidebar-collapsed';
 
@@ -45,10 +47,18 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     .map((t) => t[0]?.toUpperCase() || '')
     .join('') || 'FF';
 
+  const layoutStyle = {
+    '--ff-sidebar-width': collapsed ? '72px' : '260px',
+  } as React.CSSProperties;
+
 
   return (
-    <div className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]">
-      <div className="flex h-screen">
+    <GoalComposerProvider>
+      <div
+        className="h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 [font-family:'Inter',sans-serif]"
+        style={layoutStyle}
+      >
+        <div className="flex h-screen">
         {/* ── Desktop Sidebar — full height, sits at the left ── */}
         <aside
           className={`
@@ -198,13 +208,17 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <Navbar onToggleMobileSidebar={() => setMobileOpen((p) => !p)} />
           </div>
 
-          {/* Main content scrolls independently */}
-          <main className="flex-1 overflow-y-auto">
-            {children}
+          {/* Main content scrolls independently — smooth scroll + overscroll containment */}
+          <main
+            className="flex-1 overflow-y-auto scroll-smooth overscroll-contain"
+            style={{ scrollBehavior: 'smooth', willChange: 'scroll-position' }}
+          >
+            <PageReveal>{children}</PageReveal>
           </main>
         </div>
+        </div>
       </div>
-    </div>
+    </GoalComposerProvider>
   );
 };
 

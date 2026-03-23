@@ -16,6 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const showDesktopBrand = !(isAuthenticated && onToggleMobileSidebar);
   const displayName = user?.username || user?.email || 'User';
   const initials = displayName
     .split(/[\s@._-]+/)
@@ -73,7 +74,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
           {/* Logo */}
           <Link
             to={isAuthenticated ? '/dashboard' : '/'}
-            className="flex items-center gap-2.5 group"
+            className={`items-center gap-2.5 group ${showDesktopBrand ? 'flex' : 'flex md:hidden'}`}
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-transform duration-300 group-hover:scale-105">
               FF

@@ -30,12 +30,8 @@ const Card: React.FC<CardProps> = ({
     <Tag
       onClick={onClick}
       className={`
-        relative overflow-hidden rounded-2xl
-        border border-slate-200/80 dark:border-slate-800
-        bg-white dark:bg-slate-900
-        shadow-sm
-        ${hover ? 'transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-violet-200 dark:hover:border-violet-800/50' : ''}
-        ${onClick ? 'cursor-pointer text-left w-full' : ''}
+        card ${hover ? '' : 'card-static'}
+        ${onClick ? 'cursor-pointer text-left w-full appearance-none' : ''}
         ${paddingClasses[padding]}
         ${className}
       `.trim()}

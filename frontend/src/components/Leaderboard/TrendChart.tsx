@@ -12,46 +12,97 @@ const labelMap: Record<LeaderboardTrendPoint['period'], string> = {
   ALL_TIME: 'All Time',
 };
 
-const TrendChart: React.FC<TrendChartProps> = ({ trends }) => {
-  if (trends.length === 0) {
-    return null;
-  }
+const axisColor = 'var(--ff-text-500)';
+const axisLine = 'var(--ff-border)';
+const gridColor = 'rgba(148,163,184,0.28)';
+const tooltipBg = 'var(--ff-surface-elevated)';
+const tooltipBorder = 'var(--ff-border)';
+const tooltipLabel = 'var(--ff-text-900)';
+const tooltipItem = 'var(--ff-text-700)';
 
+const TrendChart: React.FC<TrendChartProps> = ({ trends }) => {
   const chartData = trends.map((point) => ({
     ...point,
     label: labelMap[point.period],
   }));
 
   return (
-    <section className="card mb-6">
-      <h2 className="font-display text-xl font-bold text-gray-900">Ranking Trend Snapshot</h2>
-      <p className="mt-1 text-sm font-medium text-ink-muted">Top score and participant spread across time windows.</p>
-      <div className="mt-4 h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#dbe6f2" />
-            <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-            <YAxis yAxisId="left" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fill: '#64748b', fontSize: 12 }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
-            <Tooltip
-              cursor={{ stroke: '#cbd5e1', strokeDasharray: '4 4' }}
-              labelFormatter={(label) => `Period: ${label}`}
-              formatter={(value, series) => {
-                const numeric = Number(value) || 0;
-                if (String(series).toLowerCase().includes('participant')) {
-                  return [numeric.toLocaleString(), 'Participants'];
-                }
-                return [numeric.toLocaleString(), 'Top Score'];
-              }}
-              labelStyle={{ color: '#0f172a', fontWeight: 700, marginBottom: 4 }}
-              itemStyle={{ color: '#334155', fontWeight: 600, fontSize: 12 }}
-              contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', background: 'rgba(255,255,255,0.96)' }}
-            />
-            <Line yAxisId="left" type="monotone" dataKey="topScore" name="Top Score" stroke="#0f766e" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
-            <Line yAxisId="right" type="monotone" dataKey="participants" name="Participants" stroke="#2563eb" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">Ranking Trend Snapshot</h3>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        Top score and participant spread across leaderboard windows.
+      </p>
+
+      {chartData.length === 0 ? (
+        <p className="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-400">
+          Trend data is not available yet.
+        </p>
+      ) : (
+        <div className="mt-4 h-[260px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: axisColor, fontSize: 12 }}
+                tickLine={false}
+                axisLine={{ stroke: axisLine }}
+              />
+              <YAxis
+                yAxisId="left"
+                tick={{ fill: axisColor, fontSize: 12 }}
+                tickLine={false}
+                axisLine={{ stroke: axisLine }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tick={{ fill: axisColor, fontSize: 12 }}
+                tickLine={false}
+                axisLine={{ stroke: axisLine }}
+              />
+              <Tooltip
+                cursor={{ stroke: axisLine, strokeDasharray: '4 4' }}
+                labelFormatter={(label) => `Period: ${label}`}
+                formatter={(value, series) => {
+                  const numeric = Number(value) || 0;
+                  if (String(series).toLowerCase().includes('participant')) {
+                    return [numeric.toLocaleString(), 'Participants'];
+                  }
+                  return [numeric.toLocaleString(), 'Top Score'];
+                }}
+                labelStyle={{ color: tooltipLabel, fontWeight: 700, marginBottom: 4 }}
+                itemStyle={{ color: tooltipItem, fontWeight: 600, fontSize: 12 }}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: `1px solid ${tooltipBorder}`,
+                  background: tooltipBg,
+                }}
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="topScore"
+                name="Top Score"
+                stroke="#7c3aed"
+                strokeWidth={2.8}
+                dot={false}
+                activeDot={{ r: 5, fill: '#7c3aed' }}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="participants"
+                name="Participants"
+                stroke="#2563eb"
+                strokeWidth={2.6}
+                dot={false}
+                activeDot={{ r: 5, fill: '#2563eb' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </section>
   );
 };
