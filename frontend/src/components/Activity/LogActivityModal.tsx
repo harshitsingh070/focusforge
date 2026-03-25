@@ -4,6 +4,7 @@ import { AppDispatch, RootState } from '../../store';
 import { logActivity } from '../../store/activitySlice';
 import { fetchDashboard } from '../../store/dashboardSlice';
 import { ActivityLog, ActivityRequest, BadgeAward } from '../../types';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface LogActivityModalProps {
   goalId: number;
@@ -70,12 +71,10 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLocalError(null);
-
     if (formData.minutesSpent < 10 || formData.minutesSpent > maxMinutesAllowed) {
       setLocalError(`Time must be between 10 and ${maxMinutesAllowed} minutes for this goal.`);
       return;
     }
-
     try {
       const payload: ActivityRequest = { ...formData, logDate: normalizeDateForApi(formData.logDate) };
       const response = (await dispatch(logActivity(payload)).unwrap()) as ActivityLog;
@@ -89,31 +88,36 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
     }
   };
 
+  /* shared input class */
+  const inputCls =
+    'w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] ' +
+    'bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2.5 text-sm ' +
+    'text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors ' +
+    'focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 ' +
+    'placeholder:text-[var(--ff-dashboard-text-muted,var(--ff-text-500))]';
+
+  const labelCls = `mb-1.5 block text-xs font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm p-4 sm:items-center"
       onMouseDown={(e) => { if (e.target === e.currentTarget && !loading) onClose(); }}
     >
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-5 shadow-e2 sm:rounded-2xl">
+      {/* Modal panel */}
+      <div
+        className={`${styles.dashboardThemeScope} ${styles.dashboardPanelCard} max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl p-5 sm:rounded-2xl`}
+        style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.4)' }}
+      >
         {/* Header */}
         <div className="mb-5 flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Log Activity</h2>
-            <p className="mt-0.5 truncate text-sm text-[var(--ff-text-700)]">{goalTitle}</p>
+            <h2 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Log Activity</h2>
+            <p className={`mt-0.5 truncate text-sm ${styles.dashboardGoalMeta}`}>{goalTitle}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              <span
-                className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                style={{ background: 'rgba(14,165,233,0.12)', color: '#0369a1' }}
-              >
+              <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>
                 Target: {maxMinutesAllowed}m
               </span>
-              <span
-                className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                style={{
-                  background: remainingMinutes > 0 ? 'rgba(245,158,11,0.12)' : 'rgba(34,197,94,0.12)',
-                  color: remainingMinutes > 0 ? '#d97706' : '#16a34a',
-                }}
-              >
+              <span className={`${styles.dashboardStatusChip} ${remainingMinutes > 0 ? styles.dashboardStatusChipFocus : styles.dashboardStatusChipActive}`}>
                 {remainingMinutes > 0 ? `${remainingMinutes}m remaining` : '✓ Target reached'}
               </span>
             </div>
@@ -121,7 +125,7 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
           <button
             onClick={onClose}
             type="button"
-            className="shrink-0 rounded-[8px] border border-[var(--ff-border)] p-1.5 text-[var(--ff-text-700)] transition-colors hover:bg-[var(--ff-surface-hover)]"
+            className={`${styles.dashboardGoalButtonSecondary} shrink-0 !px-2 !py-2`}
             aria-label="Close"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -129,14 +133,14 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-5 h-2 overflow-hidden rounded-full bg-[var(--ff-surface-hover)]">
+        <div className={`${styles.dashboardGoalTrack} mb-5 h-2`}>
           <div
-            className="h-full rounded-full transition-all duration-500"
+            className={styles.dashboardGoalFill}
             style={{
               width: `${progressPercent}%`,
               background: progressPercent >= 100
                 ? 'linear-gradient(90deg,#16a34a,#22c55e)'
-                : 'var(--ff-gradient-primary, linear-gradient(90deg,#7c3aed,#8b5cf6))',
+                : 'linear-gradient(90deg,#7c3aed,#8b5cf6)',
             }}
           />
         </div>
@@ -147,11 +151,11 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Date */}
           <div>
-            <label htmlFor="activity-date" className="mb-1.5 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Date <span className="text-rose-500">*</span>
+            <label htmlFor="activity-date" className={labelCls}>
+              Date <span className="text-rose-400">*</span>
             </label>
             <input
               id="activity-date"
@@ -159,16 +163,16 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               value={formData.logDate}
               onChange={(e) => { setFormData({ ...formData, logDate: e.target.value }); if (localError) setLocalError(null); }}
               max={todayIso}
-              className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none transition-colors focus:border-[rgba(var(--ff-primary-rgb),0.55)]"
+              className={inputCls}
               required
             />
-            <p className="mt-1 text-xs text-[var(--ff-text-500)]">Future dates are not allowed.</p>
+            <p className={`mt-1 text-xs ${styles.dashboardGoalMeta}`}>Future dates are not allowed.</p>
           </div>
 
           {/* Minutes */}
           <div>
-            <label htmlFor="minutes" className="mb-1.5 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Time Spent (minutes) <span className="text-rose-500">*</span>
+            <label htmlFor="minutes" className={labelCls}>
+              Time Spent (minutes) <span className="text-rose-400">*</span>
             </label>
             <input
               id="minutes"
@@ -178,10 +182,10 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               min="10"
               max={maxMinutesAllowed}
               step="5"
-              className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none transition-colors focus:border-[rgba(var(--ff-primary-rgb),0.55)]"
+              className={inputCls}
               required
             />
-            <p className="mt-1 text-xs text-[var(--ff-text-500)]">
+            <p className={`mt-1 text-xs ${styles.dashboardGoalMeta}`}>
               {progressPercent}% of daily target · Allowed: 10–{maxMinutesAllowed} min
             </p>
 
@@ -194,10 +198,12 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
                     key={m}
                     type="button"
                     onClick={() => setMinutesSpent(m)}
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${sel
-                        ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
-                        : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                      }`}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
+                      sel
+                        ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-300'
+                        : `border-[var(--ff-dashboard-card-border,var(--ff-border))] ${styles.dashboardGoalMeta} hover:border-violet-400`
+                    }`}
+                    style={!sel ? { background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' } : {}}
                   >
                     {m}m
                   </button>
@@ -208,8 +214,8 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
 
           {/* Notes */}
           <div>
-            <label htmlFor="notes" className="mb-1.5 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Notes <span className="text-[var(--ff-text-500)] font-normal">(optional)</span>
+            <label htmlFor="notes" className={labelCls}>
+              Notes <span className={`font-normal ${styles.dashboardGoalMeta}`}>(optional)</span>
             </label>
             <textarea
               id="notes"
@@ -218,29 +224,33 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
               placeholder="What did you work on?"
               rows={3}
               maxLength={280}
-              className="w-full resize-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none transition-colors focus:border-[rgba(var(--ff-primary-rgb),0.55)] placeholder:text-[var(--ff-text-500)]"
+              className={`${inputCls} resize-none`}
             />
-            <p className="mt-1 text-right text-xs text-[var(--ff-text-500)]">{(formData.notes || '').length}/280</p>
+            <p className={`mt-1 text-right text-xs ${styles.dashboardGoalMeta}`}>
+              {(formData.notes || '').length}/280
+            </p>
           </div>
 
+          {/* Actions */}
           <div className="flex flex-col gap-2.5 pt-1 sm:flex-row">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ff-text-900)] transition-colors hover:bg-[var(--ff-surface-hover)]"
+              className={`${styles.dashboardGoalButtonSecondary} flex-1`}
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[filter,box-shadow] hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${styles.dashboardGoalButtonPrimary} flex flex-1 items-center justify-center gap-2`}
               disabled={loading || !isMinutesValid}
             >
-              {loading
-                ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Logging…</>
-                : <><span className="material-symbols-outlined text-[18px]">add_circle</span> Log Activity</>
-              }
+              {loading ? (
+                <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Logging…</>
+              ) : (
+                <><span className="material-symbols-outlined text-[18px]">add_circle</span> Log Activity</>
+              )}
             </button>
           </div>
         </form>

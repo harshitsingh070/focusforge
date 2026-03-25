@@ -44,7 +44,7 @@ export const GoalComposerProvider: React.FC<{ children: React.ReactNode }> = ({ 
     <GoalComposerContext.Provider value={value}>
       {children}
 
-      <Modal open={open} onClose={closeGoalComposer} title="Create New Goal" maxWidth="3xl">
+      <Modal open={open} onClose={closeGoalComposer} maxWidth="md">
         <GoalComposerForm mode="modal" onCancel={closeGoalComposer} onCreated={handleCreated} />
       </Modal>
     </GoalComposerContext.Provider>

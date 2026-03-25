@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileSettingsData } from '../../types';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface ProfileSettingsProps {
   value: ProfileSettingsData;
@@ -8,9 +9,9 @@ interface ProfileSettingsProps {
 
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({ value, onChange }) => {
   return (
-    <section className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+    <section className={`${styles.dashboardPanelCard} mb-8 rounded-2xl p-6 sm:p-8`}>
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Profile Information</h3>
+        <h3 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Profile Information</h3>
       </div>
       <div className="flex flex-col sm:flex-row items-start gap-8 mb-8">
         <div className="relative group shrink-0">
@@ -24,38 +25,38 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ value, onChange }) =>
         <div className="flex-1 space-y-6 w-full">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label htmlFor="profile-username" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label htmlFor="profile-username" className={`text-xs font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>
                 Username
               </label>
               <input
                 id="profile-username"
                 type="text"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-slate-900 dark:text-white transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+                className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-[var(--ff-text-900)] transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
                 value={value.username}
                 onChange={(event) => onChange({ ...value, username: event.target.value })}
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="profile-email" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <label htmlFor="profile-email" className={`text-xs font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>
                 Email
               </label>
               <input
                 id="profile-email"
                 type="email"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-slate-900 dark:text-white transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+                className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-[var(--ff-text-900)] transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
                 value={value.email}
                 onChange={(event) => onChange({ ...value, email: event.target.value })}
               />
             </div>
           </div>
           <div className="space-y-2">
-            <label htmlFor="profile-bio" className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <label htmlFor="profile-bio" className={`text-xs font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>
               Bio
             </label>
             <textarea
               id="profile-bio"
               rows={3}
-              className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5 text-slate-900 dark:text-white transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
+              className="w-full resize-none rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-[var(--ff-text-900)] transition-all focus:border-violet-600 focus:outline-none focus:ring-1 focus:ring-violet-600"
               value={value.bio}
               onChange={(event) => onChange({ ...value, bio: event.target.value })}
               placeholder="Share what you are currently building."

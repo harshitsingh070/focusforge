@@ -8,6 +8,7 @@ import ActivityForm from './ActivityForm';
 import DateRangeFilter from './DateRangeFilter';
 import EmptyState from '../ui/EmptyState';
 import StatusBadge from '../ui/StatusBadge';
+import styles from '../Dashboard/Dashboard.module.css';
 
 const ActivityLog: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -19,7 +20,7 @@ const ActivityLog: React.FC = () => {
 
   return (
     <>
-      <div className="mx-auto max-w-[1280px] p-4 sm:p-8">
+      <div className={`${styles.dashboardThemeScope} mx-auto max-w-[1280px] p-4 sm:p-8`}>
         <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
           <div className="relative">
@@ -41,17 +42,17 @@ const ActivityLog: React.FC = () => {
 
           {/* Right: Timeline */}
           <section className="space-y-3">
-            <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <div className={`${styles.dashboardPanelCard} flex items-center justify-between rounded-2xl p-5`}>
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Timeline</h2>
-                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">Most recent logs appear first.</p>
+                <h2 className={`text-2xl font-bold tracking-tight ${styles.dashboardGoalTitle}`}>Timeline</h2>
+                <p className={`mt-0.5 text-sm ${styles.dashboardGoalMeta}`}>Most recent logs appear first.</p>
               </div>
               <StatusBadge variant="primary">{activities.length} entries</StatusBadge>
             </div>
 
             {loading && (
-              <div className="flex justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 py-12 shadow-sm">
-                <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 dark:border-slate-700 border-t-violet-500" />
+              <div className={`${styles.dashboardPanelCard} flex justify-center rounded-2xl py-12`}>
+                <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--ff-dashboard-track,var(--ff-border))] border-t-violet-500" />
               </div>
             )}
 

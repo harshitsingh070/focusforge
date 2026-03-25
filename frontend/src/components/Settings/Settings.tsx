@@ -13,6 +13,7 @@ import Preferences from './Preferences';
 import PrivacySettings from './PrivacySettings';
 import ProfileSettings from './ProfileSettings';
 import Button from '../ui/Button';
+import styles from '../Dashboard/Dashboard.module.css';
 
 const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -74,7 +75,8 @@ const Settings: React.FC = () => {
 
   return (
     <>
-      <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-8 py-8 pb-24">
+      <div className={`${styles.dashboardThemeScope} mx-auto w-full max-w-[1280px] px-4 sm:px-8 py-8 pb-24`}>
+        {/* Header banner */}
         <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
           <div className="relative">
@@ -83,12 +85,14 @@ const Settings: React.FC = () => {
           </div>
         </section>
 
-        {error && <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">{error}</div>}
+        {error && (
+          <div className={`${styles.dashboardPanelCard} mb-4 rounded-xl p-3 text-sm`} style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#f87171' }}>{error}</div>
+        )}
         {profileFormError && (
-          <div className="mb-4 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">{profileFormError}</div>
+          <div className={`${styles.dashboardPanelCard} mb-4 rounded-xl p-3 text-sm`} style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#f87171' }}>{profileFormError}</div>
         )}
         {updateSuccess && (
-          <div className="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-3 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+          <div className={`${styles.dashboardPanelCard} mb-4 rounded-xl p-3 text-sm font-semibold`} style={{ borderColor: 'rgba(16,185,129,0.3)', color: '#6ee7b7' }}>
             Settings saved successfully.
           </div>
         )}
@@ -97,13 +101,14 @@ const Settings: React.FC = () => {
         <Preferences value={preferencesState} onChange={setPreferencesState} />
         <PrivacySettings value={privacyState} onChange={setPrivacyState} />
 
+        {/* Danger Zone */}
         <section className="mt-20 border-t border-red-500/10 pt-8">
-          <h3 className="mb-1 text-lg font-bold text-red-600 dark:text-red-500">Danger Zone</h3>
-          <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">Irreversible actions that affect your data and account access.</p>
-          <div className="flex items-center justify-between rounded-2xl border border-red-500/10 bg-red-50 dark:bg-red-500/[0.02] p-5">
+          <h3 className="mb-1 text-lg font-bold text-red-400">Danger Zone</h3>
+          <p className={`mb-6 text-sm ${styles.dashboardGoalMeta}`}>Irreversible actions that affect your data and account access.</p>
+          <div className={`${styles.dashboardPanelCard} flex items-center justify-between rounded-2xl p-5`} style={{ borderColor: 'rgba(239,68,68,0.15)' }}>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white">Delete Account</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Permanently remove all your tasks and profile data.</p>
+              <p className={`text-sm font-bold ${styles.dashboardGoalTitle}`}>Delete Account</p>
+              <p className={`text-xs ${styles.dashboardGoalMeta}`}>Permanently remove all your tasks and profile data.</p>
             </div>
             <Button variant="danger" size="sm" onClick={() => alert('Account deletion not implemented in this demo.')}>
               Delete Account
@@ -116,7 +121,9 @@ const Settings: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 p-4 backdrop-blur-md transition-[left] duration-300 md:[left:var(--ff-sidebar-width)]">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between">
           <div className="flex items-center gap-2">
-            {hasUnsavedChanges && <span className="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-500/20 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400">Unsaved changes</span>}
+            {hasUnsavedChanges && (
+              <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipFocus}`}>Unsaved changes</span>
+            )}
           </div>
           <div className="flex gap-3">
             <Button variant="secondary" onClick={handleReset} disabled={!hasUnsavedChanges || loading}>Reset</Button>

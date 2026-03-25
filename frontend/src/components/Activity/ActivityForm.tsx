@@ -4,7 +4,7 @@ import { AppDispatch, RootState } from '../../store';
 import { logActivity } from '../../store/activitySlice';
 import { ActivityRequest } from '../../types';
 import Button from '../ui/Button';
-import Card from '../ui/Card';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface ActivityFormProps {
   onSubmitted?: () => void;
@@ -43,25 +43,33 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
     }
   };
 
+  const inputCls =
+    'w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] ' +
+    'bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3.5 py-2.5 text-sm ' +
+    'text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-all duration-200 ' +
+    'focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 ' +
+    'placeholder:text-[var(--ff-dashboard-text-muted,var(--ff-text-500))]';
+
+  const labelCls = `mb-1.5 block text-xs font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`;
+
   return (
-    <Card>
+    <section className={`${styles.dashboardPanelCard} rounded-2xl p-5 sm:p-6`}>
       <form onSubmit={handleSubmit}>
-        <h3 className="text-xl font-bold text-slate-900 dark:text-white">Log Activity</h3>
+        <h3 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Log Activity</h3>
 
         {error && (
-          <div className="mt-3 rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-400">
+          <div className="mt-3 rounded-xl border border-red-300/40 bg-red-50 p-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
             {error}
           </div>
         )}
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-5 space-y-4">
+          {/* Goal select */}
           <div>
-            <label htmlFor="activity-goal-select" className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Goal
-            </label>
+            <label htmlFor="activity-goal-select" className={labelCls}>Goal</label>
             <select
               id="activity-goal-select"
-              className="w-full appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition-all duration-200 focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 cursor-pointer"
+              className={`${inputCls} appearance-none cursor-pointer`}
               value={form.goalId || ''}
               onChange={(e) => setForm({ ...form, goalId: Number(e.target.value) })}
               required
@@ -73,14 +81,13 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
             </select>
           </div>
 
+          {/* Date */}
           <div>
-            <label htmlFor="activity-date-input" className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Date
-            </label>
+            <label htmlFor="activity-date-input" className={labelCls}>Date</label>
             <input
               id="activity-date-input"
               type="date"
-              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 outline-none transition-all duration-200 focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+              className={inputCls}
               value={form.logDate}
               onChange={(e) => setForm({ ...form, logDate: e.target.value })}
               max={new Date().toISOString().split('T')[0]}
@@ -88,12 +95,11 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
             />
           </div>
 
+          {/* Minutes slider */}
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label htmlFor="activity-minutes-slider" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Minutes
-              </label>
-              <span className="text-xl font-bold text-slate-900 dark:text-white">{form.minutesSpent}</span>
+              <label htmlFor="activity-minutes-slider" className={labelCls}>Minutes</label>
+              <span className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>{form.minutesSpent}</span>
             </div>
             <input
               id="activity-minutes-slider"
@@ -103,17 +109,17 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
               step={5}
               value={Math.max(10, Math.min(180, form.minutesSpent))}
               onChange={(e) => setForm({ ...form, minutesSpent: Number(e.target.value) })}
-              className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-200 dark:bg-slate-700 accent-violet-500"
+              className="h-2 w-full cursor-pointer appearance-none rounded-full accent-violet-500"
+              style={{ background: 'var(--ff-dashboard-track, var(--ff-surface-hover))' }}
             />
           </div>
 
+          {/* Notes */}
           <div>
-            <label htmlFor="activity-notes-input" className="mb-1.5 block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Notes
-            </label>
+            <label htmlFor="activity-notes-input" className={labelCls}>Notes</label>
             <textarea
               id="activity-notes-input"
-              className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition-all duration-200 focus:border-violet-400 dark:focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+              className={`${inputCls} resize-none`}
               rows={3}
               value={form.notes || ''}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
@@ -122,11 +128,20 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
           </div>
         </div>
 
-        <Button type="submit" variant="primary" fullWidth className="mt-5" loading={loading}>
-          Submit Activity
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`${styles.dashboardGoalButtonPrimary} w-full mt-5`}
+        >
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+              Submitting…
+            </span>
+          ) : 'Submit Activity'}
+        </button>
       </form>
-    </Card>
+    </section>
   );
 };
 

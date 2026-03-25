@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { LeaderboardEntry } from '../../store/enhancedLeaderboardSlice';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[];
@@ -95,7 +96,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
 
   if (entries.length === 0) {
     return (
-      <p className="rounded-xl border border-slate-200 bg-slate-50 py-8 text-center text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-300">
+      <p className={`${styles.dashboardGoalCard} rounded-xl py-8 text-center text-sm font-medium`} style={{ color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>
         No rankings available for this period and category.
       </p>
     );
@@ -106,7 +107,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
       <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-[960px] w-full border-separate border-spacing-0">
           <thead>
-            <tr className="rounded-xl bg-slate-100 text-xs uppercase tracking-[0.08em] text-slate-500 dark:bg-slate-800/70 dark:text-slate-400">
+            <tr className="rounded-xl text-xs uppercase tracking-[0.08em]" style={{ background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))', color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>
               <th className="px-4 py-3 text-center font-bold">Rank</th>
               <th className="px-4 py-3 text-left font-bold">Athlete</th>
               <th className="px-4 py-3 text-left font-bold">Performance</th>
@@ -212,10 +213,8 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
           return (
             <article
               key={`mobile-${entry.userId}-${entry.rank}`}
-              className={`rounded-xl border p-4 ${isSelf
-                  ? 'border-violet-300 bg-violet-50 dark:border-violet-500/40 dark:bg-violet-500/10'
-                  : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900'
-                }`}
+              className={`${styles.dashboardGoalCard} rounded-xl p-4 ${isSelf ? 'border-violet-300 dark:border-violet-500/40' : ''}`}
+              style={isSelf ? { background: 'rgba(139,92,246,0.08)' } : {}}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -223,7 +222,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
                     {getRankLabel(entry.rank)}
                   </span>
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                    <p className={`text-sm font-bold ${isSelf ? 'text-violet-400' : styles.dashboardGoalTitle}`}>
                       {entry.username}
                       {isSelf && (
                         <span className="ml-2 rounded bg-violet-600 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
@@ -231,18 +230,18 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
                         </span>
                       )}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{entry.daysActive}d active • {entry.streak}d streak</p>
+                    <p className={`text-xs ${styles.dashboardGoalMeta}`}>{entry.daysActive}d active • {entry.streak}d streak</p>
                   </div>
                 </div>
-                <p className={`font-mono text-lg font-black ${isSelf ? 'text-violet-700 dark:text-violet-300' : 'text-slate-900 dark:text-white'}`}>
+                <p className={`font-mono text-lg font-black ${isSelf ? 'text-violet-400' : styles.dashboardGoalTitle}`}>
                   {Number(entry.rawPoints || 0).toLocaleString()}
                 </p>
               </div>
 
-              <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div className={`${styles.dashboardGoalTrack} mt-3`}>
                 <div
-                  className={`h-full rounded-full ${isSelf ? 'bg-gradient-to-r from-violet-600 to-purple-500' : 'bg-gradient-to-r from-sky-500 to-blue-500'}`}
-                  style={{ width: `${progressPercent}%` }}
+                  className={styles.dashboardGoalFill}
+                  style={{ width: `${progressPercent}%`, background: isSelf ? 'linear-gradient(90deg,#7c3aed,#a78bfa)' : '' }}
                 />
               </div>
 

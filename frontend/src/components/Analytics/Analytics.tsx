@@ -8,14 +8,15 @@ import TrendAnalysis from './TrendAnalysis';
 import WeeklyChart from './WeeklyChart';
 import EmptyState from '../ui/EmptyState';
 import { CardSkeleton } from '../ui/Skeleton';
+import styles from '../Dashboard/Dashboard.module.css';
 import './Analytics.css';
 
-const metricCards = [
-  { key: 'activeDays', label: 'Active Days', icon: 'calendar_today', colors: 'from-violet-600 to-indigo-600', shadow: 'shadow-violet-500/25' },
-  { key: 'currentStreak', label: 'Current Streak', icon: 'local_fire_department', colors: 'from-orange-500 to-red-500', shadow: 'shadow-orange-500/25' },
-  { key: 'bestStreak', label: 'Best Streak', icon: 'emoji_events', colors: 'from-amber-500 to-yellow-400', shadow: 'shadow-amber-400/25' },
-  { key: 'consistency', label: 'Consistency', icon: 'ssid_chart', colors: 'from-emerald-500 to-teal-500', shadow: 'shadow-emerald-500/25' },
-  { key: 'trustScore', label: 'Trust Score', icon: 'verified', colors: 'from-slate-500 to-slate-400', shadow: 'shadow-slate-400/15' },
+const METRIC_CONFIG = [
+  { key: 'activeDays', label: 'Active Days', icon: 'calendar_today', cardClass: 'dashboardStatCardViolet' as const, iconClass: 'dashboardStatIconViolet' as const, subColor: 'dashboardStatSubPositive' as const },
+  { key: 'currentStreak', label: 'Current Streak', icon: 'local_fire_department', cardClass: 'dashboardStatCardAmber' as const, iconClass: 'dashboardStatIconAmber' as const, subColor: 'dashboardStatSubWarm' as const },
+  { key: 'bestStreak', label: 'Best Streak', icon: 'emoji_events', cardClass: 'dashboardStatCardAmber' as const, iconClass: 'dashboardStatIconAmber' as const, subColor: 'dashboardStatSubWarm' as const },
+  { key: 'consistency', label: 'Consistency', icon: 'ssid_chart', cardClass: 'dashboardStatCardEmerald' as const, iconClass: 'dashboardStatIconEmerald' as const, subColor: 'dashboardStatSubPositive' as const },
+  { key: 'trustScore', label: 'Trust Score', icon: 'verified', cardClass: 'dashboardStatCardViolet' as const, iconClass: 'dashboardStatIconViolet' as const, subColor: 'dashboardStatSubPositive' as const },
 ];
 
 const clampPercent = (value: number) => Math.max(0, Math.min(100, Math.round(value)));
@@ -76,8 +77,9 @@ const Analytics: React.FC = () => {
   }, [data]);
 
   return (
-    <div className="ff-analytics-page">
+    <div className={`${styles.dashboardThemeScope} ff-analytics-page`}>
       <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+        {/* Header banner */}
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
           <div className="relative">
@@ -96,7 +98,7 @@ const Analytics: React.FC = () => {
         {!data && loading && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
-              {[1,2,3,4,5].map((i) => <CardSkeleton key={i} />)}
+              {[1, 2, 3, 4, 5].map((i) => <CardSkeleton key={i} />)}
             </div>
             <CardSkeleton />
           </div>
@@ -119,54 +121,56 @@ const Analytics: React.FC = () => {
 
         {data && (
           <>
-            {/* Metric cards */}
+            {/* Metric cards — dashboard style */}
             <section className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
               {metrics.map((metric, i) => {
-                const card = metricCards.find((c) => c.key === metric.key)!;
+                const cfg = METRIC_CONFIG.find((c) => c.key === metric.key)!;
                 return (
-                  <article
+                  <div
                     key={metric.key}
-                    className={`ff-analytics-metric-hover group flex flex-col rounded-2xl bg-gradient-to-br ${card.colors} p-5 shadow-lg ${card.shadow}`}
+                    className={`${styles.dashboardStatCard} ${styles[cfg.cardClass]} ff-analytics-metric-hover rounded-2xl p-5`}
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <p className="text-xs font-semibold text-white/80 uppercase tracking-wide">{card.label}</p>
-                      <span className="material-symbols-outlined text-[18px] text-white/60">{card.icon}</span>
+                      <p className={styles.dashboardStatLabel}>{cfg.label}</p>
+                      <div className={`${styles.dashboardStatIconShell} ${styles[cfg.iconClass]}`}>
+                        <span className="material-symbols-outlined text-[18px]">{cfg.icon}</span>
+                      </div>
                     </div>
-                    <p className="text-3xl font-extrabold leading-none text-white">{metric.value}</p>
-                    <p className="mt-2 text-xs font-medium text-white/70">{metric.meta}</p>
-                    <div className="mt-4 h-1.5 w-full rounded-full bg-white/20">
+                    <p className={styles.dashboardStatValue}>{metric.value}</p>
+                    <p className={`${styles.dashboardStatSub} ${styles[cfg.subColor]}`}>{metric.meta}</p>
+                    <div className={`${styles.dashboardGoalTrack} mt-4`}>
                       <div
-                        className="h-1.5 rounded-full bg-white/80 transition-all duration-700"
+                        className={styles.dashboardGoalFill}
                         style={{ width: `${Math.max(8, metric.progress)}%` }}
                       />
                     </div>
-                  </article>
+                  </div>
                 );
               })}
             </section>
 
             {/* AI Insights */}
-            <section className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <section className={`${styles.dashboardPanelCard} rounded-2xl p-6`}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 dark:bg-violet-900/30">
-                  <span className="material-symbols-outlined text-[20px] text-violet-600 dark:text-violet-400">auto_awesome</span>
+                <div className={`${styles.dashboardStatIconShell} ${styles.dashboardStatIconViolet}`}>
+                  <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">AI Insights</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Personalized recommendations based on your patterns</p>
+                  <h2 className={`text-lg font-bold ${styles.dashboardGoalTitle}`}>AI Insights</h2>
+                  <p className={`text-xs ${styles.dashboardGoalMeta}`}>Personalized recommendations based on your patterns</p>
                 </div>
               </div>
               <div className="grid gap-3">
                 {insights.length > 0 ? insights.map((insight, index) => (
-                  <div key={`${index}-${insight}`} className="flex items-start gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 p-4">
-                    <span className="material-symbols-outlined text-[16px] text-violet-500 shrink-0 mt-0.5">lightbulb</span>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{insight}</p>
+                  <div key={`${index}-${insight}`} className={`${styles.dashboardGoalCard} flex items-start gap-3 rounded-xl p-4`}>
+                    <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5" style={{ color: '#a78bfa' }}>lightbulb</span>
+                    <p className={`text-sm leading-relaxed ${styles.dashboardGoalMeta}`}>{insight}</p>
                   </div>
                 )) : (
-                  <div className="flex items-start gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 p-4">
-                    <span className="material-symbols-outlined text-[16px] text-slate-400 shrink-0 mt-0.5">lightbulb</span>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Keep logging focused sessions to unlock personalized recommendations.</p>
+                  <div className={`${styles.dashboardGoalCard} flex items-start gap-3 rounded-xl p-4`}>
+                    <span className="material-symbols-outlined text-[16px] shrink-0 mt-0.5" style={{ color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>lightbulb</span>
+                    <p className={`text-sm ${styles.dashboardGoalMeta}`}>Keep logging focused sessions to unlock personalized recommendations.</p>
                   </div>
                 )}
               </div>

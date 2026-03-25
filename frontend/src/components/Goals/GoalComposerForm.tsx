@@ -3,25 +3,19 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../../store';
 import { createGoal } from '../../store/goalsSlice';
 import { GoalRequest } from '../../types';
-import Button from '../ui/Button';
+import styles from '../Dashboard/Dashboard.module.css';
 
 export const goalCategories = [
-  { id: 1, name: 'Coding', color: '#0f766e' },
-  { id: 2, name: 'Health', color: '#10b981' },
-  { id: 3, name: 'Reading', color: '#ea580c' },
-  { id: 4, name: 'Academics', color: '#2563eb' },
-  { id: 5, name: 'Career Skills', color: '#be185d' },
+  { id: 1, name: 'Coding',       color: '#0f766e' },
+  { id: 2, name: 'Health',       color: '#10b981' },
+  { id: 3, name: 'Reading',      color: '#ea580c' },
+  { id: 4, name: 'Academics',    color: '#2563eb' },
+  { id: 5, name: 'Career Skills',color: '#be185d' },
 ];
 
 const difficultyLabels: Record<number, string> = {
-  1: 'Very Easy',
-  2: 'Easy',
-  3: 'Balanced',
-  4: 'Hard',
-  5: 'Very Hard',
+  1: 'Very Easy', 2: 'Easy', 3: 'Balanced', 4: 'Hard', 5: 'Very Hard',
 };
-
-const minutePresets = [10, 15, 20, 30, 45, 60, 90, 120];
 
 interface GoalComposerFormProps {
   mode?: 'page' | 'modal';
@@ -31,10 +25,8 @@ interface GoalComposerFormProps {
 
 const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onCancel, onCreated }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const isModal = mode === 'modal';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const [formData, setFormData] = useState<GoalRequest>({
     categoryId: 1,
     title: '',
@@ -47,274 +39,191 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
   });
 
   const selectedCategory = useMemo(
-    () => goalCategories.find((category) => category.id === formData.categoryId) || goalCategories[0],
+    () => goalCategories.find((c) => c.id === formData.categoryId) || goalCategories[0],
     [formData.categoryId]
   );
-
-  const setDailyMinutes = (value: number) => {
-    setFormData((current) => ({
-      ...current,
-      dailyMinimumMinutes: Math.max(0, Math.min(600, value)),
-    }));
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      await dispatch(
-        createGoal({
-          ...formData,
-          endDate: formData.endDate || undefined,
-        })
-      ).unwrap();
-
-      if (onCreated) {
-        await onCreated();
-        return;
-      }
+      await dispatch(createGoal({ ...formData, endDate: formData.endDate || undefined })).unwrap();
+      if (onCreated) { await onCreated(); return; }
     } catch (err: any) {
       setError(err || 'Failed to create goal');
       setLoading(false);
       return;
     }
-
     setLoading(false);
   };
 
+  const inputCls =
+    'w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] ' +
+    'bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2.5 text-sm ' +
+    'text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors ' +
+    'focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 ' +
+    'placeholder:text-[var(--ff-dashboard-text-muted,var(--ff-text-500))]';
+
+  const labelCls = `mb-1.5 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`;
+
   return (
-    <div className={mode === 'page' ? 'mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10' : ''}>
+    <div className={`${styles.dashboardThemeScope} ${mode === 'page' ? 'mx-auto w-full max-w-xl px-4 py-8 sm:px-6' : ''}`}>
       {mode === 'page' && (
-        <button
-          type="button"
-          onClick={onCancel}
-          className="mb-6 flex items-center gap-1.5 text-sm font-medium text-[var(--ff-text-700)] transition-colors hover:text-[var(--ff-text-900)]"
-        >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back
+        <button type="button" onClick={onCancel}
+          className={`mb-5 flex items-center gap-1.5 text-sm font-medium ${styles.dashboardGoalMeta} hover:text-violet-400`}>
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>Back
         </button>
       )}
 
-      <div className={mode === 'page' ? 'mb-6' : 'mb-4'}>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-[rgba(124,58,237,0.1)] px-3 py-0.5 text-xs font-semibold text-[var(--ff-primary)]">Goal Setup</span>
-          <span className="status-chip" style={{ background: `${selectedCategory.color}1c`, color: selectedCategory.color }}>
+      {/* ── Header ── */}
+      <div className="mb-4">
+        <div className="flex flex-wrap items-center gap-1.5 mb-2">
+          <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>New Goal</span>
+          <span className={styles.dashboardStatusChip}
+            style={{ background: `${selectedCategory.color}1c`, color: selectedCategory.color, borderColor: `${selectedCategory.color}40` }}>
             {selectedCategory.name}
           </span>
-          <span className="status-chip" style={{ background: 'rgba(59,130,246,0.14)', color: '#1d4ed8' }}>
+          <span className={styles.dashboardStatusChip}
+            style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.2)' }}>
             {difficultyLabels[formData.difficulty]}
           </span>
-          <span className="status-chip" style={{ background: 'rgba(249,115,22,0.15)', color: '#c2410c' }}>
-            {formData.dailyMinimumMinutes} min/day
-          </span>
         </div>
-
-        {mode === 'page' ? (
-          <>
-            <h1 className="mt-3 text-2xl font-bold tracking-tight text-[var(--ff-text-900)]">Create New Goal</h1>
-            <p className="mt-1 text-sm text-[var(--ff-text-700)]">Set a daily target and keep your momentum visible.</p>
-          </>
-        ) : (
-          <p className="mt-2.5 text-sm text-slate-600 dark:text-slate-300">
-            Build a new goal without leaving the current screen.
-          </p>
+        {mode === 'page' && (
+          <h1 className={`text-xl font-bold tracking-tight ${styles.dashboardGoalTitle}`}>Create New Goal</h1>
         )}
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className={`${mode === 'page' ? 'rounded-2xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2' : 'space-y-4'}`}
-      >
+      {/* ── Form ── */}
+      <form onSubmit={handleSubmit}
+        className={mode === 'page' ? `${styles.dashboardPanelCard} rounded-2xl p-5 space-y-4` : 'space-y-4'}>
+
         {error && (
-          <div className="rounded-xl border border-rose-300/50 bg-rose-50 px-4 py-3 dark:border-rose-500/30 dark:bg-rose-500/10">
-            <p className="text-sm text-rose-700 dark:text-rose-300">{error}</p>
+          <div className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2.5">
+            <p className="text-sm text-rose-400">{error}</p>
           </div>
         )}
 
+        {/* ── Category ── */}
         <div>
-          <label className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-            Category <span className="text-rose-500">*</span>
-          </label>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <label className={labelCls}>Category <span className="text-rose-400">*</span></label>
+          <div className="grid grid-cols-5 gap-1.5">
             {goalCategories.map((cat) => {
               const active = formData.categoryId === cat.id;
               return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setFormData((current) => ({ ...current, categoryId: cat.id }))}
-                  className={`rounded-lg border px-3 py-2.5 text-left text-sm font-semibold transition-all ${
-                    active
-                      ? 'border-transparent text-white shadow-soft ring-2 ring-offset-1 ring-white/85'
-                      : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                  }`}
-                  style={active ? { backgroundColor: cat.color } : {}}
-                >
-                  {cat.name}
+                <button key={cat.id} type="button"
+                  onClick={() => setFormData((f) => ({ ...f, categoryId: cat.id }))}
+                  className={`rounded-xl border py-2 text-center text-xs font-semibold transition-all ${active ? 'text-white ring-1 ring-white/20' : `${styles.dashboardGoalMeta} border-[var(--ff-dashboard-card-border,var(--ff-border))] hover:border-violet-400`}`}
+                  style={active ? { backgroundColor: cat.color, borderColor: 'transparent' }
+                    : { background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' }}>
+                  {cat.name.split(' ')[0]}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className={`grid ${isModal ? 'gap-3.5' : 'gap-4'} sm:grid-cols-2`}>
-          <div className="sm:col-span-2">
-            <label htmlFor="goal-title" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Goal Title <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="goal-title"
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData((current) => ({ ...current, title: e.target.value }))}
-              placeholder="Example: Learn React fundamentals"
-              className="input-field"
-              required
-            />
-          </div>
+        {/* ── Title ── */}
+        <div>
+          <label htmlFor="goal-title" className={labelCls}>Goal Title <span className="text-rose-400">*</span></label>
+          <input id="goal-title" type="text"
+            value={formData.title}
+            onChange={(e) => setFormData((f) => ({ ...f, title: e.target.value }))}
+            placeholder="e.g. Learn React fundamentals"
+            className={inputCls} required />
+        </div>
 
-          <div className="sm:col-span-2">
-            <label htmlFor="goal-description" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Description
-            </label>
-            <textarea
-              id="goal-description"
-              value={formData.description}
-              onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
-              placeholder="What do you want to achieve?"
-              rows={isModal ? 3 : 4}
-              className="textarea-field"
-            />
-          </div>
+        {/* ── Description ── */}
+        <div>
+          <label htmlFor="goal-desc" className={labelCls}>Description</label>
+          <textarea id="goal-desc"
+            value={formData.description}
+            onChange={(e) => setFormData((f) => ({ ...f, description: e.target.value }))}
+            placeholder="What do you want to achieve?"
+            rows={2}
+            className={`${inputCls} resize-none`} />
+        </div>
 
+        {/* ── Daily Minutes + Difficulty (2-col) ── */}
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="daily-commitment" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Daily Commitment (minutes) <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="daily-commitment"
-              type="number"
+            <label htmlFor="daily-mins" className={labelCls}>Daily Minutes <span className="text-rose-400">*</span></label>
+            <input id="daily-mins" type="number"
               value={formData.dailyMinimumMinutes}
-              onChange={(e) => setDailyMinutes(parseInt(e.target.value, 10) || 0)}
-              min="10"
-              max="600"
-              step="5"
-              className="input-field"
-              required
-            />
-            <p className="mt-1 text-xs text-[var(--ff-text-500)]">Choose between 10 and 600 minutes.</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {minutePresets
-                .filter((minutes) => minutes <= 600)
-                .map((minutes) => {
-                  const active = formData.dailyMinimumMinutes === minutes;
-                  return (
-                    <button
-                      key={minutes}
-                      type="button"
-                      onClick={() => setDailyMinutes(minutes)}
-                      className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-                        active
-                          ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
-                          : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                      }`}
-                    >
-                      {minutes}m
-                    </button>
-                  );
-                })}
-            </div>
+              onChange={(e) => setFormData((f) => ({ ...f, dailyMinimumMinutes: Math.max(10, Math.min(600, parseInt(e.target.value) || 10)) }))}
+              min="10" max="600" step="5"
+              className={inputCls} required />
           </div>
-
           <div>
-            <label className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Difficulty Level <span className="text-rose-500">*</span>
-            </label>
-            <div className="grid grid-cols-5 gap-2">
+            <label className={labelCls}>Difficulty <span className="text-rose-400">*</span></label>
+            <div className="grid grid-cols-5 gap-1">
               {[1, 2, 3, 4, 5].map((level) => (
-                <button
-                  key={level}
-                  type="button"
-                  onClick={() => setFormData((current) => ({ ...current, difficulty: level }))}
-                  className={`rounded-lg border px-2 py-2 text-sm font-semibold transition-all ${
-                    formData.difficulty === level
-                      ? 'border-[var(--ff-primary)] bg-[rgba(124,58,237,0.1)] text-[var(--ff-primary)]'
-                      : 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]'
-                  }`}
-                >
+                <button key={level} type="button"
+                  onClick={() => setFormData((f) => ({ ...f, difficulty: level }))}
+                  className={`rounded-lg border py-2 text-xs font-bold transition-all ${formData.difficulty === level
+                    ? 'border-violet-500 bg-violet-500/15 text-violet-400'
+                    : `${styles.dashboardGoalMeta} border-[var(--ff-dashboard-card-border,var(--ff-border))] hover:border-violet-400`}`}
+                  style={formData.difficulty !== level ? { background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' } : {}}>
                   {level}
                 </button>
               ))}
             </div>
-            <p className="mt-1 text-xs font-semibold text-[var(--ff-text-700)]">
-              {formData.difficulty} - {difficultyLabels[formData.difficulty]}
-            </p>
+            <p className={`mt-1 text-[10px] ${styles.dashboardGoalMeta}`}>{formData.difficulty} — {difficultyLabels[formData.difficulty]}</p>
           </div>
+        </div>
 
+        {/* ── Start + End Date (2-col) ── */}
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label htmlFor="start-date" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              Start Date <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="start-date"
-              type="date"
+            <label htmlFor="start-date" className={labelCls}>Start Date <span className="text-rose-400">*</span></label>
+            <input id="start-date" type="date"
               value={formData.startDate}
-              onChange={(e) => setFormData((current) => ({ ...current, startDate: e.target.value }))}
-              className="input-field"
-              required
-            />
+              onChange={(e) => setFormData((f) => ({ ...f, startDate: e.target.value }))}
+              className={inputCls} required />
           </div>
-
           <div>
-            <label htmlFor="end-date" className="mb-2 block text-sm font-semibold text-[var(--ff-text-900)]">
-              End Date <span className="font-normal text-[var(--ff-text-500)]">(Optional)</span>
+            <label htmlFor="end-date" className={labelCls}>
+              End Date <span className={`font-normal normal-case tracking-normal ${styles.dashboardGoalMeta}`}>(opt.)</span>
             </label>
-            <input
-              id="end-date"
-              type="date"
+            <input id="end-date" type="date"
               value={formData.endDate}
-              onChange={(e) => setFormData((current) => ({ ...current, endDate: e.target.value }))}
+              onChange={(e) => setFormData((f) => ({ ...f, endDate: e.target.value }))}
               min={formData.startDate}
-              className="input-field"
-            />
+              className={inputCls} />
           </div>
         </div>
 
-        <div
-          className={`rounded-lg border p-4 ${
-            formData.isPrivate
-              ? 'border-[var(--ff-border)] bg-[var(--ff-surface-soft)]'
-              : 'border-emerald-200 bg-emerald-50'
-          }`}
-          style={isModal ? { padding: '0.9rem 1rem' } : undefined}
-        >
-          <label className="flex items-start gap-3">
-            <input
-              type="checkbox"
+        {/* ── Public toggle ── */}
+        <div className={`${styles.dashboardGoalCard} rounded-xl p-3.5`}
+          style={!formData.isPrivate ? { borderColor: 'rgba(16,185,129,0.3)', background: 'rgba(16,185,129,0.06)' } : {}}>
+          <label className="flex cursor-pointer items-center gap-2.5">
+            <input type="checkbox"
               checked={!formData.isPrivate}
-              onChange={(e) => setFormData((current) => ({ ...current, isPrivate: !e.target.checked }))}
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-600"
-            />
-            <span className="text-sm font-semibold text-[var(--ff-text-900)]">
-              Make this goal public (appear on leaderboards)
-            </span>
+              onChange={(e) => setFormData((f) => ({ ...f, isPrivate: !e.target.checked }))}
+              className="h-4 w-4 rounded border-slate-300 accent-violet-500" />
+            <div>
+              <span className={`text-sm font-semibold ${styles.dashboardGoalTitle}`}>Make goal public</span>
+              <p className={`text-xs ${styles.dashboardGoalMeta}`}
+                style={!formData.isPrivate ? { color: '#6ee7b7' } : {}}>
+                {!formData.isPrivate ? 'Appears on category leaderboards' : 'Visible only to you'}
+              </p>
+            </div>
           </label>
-          <p className={`ml-7 mt-1.5 text-sm ${formData.isPrivate ? 'text-[var(--ff-text-700)]' : 'text-emerald-700 dark:text-emerald-400'}`}>
-            {!formData.isPrivate
-              ? 'This goal will be visible on category leaderboards.'
-              : 'This goal stays private and visible only to you.'}
-          </p>
         </div>
 
-        <div className={`flex flex-col gap-3 ${isModal ? 'pt-0' : 'pt-1'} sm:flex-row`}>
-          <Button type="button" variant="secondary" className="flex-1" onClick={onCancel} disabled={loading}>
+        {/* ── Actions ── */}
+        <div className="flex gap-3 pt-1">
+          <button type="button" onClick={onCancel} disabled={loading}
+            className={`${styles.dashboardGoalButtonSecondary} flex-1`}>
             Cancel
-          </Button>
-          <Button type="submit" variant="primary" className="flex-1" loading={loading} icon={loading ? undefined : 'add_circle'}>
-            {loading ? 'Creating…' : 'Create Goal'}
-          </Button>
+          </button>
+          <button type="submit" disabled={loading}
+            className={`${styles.dashboardGoalButtonPrimary} flex flex-1 items-center justify-center gap-2`}>
+            {loading
+              ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Creating…</>
+              : <><span className="material-symbols-outlined text-[18px]">add_circle</span> Create Goal</>
+            }
+          </button>
         </div>
       </form>
     </div>

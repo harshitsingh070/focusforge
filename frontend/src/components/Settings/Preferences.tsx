@@ -1,5 +1,6 @@
 import React from 'react';
 import { UserPreferences } from '../../types';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface PreferencesProps {
   value: UserPreferences;
@@ -9,20 +10,20 @@ interface PreferencesProps {
 const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
   return (
     <>
-      <section className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+      <section className={`${styles.dashboardPanelCard} mb-8 rounded-2xl p-6 sm:p-8`}>
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Preferences</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Set your defaults for reminders and appearance.</p>
+          <h3 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Preferences</h3>
+          <p className={`mt-1 text-sm ${styles.dashboardGoalMeta}`}>Set your defaults for reminders and appearance.</p>
         </div>
         <div className="space-y-3">
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+          <div className={`${styles.dashboardGoalCard} flex items-center justify-between rounded-xl p-4`}>
             <div className="flex items-center gap-4">
               <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
                 <span className="material-symbols-outlined block text-[20px]">notifications</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Email reminders</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Receive inactivity reminders over email.</p>
+                <p className={`text-sm font-bold ${styles.dashboardGoalTitle}`}>Email reminders</p>
+                <p className={`text-xs ${styles.dashboardGoalMeta}`}>Receive inactivity reminders over email.</p>
               </div>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
@@ -36,14 +37,14 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
             </label>
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+          <div className={`${styles.dashboardGoalCard} flex items-center justify-between rounded-xl p-4`}>
             <div className="flex items-center gap-4">
               <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
                 <span className="material-symbols-outlined block text-[20px]">mail</span>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Weekly summary</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Enable a weekly performance summary.</p>
+                <p className={`text-sm font-bold ${styles.dashboardGoalTitle}`}>Weekly summary</p>
+                <p className={`text-xs ${styles.dashboardGoalMeta}`}>Enable a weekly performance summary.</p>
               </div>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
@@ -59,9 +60,9 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
         </div>
       </section>
 
-      <section className="mb-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+      <section className={`${styles.dashboardPanelCard} mb-8 rounded-2xl p-6 sm:p-8`}>
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Theme</h3>
+          <h3 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Theme</h3>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="group cursor-pointer" onClick={() => onChange({ ...value, theme: 'light' })}>

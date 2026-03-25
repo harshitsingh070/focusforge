@@ -5,6 +5,7 @@ import { AppDispatch, RootState } from '../../store';
 import { deleteGoal, fetchGoalById, fetchGoals, updateGoal } from '../../store/goalsSlice';
 import { Goal, GoalRequest } from '../../types';
 import LogActivityModal from '../Activity/LogActivityModal';
+import styles from '../Dashboard/Dashboard.module.css';
 
 type GoalTab = 'ACTIVE' | 'ALL' | 'COMPLETED' | 'ARCHIVED';
 type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
@@ -96,7 +97,6 @@ const GoalsList: React.FC = () => {
   const { selectedGoal } = useSelector((state: RootState) => state.goals);
 
   // Fetch goals on mount only. Subsequent refreshes (after actions) are triggered explicitly.
-  // This avoids the loading spinner re-appearing every time the user navigates to this page.
   useEffect(() => {
     dispatch(fetchGoals());
   }, [dispatch]);
@@ -155,7 +155,8 @@ const GoalsList: React.FC = () => {
   return (
     <>
       {/* ── Content area ── */}
-      <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8">
+      <div className={`${styles.dashboardThemeScope} mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8`}>
+        {/* ── Hero / Header banner ── */}
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
 
@@ -237,54 +238,52 @@ const GoalsList: React.FC = () => {
           </div>
         )}
 
-        {/* ── Summary stats ── */}
+        {/* ── Summary stat cards (dashboard style) ── */}
         {!loading && (
-          <div className="grid grid-cols-3 gap-4">
+          <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               {
                 icon: 'track_changes',
                 label: 'Total Goals',
-                value: goalsWithMeta.length,
-                accent: 'var(--ff-primary)',
-                bg: 'rgba(124,58,237,0.08)',
+                value: goalsWithMeta.length.toLocaleString(),
+                cardClass: styles.dashboardStatCardViolet,
+                iconClass: styles.dashboardStatIconViolet,
+                sub: 'All time',
+                subColor: styles.dashboardStatSubNeutral ?? styles.dashboardStatSubPositive,
               },
               {
                 icon: 'check_circle',
                 label: 'Completed',
-                value: goalsWithMeta.filter((g) => g.completed).length,
-                accent: '#16A34A',
-                bg: 'rgba(34,197,94,0.08)',
+                value: goalsWithMeta.filter((g) => g.completed).length.toLocaleString(),
+                cardClass: styles.dashboardStatCardEmerald,
+                iconClass: styles.dashboardStatIconEmerald,
+                sub: 'Goals hit 90%+',
+                subColor: styles.dashboardStatSubPositive,
               },
               {
                 icon: 'local_fire_department',
                 label: 'Best Streak',
                 value: `${Math.max(0, ...goalsWithMeta.map((g) => g.currentStreak))} days`,
-                accent: '#D97706',
-                bg: 'rgba(245,158,11,0.08)',
+                cardClass: styles.dashboardStatCardAmber,
+                iconClass: styles.dashboardStatIconAmber,
+                sub: 'Active streak',
+                subColor: styles.dashboardStatSubWarm,
               },
             ].map((stat) => (
-              <div
-                key={stat.label}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-4 shadow-sm transition-all duration-200 hover:shadow-md"
-              >
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
-                  style={{ background: stat.bg }}
-                >
-                  <span
-                    className="material-symbols-outlined text-[22px]"
-                    style={{ color: stat.accent }}
-                  >
-                    {stat.icon}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-[22px] font-bold leading-none text-[var(--ff-text-900)]">{stat.value}</p>
-                  <p className="mt-1 text-xs font-medium text-[var(--ff-text-500)]">{stat.label}</p>
+              <div key={stat.label} className={`${styles.dashboardStatCard} ${stat.cardClass} rounded-2xl p-6`}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className={styles.dashboardStatLabel}>{stat.label}</p>
+                    <p className={styles.dashboardStatValue}>{stat.value}</p>
+                    <p className={`${styles.dashboardStatSub} ${stat.subColor}`}>{stat.sub}</p>
+                  </div>
+                  <div className={`${styles.dashboardStatIconShell} ${stat.iconClass}`}>
+                    <span className="material-symbols-outlined text-[20px]">{stat.icon}</span>
+                  </div>
                 </div>
               </div>
             ))}
-          </div>
+          </section>
         )}
 
         {loading ? (
@@ -307,14 +306,14 @@ const GoalsList: React.FC = () => {
               return (
                 <article
                   key={goal.id}
-                  className="group ff-section-enter flex h-full flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-violet-200 dark:hover:border-violet-800/50"
+                  className={`${styles.dashboardGoalCard} group ff-section-enter flex h-full flex-col rounded-[1.5rem] p-4`}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <h4 className="line-clamp-2 text-lg font-bold text-[var(--ff-text-900)]">{goal.title}</h4>
-                      <div className="mt-2.5 flex flex-wrap gap-2">
+                      <h4 className={`${styles.dashboardGoalTitle} line-clamp-2`}>{goal.title}</h4>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
                         <span
-                          className="rounded-full border px-3 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                          className={`${styles.dashboardGoalBadge} rounded-full border px-3 py-0.5`}
                           style={categoryPillStyle}
                         >
                           {goal.category || 'General'}
@@ -323,7 +322,7 @@ const GoalsList: React.FC = () => {
                           🔥 {Math.max(goal.currentStreak, 0)} Day Streak
                         </span>
                         <span
-                          className="rounded-full border px-3 py-0.5 text-xs font-semibold"
+                          className={`${styles.dashboardGoalBadge} rounded-full border px-3 py-0.5`}
                           style={{
                             backgroundColor: difficultyStyle.background,
                             color: difficultyStyle.color,
@@ -336,33 +335,41 @@ const GoalsList: React.FC = () => {
                     </div>
 
                     {/* Progress ring */}
-                    <div className="relative h-14 w-14 shrink-0">
+                    <div className="relative h-12 w-12 shrink-0">
                       <div
-                        className="h-14 w-14 rounded-full"
+                        className="h-12 w-12 rounded-full"
                         style={{
-                          background: `conic-gradient(var(--ff-primary) ${progressDegrees}deg, var(--ff-surface-hover) 0deg)`,
+                          background: `conic-gradient(${categoryColor} ${progressDegrees}deg, var(--ff-dashboard-track, var(--ff-surface-hover)) 0deg)`,
                         }}
                       />
-                      <div className="absolute inset-[4px] rounded-full bg-[var(--ff-surface-elevated)]" />
-                      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-[var(--ff-text-900)]">
+                      <div className="absolute inset-[4px] rounded-full" style={{ background: 'var(--ff-dashboard-card-top, var(--ff-surface-elevated))' }} />
+                      <span className={`absolute inset-0 flex items-center justify-center text-[11px] font-bold ${styles.dashboardGoalPercent}`} style={{ fontSize: '11px' }}>
                         {goal.progressPercent}%
                       </span>
                     </div>
                   </div>
 
-                  <p className="mt-3 line-clamp-2 flex-1 text-sm text-[var(--ff-text-700)]">
+                  <p className={`${styles.dashboardGoalMeta} mt-2 line-clamp-2 flex-1`}>
                     {goal.description?.trim() || 'No goal description provided.'}
                   </p>
-                  <p className="mt-1.5 text-xs text-[var(--ff-text-500)]">
+                  <p className="mt-1.5 text-xs" style={{ color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>
                     Daily target:{' '}
-                    <span className="font-medium text-[var(--ff-text-700)]">{Math.max(goal.dailyMinimumMinutes, 0)} min</span>
+                    <span className="font-medium" style={{ color: 'var(--ff-dashboard-text-soft, var(--ff-text-700))' }}>{Math.max(goal.dailyMinimumMinutes, 0)} min</span>
                   </p>
 
-                  <div className="mt-5 grid grid-cols-2 gap-3">
+                  {/* Progress bar */}
+                  <div className={`${styles.dashboardGoalTrack} mt-3`}>
+                    <div
+                      className={styles.dashboardGoalFill}
+                      style={{ width: `${Math.max(goal.progressPercent, 8)}%`, background: categoryColor }}
+                    />
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setOverlay({ type: 'detail', goal })}
-                      className="inline-flex items-center justify-center rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ff-text-900)] transition-[background-color] duration-normal ease-premium hover:bg-[var(--ff-surface-hover)]"
+                      className={`${styles.dashboardGoalButtonSecondary} inline-flex items-center justify-center rounded-[10px] border px-4 py-2.5 text-sm font-semibold transition-[background-color] duration-normal ease-premium`}
                     >
                       Details
                     </button>
@@ -370,7 +377,7 @@ const GoalsList: React.FC = () => {
                       type="button"
                       onClick={() => setOverlay({ type: 'log', goal })}
                       disabled={!goal.isActive}
-                      className="inline-flex items-center justify-center rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 transition-[transform,filter,box-shadow] duration-normal ease-premium hover:brightness-105 hover:shadow-hover disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`${styles.dashboardGoalButtonPrimary} inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60`}
                     >
                       Update Progress
                     </button>
@@ -380,9 +387,9 @@ const GoalsList: React.FC = () => {
             })}
 
             {filteredGoals.length === 0 && (
-              <article className="col-span-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center">
-                <span className="material-symbols-outlined mb-3 block text-4xl text-slate-300 dark:text-slate-600">track_changes</span>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No goals match this view yet.</p>
+              <article className={`${styles.dashboardGoalCard} col-span-full rounded-[1.5rem] p-12 text-center`}>
+                <span className="material-symbols-outlined mb-3 block text-4xl" style={{ color: 'var(--ff-dashboard-track, var(--ff-text-500))' }}>track_changes</span>
+                <p className="text-sm font-medium" style={{ color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>No goals match this view yet.</p>
                 <button
                   type="button"
                   onClick={openGoalComposer}
@@ -420,31 +427,31 @@ const GoalsList: React.FC = () => {
           {/* ── Goal Detail panel ── */}
           {overlay.type === 'detail' && (
             <div
-              className="ff-sheet-enter sm:ff-modal-enter w-full max-h-[92vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-2xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2"
+              className={`${styles.dashboardThemeScope} ff-sheet-enter sm:ff-modal-enter w-full max-h-[92vh] overflow-y-auto sm:max-w-2xl rounded-t-2xl sm:rounded-2xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-top,var(--ff-surface-elevated))] p-6 shadow-e2`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="mb-5 flex items-center justify-between gap-4">
-                <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Goal Detail</h2>
-                <button onClick={closeOverlay} className="rounded-[8px] border border-[var(--ff-border)] p-1.5 text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]">
+                <h2 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Goal Detail</h2>
+                <button onClick={closeOverlay} className="rounded-[8px] border border-[var(--ff-dashboard-card-border,var(--ff-border))] p-1.5 hover:bg-[var(--ff-surface-hover)]" style={{ color: 'var(--ff-dashboard-text-soft, var(--ff-text-700))' }}>
                   <span className="material-symbols-outlined text-[20px]">close</span>
                 </button>
               </div>
               {/* Badges */}
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full border px-3 py-0.5 text-xs font-semibold uppercase tracking-wide"
+                <span className={`${styles.dashboardGoalBadge} rounded-full border px-3 py-0.5`}
                   style={{ color: overlay.goal.categoryColor || 'var(--ff-primary)', backgroundColor: `${overlay.goal.categoryColor || '#7c3aed'}18`, borderColor: `${overlay.goal.categoryColor || '#7c3aed'}40` }}>
                   {overlay.goal.category || 'General'}
                 </span>
-                <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${overlay.goal.isActive ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400' : 'bg-amber-100 text-amber-700'}`}>
+                <span className={`${styles.dashboardStatusChip} ${overlay.goal.isActive ? styles.dashboardStatusChipActive : styles.dashboardStatusChipFocus}`}>
                   {overlay.goal.isActive ? 'Active' : 'Archived'}
                 </span>
-                <span className={`rounded-full px-3 py-0.5 text-xs font-semibold ${overlay.goal.isPrivate ? 'bg-[var(--ff-surface-soft)] text-[var(--ff-text-700)]' : 'bg-blue-50 text-blue-700'}`}>
+                <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>
                   {overlay.goal.isPrivate ? 'Private' : 'Public'}
                 </span>
               </div>
-              <h3 className="mt-3 text-2xl font-bold text-[var(--ff-text-900)]">{overlay.goal.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--ff-text-700)]">{overlay.goal.description || 'No description provided.'}</p>
+              <h3 className={`${styles.dashboardSummaryTitle} mt-3`}>{overlay.goal.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--ff-dashboard-text-soft, var(--ff-text-700))' }}>{overlay.goal.description || 'No description provided.'}</p>
               {/* Stat grid */}
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {[
@@ -455,13 +462,13 @@ const GoalsList: React.FC = () => {
                   { label: 'Start Date', value: overlay.goal.startDate, icon: 'calendar_today', accent: '#7c3aed' },
                   { label: 'End Date', value: overlay.goal.endDate || 'Open ended', icon: 'event', accent: '#db2777' },
                 ].map((s) => (
-                  <div key={s.label} className="flex items-center gap-3 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-3 shadow-e1">
+                  <div key={s.label} className={`${styles.dashboardSummaryCard} flex items-center gap-3 rounded-xl px-3 py-3`}>
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px]" style={{ background: `${s.accent}18` }}>
                       <span className="material-symbols-outlined text-[18px]" style={{ color: s.accent }}>{s.icon}</span>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] font-medium text-[var(--ff-text-500)]">{s.label}</p>
-                      <p className="mt-0.5 truncate text-sm font-bold text-[var(--ff-text-900)]">{s.value}</p>
+                      <p className={`${styles.dashboardStatLabel} text-[10px]`}>{s.label}</p>
+                      <p className={`${styles.dashboardGoalTitle} mt-0.5 truncate text-sm`}>{s.value}</p>
                     </div>
                   </div>
                 ))}
@@ -471,13 +478,13 @@ const GoalsList: React.FC = () => {
                 <button
                   disabled={!overlay.goal.isActive}
                   onClick={() => setOverlay({ type: 'log', goal: overlay.goal })}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={`${styles.dashboardGoalButtonPrimary} flex flex-1 items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   <span className="material-symbols-outlined text-[18px]">add_circle</span> Log Activity
                 </button>
                 <button
                   onClick={() => setOverlay({ type: 'edit', goal: overlay.goal })}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-4 py-2.5 text-sm font-semibold text-[var(--ff-text-900)] hover:bg-[var(--ff-surface-hover)]"
+                  className={`${styles.dashboardGoalButtonSecondary} flex flex-1 items-center justify-center gap-2 rounded-[10px] border px-4 py-2.5 text-sm font-semibold`}
                 >
                   <span className="material-symbols-outlined text-[18px]">edit</span> Edit Goal
                 </button>
@@ -532,79 +539,129 @@ const GoalsList: React.FC = () => {
 
             return (
               <div
-                className="ff-sheet-enter sm:ff-modal-enter w-full max-h-[92vh] overflow-y-auto sm:max-w-xl rounded-t-2xl sm:rounded-2xl border border-[var(--ff-border)] bg-[var(--ff-surface-elevated)] p-6 shadow-e2"
+                className={`${styles.dashboardThemeScope} ff-sheet-enter sm:ff-modal-enter w-full max-h-[90vh] overflow-y-auto sm:max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl`}
+                style={{
+                  background: 'var(--ff-dashboard-card-top, var(--ff-surface-elevated))',
+                  border: '1px solid var(--ff-dashboard-card-border, var(--ff-border))',
+                  boxShadow: '0 32px 80px rgba(0,0,0,0.45)',
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="mb-5 flex items-center justify-between gap-4">
-                  <h2 className="text-xl font-bold text-[var(--ff-text-900)]">Edit Goal</h2>
-                  <button onClick={closeOverlay} className="rounded-[8px] border border-[var(--ff-border)] p-1.5 text-[var(--ff-text-700)] hover:bg-[var(--ff-surface-hover)]">
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-4"
+                  style={{ borderBottom: '1px solid var(--ff-dashboard-card-border, var(--ff-border))' }}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-violet-500/15">
+                      <span className="material-symbols-outlined text-[18px] text-violet-400">edit</span>
+                    </div>
+                    <div>
+                      <h2 className={`text-base font-bold ${styles.dashboardGoalTitle}`}>Edit Goal</h2>
+                      <p className={`text-[11px] truncate max-w-[160px] ${styles.dashboardGoalMeta}`}>{g.title}</p>
+                    </div>
+                  </div>
+                  <button onClick={closeOverlay} className={`${styles.dashboardGoalButtonSecondary} !px-2 !py-2`} aria-label="Close">
+                    <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
                 </div>
 
+                <div className="p-5">
+
                 {actionMsg && (
-                  <div className="mb-4 rounded-xl border border-green-300/50 bg-green-50 px-4 py-2.5 text-sm font-medium text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300">
-                    {actionMsg}
-                  </div>
-                )}
-
-                <form onSubmit={handleSave} className="space-y-4">
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">Title</label>
-                    <input name="title" defaultValue={g.title} className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" required />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">Description</label>
-                    <textarea name="description" defaultValue={g.description || ''} rows={3} className="w-full resize-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">Difficulty (1–5)</label>
-                      <input name="difficulty" type="number" min={1} max={5} defaultValue={g.difficulty} className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">Daily Minutes</label>
-                      <input name="dailyMinimumMinutes" type="number" min={10} max={600} defaultValue={g.dailyMinimumMinutes} className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">Start Date</label>
-                      <input name="startDate" type="date" defaultValue={g.startDate} className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-sm font-semibold text-[var(--ff-text-900)]">End Date <span className="font-normal text-[var(--ff-text-500)]">(optional)</span></label>
-                      <input name="endDate" type="date" defaultValue={g.endDate || ''} className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm text-[var(--ff-text-900)] outline-none focus:border-[rgba(var(--ff-primary-rgb),0.55)]" />
-                    </div>
-                  </div>
-                  <input type="hidden" name="isPrivate" value={String(g.isPrivate)} />
-                  <button type="submit" disabled={!!actionLoading} className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-[var(--ff-primary)] [background-image:var(--ff-gradient-primary)] px-4 py-2.5 text-sm font-semibold text-white shadow-e1 hover:brightness-105 disabled:opacity-60">
-                    {actionLoading === 'archive' ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Saving…</> : 'Save Changes'}
-                  </button>
-                </form>
-
-                {/* Danger zone */}
-                <div className="mt-5 rounded-xl border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] p-4">
-                  <p className="mb-3 text-xs font-semibold text-[var(--ff-text-700)]">Danger Zone</p>
-                  {!deleteConfirm ? (
-                    <div className="flex gap-3">
-                      <button onClick={handleArchive} disabled={!!actionLoading} className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--ff-text-900)] hover:bg-[var(--ff-surface-hover)] disabled:opacity-60">
-                        {actionLoading === 'archive' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-[var(--ff-primary)]" /> : <span className="material-symbols-outlined text-[16px]">{isArchived ? 'unarchive' : 'archive'}</span>}
-                        {isArchived ? 'Unarchive' : 'Archive'}
-                      </button>
-                      <button onClick={() => setDeleteConfirm(true)} disabled={!!actionLoading} className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-rose-300/60 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-60 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
-                        <span className="material-symbols-outlined text-[16px]">delete</span> Delete
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-sm text-[var(--ff-text-700)]">Delete <strong>"{g.title}"</strong>? This cannot be undone.</p>
-                      <div className="flex gap-3">
-                        <button onClick={() => setDeleteConfirm(false)} className="flex-1 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] px-3 py-2 text-sm font-semibold text-[var(--ff-text-900)] hover:bg-[var(--ff-surface-hover)]">Cancel</button>
-                        <button onClick={handleDelete} disabled={actionLoading === 'delete'} className="flex flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700 disabled:opacity-60">
-                          {actionLoading === 'delete' ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : <span className="material-symbols-outlined text-[16px]">delete</span>} Yes, Delete
-                        </button>
-                      </div>
+                    <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm font-medium text-emerald-400">
+                      {actionMsg}
                     </div>
                   )}
+
+                  <form onSubmit={handleSave} className="space-y-3.5">
+                    {/* Title */}
+                    <div>
+                      <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Title</label>
+                      <input name="title" defaultValue={g.title}
+                        className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20"
+                        required />
+                    </div>
+                    {/* Description */}
+                    <div>
+                      <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Description</label>
+                      <textarea name="description" defaultValue={g.description || ''} rows={2}
+                        className="w-full resize-none rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20" />
+                    </div>
+                    {/* Difficulty + Minutes + Dates */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Difficulty (1–5)</label>
+                        <input name="difficulty" type="number" min={1} max={5} defaultValue={g.difficulty}
+                          className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500" />
+                      </div>
+                      <div>
+                        <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Daily Minutes</label>
+                        <input name="dailyMinimumMinutes" type="number" min={10} max={600} defaultValue={g.dailyMinimumMinutes}
+                          className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500" />
+                      </div>
+                      <div>
+                        <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Start Date</label>
+                        <input name="startDate" type="date" defaultValue={g.startDate}
+                          className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500" />
+                      </div>
+                      <div>
+                        <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>
+                          End Date <span className={`font-normal normal-case tracking-normal ${styles.dashboardGoalMeta}`}>(opt.)</span>
+                        </label>
+                        <input name="endDate" type="date" defaultValue={g.endDate || ''}
+                          className="w-full rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500" />
+                      </div>
+                    </div>
+                    <input type="hidden" name="isPrivate" value={String(g.isPrivate)} />
+
+                    {/* Save button */}
+                    <button type="submit" disabled={!!actionLoading}
+                      className={`${styles.dashboardGoalButtonPrimary} flex w-full items-center justify-center gap-2`}>
+                      {actionLoading === 'archive'
+                        ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> Saving…</>
+                        : <><span className="material-symbols-outlined text-[16px]">save</span> Save Changes</>
+                      }
+                    </button>
+                  </form>
+
+                  {/* Danger zone */}
+                  <div className="mt-4 rounded-xl p-3.5"
+                    style={{ background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))', border: '1px solid rgba(239,68,68,0.15)' }}>
+                    <p className={`mb-2.5 text-[10px] font-bold uppercase tracking-widest ${styles.dashboardStatLabel}`}>Danger Zone</p>
+                    {!deleteConfirm ? (
+                      <div className="flex gap-2.5">
+                        <button onClick={handleArchive} disabled={!!actionLoading}
+                          className={`${styles.dashboardGoalButtonSecondary} flex flex-1 items-center justify-center gap-1.5 !py-2 text-xs`}>
+                          {actionLoading === 'archive'
+                            ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--ff-border)] border-t-violet-400" />
+                            : <span className="material-symbols-outlined text-[15px]">{isArchived ? 'unarchive' : 'archive'}</span>
+                          }
+                          {isArchived ? 'Unarchive' : 'Archive'}
+                        </button>
+                        <button onClick={() => setDeleteConfirm(true)} disabled={!!actionLoading}
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-400 transition-colors hover:bg-rose-500/20 disabled:opacity-60">
+                          <span className="material-symbols-outlined text-[15px]">delete</span> Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2.5">
+                        <p className={`text-xs ${styles.dashboardGoalMeta}`}>
+                          Delete <strong className="text-rose-400">"{g.title}"</strong>? This cannot be undone.
+                        </p>
+                        <div className="flex gap-2.5">
+                          <button onClick={() => setDeleteConfirm(false)}
+                            className={`${styles.dashboardGoalButtonSecondary} flex-1 !py-2 text-xs`}>Cancel</button>
+                          <button onClick={handleDelete} disabled={actionLoading === 'delete'}
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-60">
+                            {actionLoading === 'delete'
+                              ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                              : <span className="material-symbols-outlined text-[15px]">delete</span>
+                            }
+                            Yes, Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );

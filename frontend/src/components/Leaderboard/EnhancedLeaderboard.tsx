@@ -11,6 +11,7 @@ import {
 import FilterBar from './FilterBar';
 import LeaderboardTable from './LeaderboardTable';
 import TrendChart from './TrendChart';
+import styles from '../Dashboard/Dashboard.module.css';
 
 const AUTO_REFRESH_INTERVAL_MS = 30000;
 
@@ -131,7 +132,7 @@ const PodiumCard: React.FC<{
         {entry ? `${formatCount(entry.rawPoints)} XP` : 'No score yet'}
       </p>
       <div
-        className={`mt-3 flex w-full max-w-[220px] items-end justify-center rounded-t-2xl border border-slate-200/80 bg-gradient-to-t ${config.pedestal} dark:border-slate-700/70 ${pedestalClass}`}
+        className={`mt-3 flex w-full max-w-[220px] items-end justify-center rounded-t-2xl border border-[var(--ff-dashboard-card-border,rgba(148,163,184,0.2))] bg-gradient-to-t ${config.pedestal} ${pedestalClass}`}
       >
         <span className="mb-2 text-3xl font-black text-slate-500/35 dark:text-slate-200/20">{rank}</span>
       </div>
@@ -231,7 +232,7 @@ const EnhancedLeaderboard: React.FC = () => {
         label: '7D Streak',
         value: `${streak}d`,
         active: streak >= 7,
-        activeTone: 'text-orange-600 dark:text-orange-300 bg-orange-100 dark:bg-orange-500/15 border-orange-200 dark:border-orange-500/30',
+        chipClass: styles.dashboardStatusChipFocus,
       },
       {
         id: 'consistency',
@@ -239,7 +240,7 @@ const EnhancedLeaderboard: React.FC = () => {
         label: 'Consistency',
         value: `${days}d`,
         active: days >= 15,
-        activeTone: 'text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-500/30',
+        chipClass: styles.dashboardStatusChipActive,
       },
       {
         id: 'points',
@@ -247,15 +248,17 @@ const EnhancedLeaderboard: React.FC = () => {
         label: 'Power Score',
         value: `${formatCount(points)}`,
         active: points >= 2500,
-        activeTone: 'text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-500/15 border-violet-200 dark:border-violet-500/30',
+        chipClass: styles.dashboardStatusChipNeutral,
       },
     ];
   }, [myRank]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8">
+    <div className={`${styles.dashboardThemeScope} mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8`}>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        {/* Left column */}
         <div className="space-y-6">
+          {/* Hero header */}
           <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-6 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)]">
             <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
             <div className="relative">
@@ -268,7 +271,7 @@ const EnhancedLeaderboard: React.FC = () => {
                     Real-time performance metrics and standings.
                   </p>
                 </div>
-                <div className="rounded-xl border border-violet-200/70 bg-white/70 px-3 py-2 text-sm font-semibold text-violet-700 dark:border-violet-500/30 dark:bg-slate-900/50 dark:text-violet-300">
+                <div className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>
                   Auto-refresh every 30s
                 </div>
               </div>
@@ -285,7 +288,7 @@ const EnhancedLeaderboard: React.FC = () => {
           <TrendChart trends={trends} />
 
           {myContext?.notRanked && !loading && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-500/30 dark:bg-amber-500/10">
+            <div className={`${styles.dashboardPanelCard} rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-500/30 dark:bg-amber-500/10`}>
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined mt-0.5 shrink-0 text-xl text-amber-500">warning</span>
                 <div>
@@ -297,15 +300,16 @@ const EnhancedLeaderboard: React.FC = () => {
           )}
 
           {error && !loading && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-500/30 dark:bg-red-500/10">
-              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+            <div className={`${styles.dashboardPanelCard} rounded-2xl p-5`}>
+              <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Top 3 Podium */}
+          <section className={`${styles.dashboardPanelCard} rounded-2xl p-6`}>
             <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Top 3 Podium</h3>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              <h3 className={`text-xl font-black tracking-tight ${styles.dashboardGoalTitle}`}>Top 3 Podium</h3>
+              <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>
                 {PERIODS.find((p) => p.id === selectedPeriod)?.label || 'Selected period'}
               </span>
             </div>
@@ -322,17 +326,18 @@ const EnhancedLeaderboard: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Leaderboard Table */}
+          <section className={`${styles.dashboardPanelCard} rounded-2xl p-6`}>
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Leaderboard Table</h3>
-              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+              <h3 className={`text-xl font-black tracking-tight ${styles.dashboardGoalTitle}`}>Leaderboard Table</h3>
+              <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>
                 {participants.toLocaleString()} participants
               </span>
             </div>
 
             {loading && dedupedRankings.length === 0 ? (
               <div className="flex justify-center py-12">
-                <div className="h-12 w-12 animate-spin rounded-full border-2 border-slate-200 border-t-violet-500 dark:border-slate-700 dark:border-t-violet-400" />
+                <div className="h-12 w-12 animate-spin rounded-full border-2 border-[var(--ff-dashboard-track,var(--ff-border))] border-t-violet-500" />
               </div>
             ) : (
               <LeaderboardTable entries={dedupedRankings} highlightedUserId={selectedUserId} />
@@ -340,27 +345,29 @@ const EnhancedLeaderboard: React.FC = () => {
           </section>
         </div>
 
+        {/* Right sidebar */}
         <aside className="space-y-6">
-          <section className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Your Status */}
+          <section className={`${styles.dashboardPanelCard} relative overflow-hidden rounded-2xl p-5`}>
             <div className="pointer-events-none absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-violet-500/15 blur-2xl" />
             <div className="relative">
               <div className="mb-5 flex items-center justify-between">
-                <h3 className="text-lg font-black text-slate-900 dark:text-white">Your Status</h3>
-                <span className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  Global
-                </span>
+                <h3 className={`text-lg font-black ${styles.dashboardGoalTitle}`}>Your Status</h3>
+                <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipNeutral}`}>Global</span>
               </div>
 
-              <p className="text-5xl font-black tracking-tight text-slate-900 dark:text-white">
+              <p className={`text-5xl font-black tracking-tight ${styles.dashboardGoalTitle}`}>
                 {myRank ? `#${myRank.rank}` : '--'}
               </p>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+              <p className={`mt-2 text-sm ${styles.dashboardGoalMeta}`}>
                 {percentile
-                  ? <>Top <strong className="text-violet-600 dark:text-violet-300">{percentile}%</strong> of all athletes this period.</>
+                  ? <>Top <strong style={{ color: '#a78bfa' }}>{percentile}%</strong> of all athletes this period.</>
                   : 'Start logging activity to appear in the leaderboard.'}
               </p>
 
-              <div className="mt-5 rounded-xl border border-slate-200/80 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/70">
+              {/* Sparkline */}
+              <div className={`mt-5 rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] p-3`}
+                style={{ background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' }}>
                 {sparklinePath ? (
                   <svg viewBox="0 0 240 56" className="h-14 w-full" preserveAspectRatio="none">
                     <path d={sparklinePath} fill="none" stroke="url(#ff-leaderboard-sparkline)" strokeWidth="3" strokeLinecap="round" />
@@ -372,32 +379,36 @@ const EnhancedLeaderboard: React.FC = () => {
                     </defs>
                   </svg>
                 ) : (
-                  <p className="py-3 text-center text-xs text-slate-500 dark:text-slate-400">Trend data will appear soon.</p>
+                  <p className="py-3 text-center text-xs" style={{ color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>Trend data will appear soon.</p>
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800/70">
-                <span className="text-slate-500 dark:text-slate-400">Next rank up</span>
-                <span className="font-bold text-violet-600 dark:text-violet-300">
+              <div className={`mt-4 flex items-center justify-between rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] px-3 py-2.5 text-sm`}
+                style={{ background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' }}>
+                <span className={styles.dashboardGoalMeta}>Next rank up</span>
+                <span className="font-bold" style={{ color: '#a78bfa' }}>
                   {pointsToNextRank > 0 ? `+ ${formatCount(pointsToNextRank)} XP` : 'You are at the top'}
                 </span>
               </div>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          {/* Status Badges */}
+          <section className={`${styles.dashboardPanelCard} rounded-2xl p-5`}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white">Badges</h3>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</span>
+              <h3 className={`text-lg font-black ${styles.dashboardGoalTitle}`}>Badges</h3>
+              <span className={`text-xs font-semibold ${styles.dashboardGoalMeta}`}>Status</span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               {statusBadges.map((badge) => (
                 <div
                   key={badge.id}
-                  className={`rounded-xl border p-2.5 text-center transition-colors ${badge.active
-                      ? badge.activeTone
-                      : 'border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
-                    }`}
+                  className={`${styles.dashboardStatusChip} ${badge.active ? badge.chipClass : ''} rounded-xl p-2.5 text-center transition-colors`}
+                  style={!badge.active ? {
+                    border: '1px solid var(--ff-dashboard-card-border, var(--ff-border))',
+                    background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))',
+                    color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))',
+                  } : {}}
                 >
                   <span className="material-symbols-outlined text-[22px]">{badge.icon}</span>
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-wide">{badge.label}</p>
@@ -407,8 +418,9 @@ const EnhancedLeaderboard: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <h3 className="mb-4 text-lg font-black text-slate-900 dark:text-white">Rivals</h3>
+          {/* Rivals */}
+          <section className={`${styles.dashboardPanelCard} rounded-2xl p-5`}>
+            <h3 className={`mb-4 text-lg font-black ${styles.dashboardGoalTitle}`}>Rivals</h3>
             <div className="space-y-3">
               {rivalEntries.map((entry) => {
                 const isSelf = entry.userId === selectedUserId;
@@ -416,9 +428,13 @@ const EnhancedLeaderboard: React.FC = () => {
                   <div
                     key={`rival-${entry.userId}-${entry.rank}`}
                     className={`flex items-center justify-between rounded-xl border px-3 py-2.5 ${isSelf
-                        ? 'border-violet-300 bg-violet-50 dark:border-violet-500/50 dark:bg-violet-500/10'
-                        : 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60'
-                      }`}
+                      ? 'border-violet-300 bg-violet-50 dark:border-violet-500/50 dark:bg-violet-500/10'
+                      : ''
+                    }`}
+                    style={!isSelf ? {
+                      border: '1px solid var(--ff-dashboard-card-border, var(--ff-border))',
+                      background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))',
+                    } : {}}
                   >
                     <div className="flex items-center gap-2.5">
                       <div
@@ -428,13 +444,13 @@ const EnhancedLeaderboard: React.FC = () => {
                         {getInitials(entry.username)}
                       </div>
                       <div>
-                        <p className={`text-sm font-bold ${isSelf ? 'text-violet-700 dark:text-violet-300' : 'text-slate-900 dark:text-white'}`}>
+                        <p className={`text-sm font-bold ${isSelf ? 'text-violet-400' : styles.dashboardGoalTitle}`}>
                           {isSelf ? 'You' : entry.username}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">#{entry.rank}</p>
+                        <p className={`text-xs ${styles.dashboardGoalMeta}`}>#{entry.rank}</p>
                       </div>
                     </div>
-                    <p className={`text-sm font-black ${isSelf ? 'text-violet-700 dark:text-violet-300' : 'text-slate-700 dark:text-slate-200'}`}>
+                    <p className={`text-sm font-black ${isSelf ? 'text-violet-400' : styles.dashboardGoalTitle}`}>
                       {formatCount(entry.rawPoints)}
                     </p>
                   </div>
