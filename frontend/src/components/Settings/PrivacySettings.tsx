@@ -37,7 +37,7 @@ const PrivacySettings: React.FC<PrivacySettingsProps> = ({ value, onChange }) =>
         <p className={`mt-1 text-sm ${styles.dashboardGoalMeta}`}>Control what other users can see.</p>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         {[
           { key: 'PUBLIC', title: 'Public', description: 'Anyone can see.' },
           { key: 'FRIENDS', title: 'Friends', description: 'Only friends can see.' },
@@ -47,7 +47,7 @@ const PrivacySettings: React.FC<PrivacySettingsProps> = ({ value, onChange }) =>
           return (
             <label
               key={option.key}
-              className={`flex cursor-pointer items-start gap-4 rounded-xl border p-4 transition-all ${checked
+              className={`flex cursor-pointer flex-col items-start gap-3 rounded-xl border p-4 transition-all sm:flex-row ${checked
                   ? 'border-violet-600 bg-violet-50 dark:bg-violet-600/10'
                   : `border-[var(--ff-dashboard-card-border,var(--ff-border))]`
                 }`}
@@ -80,7 +80,7 @@ const PrivacySettings: React.FC<PrivacySettingsProps> = ({ value, onChange }) =>
           return (
             <div
               key={option.key}
-              className={`${styles.dashboardGoalCard} flex items-center justify-between rounded-xl p-4`}
+              className={`${styles.dashboardGoalCard} flex flex-col items-start gap-4 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between`}
             >
               <div>
                 <p className={`text-sm font-bold ${styles.dashboardGoalTitle}`}>{option.label}</p>

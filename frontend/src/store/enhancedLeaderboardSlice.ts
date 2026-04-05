@@ -85,6 +85,30 @@ interface DiagnosticLeaderboardData {
 
 const PERIODS_FOR_TRENDS: LeaderboardPeriod[] = ['WEEKLY', 'MONTHLY', 'ALL_TIME'];
 
+const annotateRankMovement = (previousRankings: LeaderboardEntry[], nextRankings: LeaderboardEntry[]) => {
+  if (previousRankings.length === 0) {
+    return nextRankings.map((entry) => ({
+      ...entry,
+      previousRank: entry.rank,
+      rankMovement: 0,
+      isNew: false,
+    }));
+  }
+
+  const previousRanksByUser = new Map(previousRankings.map((entry) => [entry.userId, entry.rank]));
+
+  return nextRankings.map((entry) => {
+    const previousRank = previousRanksByUser.get(entry.userId);
+
+    return {
+      ...entry,
+      previousRank: previousRank ?? entry.rank,
+      rankMovement: previousRank === undefined ? 0 : previousRank - entry.rank,
+      isNew: previousRank === undefined,
+    };
+  });
+};
+
 const getPeriodStartDate = (period: LeaderboardPeriod) => {
   const today = new Date();
   today.setHours(23, 59, 59, 999);
@@ -301,7 +325,7 @@ export const fetchEnhancedLeaderboard = createAsyncThunk<
   try {
     const selectedCategory = category?.trim();
     const selectedPeriod = period || 'MONTHLY';
-    const response = await enhancedLeaderboardAPI.getLeaderboard(selectedCategory, period);
+    const response = await enhancedLeaderboardAPI.getLeaderboard(selectedCategory, selectedPeriod);
     const payload = response.data as LeaderboardResponse;
 
     // Frontend fallback: some environments still return empty category rows on v2,
@@ -326,6 +350,7 @@ export const fetchEnhancedLeaderboard = createAsyncThunk<
         selectedPeriod
       );
       if (rankings.length === 0) {
+        console.warn(`No rankings found for category: ${selectedCategory} in period: ${selectedPeriod}`);
         return payload;
       }
 
@@ -334,7 +359,8 @@ export const fetchEnhancedLeaderboard = createAsyncThunk<
         period: selectedPeriod,
         categoryName: selectedCategory,
       };
-    } catch {
+    } catch (diagnosticError) {
+      console.error(`Diagnostic API fallback failed for category ${selectedCategory}:`, diagnosticError);
       return payload;
     }
   } catch (error) {
@@ -424,9 +450,10 @@ const enhancedLeaderboardSlice = createSlice({
         if (state.activeLeaderboardRequestId !== action.meta.requestId) {
           return;
         }
+        const nextRankings = annotateRankMovement(state.rankings, action.payload.rankings || []);
         state.loading = false;
-        state.rankings = action.payload.rankings || [];
-        state.leaderboard = action.payload.rankings || [];
+        state.rankings = nextRankings;
+        state.leaderboard = nextRankings;
         state.period = action.payload.period || state.period;
         state.categoryName = action.payload.categoryName;
         state.error = null;

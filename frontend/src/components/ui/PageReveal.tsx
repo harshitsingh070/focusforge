@@ -86,12 +86,13 @@ const PageReveal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const cycleRef = useRef(0);
 
   useLayoutEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
     const container = containerRef.current;
     if (!container) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      container.dataset.ffPageShell = 'visible';
+      return;
+    }
 
     cycleRef.current += 1;
     const cycleId = String(cycleRef.current);
@@ -99,9 +100,14 @@ const PageReveal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     let revealFrame = 0;
     let mutationFrame = 0;
 
+    container.dataset.ffPageShell = 'pending';
+
     const revealTargets = (targets: HTMLElement[]) => {
       const freshTargets = targets.filter((element) => element.dataset.ffPageLoadCycle !== cycleId);
-      if (freshTargets.length === 0) return;
+      if (freshTargets.length === 0) {
+        container.dataset.ffPageShell = 'visible';
+        return;
+      }
 
       freshTargets.forEach((element) => {
         element.dataset.ffPageLoadCycle = cycleId;
@@ -112,6 +118,7 @@ const PageReveal: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       const batch = [...freshTargets];
       revealFrame = window.requestAnimationFrame(() => {
+        container.dataset.ffPageShell = 'visible';
         batch.forEach((element) => {
           if (!element.isConnected) return;
           if (element.dataset.ffPageLoadCycle !== cycleId) return;

@@ -15,6 +15,7 @@ target/
 # Spring Boot / Maven
 HELP.md
 .mvn/wrapper/maven-wrapper.jar
+.m2/
 
 # Environment files
 .env.local
@@ -60,3 +61,16 @@ DetailedReadme.md
 githubui.md
 temp_ref/
 temp_lb_ref/
+
+.agent/
+design-system/
+.agents/
+.vscode/
+.codex/
+.claude/
+.claude-flow/
+que and ans.txt
+que and ans.md
+que and ans.pdf
+make_qa_pdf.py
+focusforge-backend\.m2/

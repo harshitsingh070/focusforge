@@ -16,7 +16,7 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
           <p className={`mt-1 text-sm ${styles.dashboardGoalMeta}`}>Set your defaults for reminders and appearance.</p>
         </div>
         <div className="space-y-3">
-          <div className={`${styles.dashboardGoalCard} flex items-center justify-between rounded-xl p-4`}>
+          <div className={`${styles.dashboardGoalCard} flex flex-col items-start gap-4 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between`}>
             <div className="flex items-center gap-4">
               <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
                 <span className="material-symbols-outlined block text-[20px]">notifications</span>
@@ -37,7 +37,7 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
             </label>
           </div>
 
-          <div className={`${styles.dashboardGoalCard} flex items-center justify-between rounded-xl p-4`}>
+          <div className={`${styles.dashboardGoalCard} flex flex-col items-start gap-4 rounded-xl p-4 sm:flex-row sm:items-center sm:justify-between`}>
             <div className="flex items-center gap-4">
               <div className="rounded-xl bg-violet-100 dark:bg-violet-600/10 p-2.5 text-violet-600 dark:text-violet-500">
                 <span className="material-symbols-outlined block text-[20px]">mail</span>
@@ -64,7 +64,7 @@ const Preferences: React.FC<PreferencesProps> = ({ value, onChange }) => {
         <div className="mb-6">
           <h3 className={`text-xl font-bold ${styles.dashboardGoalTitle}`}>Theme</h3>
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <div className="group cursor-pointer" onClick={() => onChange({ ...value, theme: 'light' })}>
             <div className={`relative flex aspect-video w-full flex-col gap-1.5 overflow-hidden rounded-xl p-2 transition-all ${value.theme === 'light' ? 'border-2 border-violet-600 ring-4 ring-violet-600/10 bg-slate-200' : 'border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900'}`}>
               <div className="flex gap-1">

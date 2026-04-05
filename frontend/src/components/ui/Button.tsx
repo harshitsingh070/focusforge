@@ -43,7 +43,9 @@ const Button: React.FC<ButtonProps> = ({
       disabled={isDisabled}
       className={`
         inline-flex items-center justify-center whitespace-nowrap rounded-full font-semibold
-        transition-[box-shadow,border-color,background,filter,color] duration-200 ease-out
+        transition-[transform,box-shadow,border-color,background,filter,color] duration-200 ease-out
+        enabled:hover:-translate-y-px active:translate-y-0 active:scale-[0.985] motion-reduce:transform-none
+        will-change-transform
         focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed
         ${variantClasses[variant]}
         ${sizeClasses[size]}

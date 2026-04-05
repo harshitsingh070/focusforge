@@ -42,7 +42,7 @@ const ActivityLog: React.FC = () => {
 
           {/* Right: Timeline */}
           <section className="space-y-3">
-            <div className={`${styles.dashboardPanelCard} flex items-center justify-between rounded-2xl p-5`}>
+            <div className={`${styles.dashboardPanelCard} flex flex-col items-start gap-3 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between`}>
               <div>
                 <h2 className={`text-2xl font-bold tracking-tight ${styles.dashboardGoalTitle}`}>Timeline</h2>
                 <p className={`mt-0.5 text-sm ${styles.dashboardGoalMeta}`}>Most recent logs appear first.</p>

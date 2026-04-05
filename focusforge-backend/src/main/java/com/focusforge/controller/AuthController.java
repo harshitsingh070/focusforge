@@ -14,7 +14,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 public class AuthController {
 
     @Autowired

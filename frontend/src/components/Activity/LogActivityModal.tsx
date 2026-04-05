@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logActivity } from '../../store/activitySlice';
 import { fetchDashboard } from '../../store/dashboardSlice';
+import { useFeedback } from '../../contexts/FeedbackContext';
 import { ActivityLog, ActivityRequest, BadgeAward } from '../../types';
+import { buildActivityFeedback } from '../../utils/feedback';
 import styles from '../Dashboard/Dashboard.module.css';
 
 interface LogActivityModalProps {
@@ -22,6 +24,7 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
   onBadgesEarned,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const { pushToast, showReward } = useFeedback();
   const { loading, error } = useSelector((state: RootState) => state.activity);
   const maxMinutesAllowed = Math.max(10, Math.min(600, dailyTarget));
   const todayIso = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -79,6 +82,11 @@ const LogActivityModal: React.FC<LogActivityModalProps> = ({
       const payload: ActivityRequest = { ...formData, logDate: normalizeDateForApi(formData.logDate) };
       const response = (await dispatch(logActivity(payload)).unwrap()) as ActivityLog;
       await dispatch(fetchDashboard());
+
+      const feedbackPlan = buildActivityFeedback(response, goalTitle);
+      feedbackPlan.toasts.forEach((toast) => pushToast(toast));
+      feedbackPlan.rewards.forEach((reward) => showReward(reward));
+
       if (response.newlyEarnedBadges && response.newlyEarnedBadges.length > 0) {
         onBadgesEarned?.(response.newlyEarnedBadges);
       }

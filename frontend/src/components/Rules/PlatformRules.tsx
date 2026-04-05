@@ -173,9 +173,9 @@ const PlatformRules: React.FC = () => {
         {/* ── Page Header ── */}
         <div className="mb-10">
           <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-2">Platform</p>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">FocusForge Rules</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-3">Discipify Rules</h1>
           <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl">
-            Transparent scoring, privacy, and trust rules for consistency-based productivity tracking.
+            Transparent scoring, privacy, and trust rules for gamified discipline tracking.
           </p>
 
           {/* Quick stats bar */}

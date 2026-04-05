@@ -104,7 +104,7 @@ const GoalDetail: React.FC = () => {
           </section>
 
           {/* Stats grid */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCell label="Difficulty" value={`${selectedGoal.difficulty}/5 — ${DIFFICULTY_LABEL[selectedGoal.difficulty] ?? ''}`} icon="signal_cellular_alt" accent="#a78bfa" />
             <StatCell label="Daily Target" value={`${selectedGoal.dailyMinimumMinutes} min`} icon="timer" accent="#38bdf8" />
             <StatCell label="Current Streak" value={`${selectedGoal.currentStreak} days`} icon="local_fire_department" accent="#f59e0b" />

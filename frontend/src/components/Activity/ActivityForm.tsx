@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
 import { logActivity } from '../../store/activitySlice';
-import { ActivityRequest } from '../../types';
-import Button from '../ui/Button';
+import { fetchDashboard } from '../../store/dashboardSlice';
+import { useFeedback } from '../../contexts/FeedbackContext';
+import { ActivityLog, ActivityRequest } from '../../types';
+import { buildActivityFeedback } from '../../utils/feedback';
 import styles from '../Dashboard/Dashboard.module.css';
 
 interface ActivityFormProps {
@@ -12,6 +14,7 @@ interface ActivityFormProps {
 
 const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const { pushToast, showReward } = useFeedback();
   const { goals } = useSelector((state: RootState) => state.goals);
   const { loading } = useSelector((state: RootState) => state.activity);
 
@@ -35,7 +38,14 @@ const ActivityForm: React.FC<ActivityFormProps> = ({ onSubmitted }) => {
     setError(null);
     if (!form.goalId) { setError('Select a goal first.'); return; }
     try {
-      await dispatch(logActivity(form)).unwrap();
+      const activity = (await dispatch(logActivity(form)).unwrap()) as ActivityLog;
+      await dispatch(fetchDashboard());
+
+      const selectedGoalTitle = goals.find((goal) => goal.id === form.goalId)?.title;
+      const feedbackPlan = buildActivityFeedback(activity, selectedGoalTitle);
+      feedbackPlan.toasts.forEach((toast) => pushToast(toast));
+      feedbackPlan.rewards.forEach((reward) => showReward(reward));
+
       onSubmitted?.();
       setForm((prev) => ({ ...prev, minutesSpent: 30, notes: '' }));
     } catch (requestError) {

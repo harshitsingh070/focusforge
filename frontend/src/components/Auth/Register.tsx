@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { clearError, signup } from '../../store/authSlice';
+import CircularLogo from '../ui/CircularLogo';
 
 const EyeIcon = ({ show }: { show: boolean }) =>
   show ? (
@@ -61,7 +62,7 @@ const Register: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-8">
+      <div className="flex min-h-screen min-h-[100dvh] items-center justify-center bg-slate-50 p-4 dark:bg-slate-950 sm:p-8">
         <div className="w-full max-w-md text-center space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 dark:bg-emerald-500/20">
             <svg className="h-8 w-8 text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +80,7 @@ const Register: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-slate-950">
 
       {/* ── Left ambient panel ── */}
       <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 flex-col p-12">
@@ -87,28 +88,26 @@ const Register: React.FC = () => {
         <div className="absolute bottom-[30%] left-[10%] h-56 w-56 rounded-full bg-indigo-500/20 blur-[70px] animate-pulse" style={{ animationDelay: '2s' }} />
 
         <Link to="/" className="inline-flex items-center gap-2.5 group mb-auto">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/40">
-            <span className="text-sm font-bold text-white">FF</span>
-          </div>
-          <span className="text-lg font-bold text-white">FocusForge</span>
+          <CircularLogo size="lg" />
+          <span className="text-lg font-bold text-white">Discipify</span>
         </Link>
 
         <div className="my-auto">
-          <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-4">Join Today</p>
+          <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-4">Join the Game</p>
           <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
-            Build momentum,<br />not just plans.
+            Level up your<br />discipline.
           </h1>
           <p className="text-slate-400 text-base leading-relaxed max-w-sm">
-            Join thousands tracking daily effort, protecting streaks, and competing on transparent leaderboards.
+            Track habits, earn XP, build streaks, and compete. Gamify your discipline today.
           </p>
 
           {/* Stats */}
           <div className="mt-10 grid grid-cols-2 gap-4">
             {[
-              { value: '3x', label: 'Faster goal clarity' },
-              { value: '24/7', label: 'Progress visibility' },
-              { value: '1', label: 'Unified workspace' },
-              { value: '🔥', label: 'Streak protection' },
+              { value: 'XP', label: 'Earn experience points' },
+              { value: '🔥', label: 'Build daily streaks' },
+              { value: '🏆', label: 'Unlock achievements' },
+              { value: '🎮', label: 'Gamified challenges' },
             ].map((s) => (
               <div key={s.label} className="rounded-2xl bg-white/5 border border-white/10 p-4">
                 <p className="text-2xl font-bold text-white">{s.value}</p>
@@ -118,25 +117,23 @@ const Register: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-slate-600 text-xs mt-auto">© 2025 FocusForge</p>
+        <p className="text-slate-600 text-xs mt-auto">© 2025 Discipify</p>
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex flex-1 items-center justify-center p-8 lg:p-12">
+      <div className="flex flex-1 items-start justify-center p-5 py-8 sm:p-8 sm:py-10 lg:items-center lg:p-12">
         <div className="w-full max-w-md">
 
           {/* Mobile logo */}
           <Link to="/" className="inline-flex items-center gap-2.5 mb-8 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
-              <span className="text-sm font-bold text-white">FF</span>
-            </div>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">FocusForge</span>
+            <CircularLogo size="md" />
+            <span className="text-lg font-bold text-slate-900 dark:text-white">Discipify</span>
           </Link>
 
           <div className="mb-8">
             <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 tracking-widest uppercase mb-2">Get started</p>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Create your account</h2>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Start tracking goals and climbing leaderboards.</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Gamify your discipline. Start earning XP today.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">

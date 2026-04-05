@@ -68,7 +68,7 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
   const labelCls = `mb-1.5 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`;
 
   return (
-    <div className={`${styles.dashboardThemeScope} ${mode === 'page' ? 'mx-auto w-full max-w-xl px-4 py-8 sm:px-6' : ''}`}>
+    <div className={`${styles.dashboardThemeScope} ${mode === 'page' ? 'mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8' : ''}`}>
       {mode === 'page' && (
         <button type="button" onClick={onCancel}
           className={`mb-5 flex items-center gap-1.5 text-sm font-medium ${styles.dashboardGoalMeta} hover:text-violet-400`}>
@@ -107,16 +107,16 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
         {/* ── Category ── */}
         <div>
           <label className={labelCls}>Category <span className="text-rose-400">*</span></label>
-          <div className="grid grid-cols-5 gap-1.5">
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5">
             {goalCategories.map((cat) => {
               const active = formData.categoryId === cat.id;
               return (
                 <button key={cat.id} type="button"
                   onClick={() => setFormData((f) => ({ ...f, categoryId: cat.id }))}
-                  className={`rounded-xl border py-2 text-center text-xs font-semibold transition-all ${active ? 'text-white ring-1 ring-white/20' : `${styles.dashboardGoalMeta} border-[var(--ff-dashboard-card-border,var(--ff-border))] hover:border-violet-400`}`}
+                  className={`min-h-[44px] rounded-xl border px-2 py-2 text-center text-[11px] font-semibold leading-tight transition-all sm:text-xs ${active ? 'text-white ring-1 ring-white/20' : `${styles.dashboardGoalMeta} border-[var(--ff-dashboard-card-border,var(--ff-border))] hover:border-violet-400`}`}
                   style={active ? { backgroundColor: cat.color, borderColor: 'transparent' }
                     : { background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))' }}>
-                  {cat.name.split(' ')[0]}
+                  {cat.name}
                 </button>
               );
             })}
@@ -145,7 +145,7 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
         </div>
 
         {/* ── Daily Minutes + Difficulty (2-col) ── */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="daily-mins" className={labelCls}>Daily Minutes <span className="text-rose-400">*</span></label>
             <input id="daily-mins" type="number"
@@ -173,7 +173,7 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
         </div>
 
         {/* ── Start + End Date (2-col) ── */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="start-date" className={labelCls}>Start Date <span className="text-rose-400">*</span></label>
             <input id="start-date" type="date"
@@ -212,7 +212,7 @@ const GoalComposerForm: React.FC<GoalComposerFormProps> = ({ mode = 'modal', onC
         </div>
 
         {/* ── Actions ── */}
-        <div className="flex gap-3 pt-1">
+        <div className="flex flex-col gap-3 pt-1 sm:flex-row">
           <button type="button" onClick={onCancel} disabled={loading}
             className={`${styles.dashboardGoalButtonSecondary} flex-1`}>
             Cancel

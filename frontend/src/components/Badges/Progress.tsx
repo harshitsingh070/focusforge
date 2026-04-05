@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import styles from '../Dashboard/Dashboard.module.css';
 
 interface ProgressProps {
   earnedCount: number;
@@ -7,24 +8,34 @@ interface ProgressProps {
 
 const Progress: React.FC<ProgressProps> = ({ earnedCount, totalCount }) => {
   const completionRate = totalCount > 0 ? Math.round((earnedCount * 100) / totalCount) : 0;
-  const ringStyle = {
-    ['--ring-value' as string]: `${completionRate}%`,
-    ['--ring-color' as string]: '#8B5CF6',
-  } as React.CSSProperties;
+  const [displayRate, setDisplayRate] = useState(0);
+
+  useEffect(() => {
+    const frameId = window.requestAnimationFrame(() => {
+      setDisplayRate(completionRate);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [completionRate]);
 
   return (
-    <div className="card ff-glow-vibrant border-transparent text-white" style={{ background: 'linear-gradient(135deg,#A855F7,#6D28D9)' }}>
-      <div className="flex items-center justify-between gap-3">
+    <div className={`${styles.dashboardStatCard} ${styles.dashboardStatCardViolet} rounded-2xl p-6`}>
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-white/80">Completion</p>
-          <p className="mt-2 text-6xl font-black">{completionRate}%</p>
-          <p className="mt-1 text-xs text-white/80">
+          <p className={styles.dashboardStatLabel}>Completion</p>
+          <p className={styles.dashboardStatValue}>{completionRate}%</p>
+          <p className={`${styles.dashboardStatSub} ${styles.dashboardStatSubWarm}`}>
             {earnedCount} of {totalCount} badges earned
           </p>
+          <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700/70">
+            <div
+              className="ff-progress-live-bar h-full rounded-full bg-gradient-to-r from-violet-600 via-violet-500 to-purple-400 shadow-[0_0_16px_rgba(124,58,237,0.28)]"
+              style={{ width: `${Math.max(displayRate, completionRate > 0 ? 10 : 0)}%` }}
+            />
+          </div>
         </div>
-        <div>
-          <div className="ff-ring !h-24 !w-24" style={ringStyle} />
-          <p className="mt-2 text-center text-xs font-semibold text-white/80">Completion</p>
+        <div className={`${styles.dashboardStatIconShell} ${styles.dashboardStatIconViolet}`}>
+          <span className="material-symbols-outlined text-[20px]">trending_up</span>
         </div>
       </div>
     </div>

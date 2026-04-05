@@ -75,7 +75,7 @@ const Settings: React.FC = () => {
 
   return (
     <>
-      <div className={`${styles.dashboardThemeScope} mx-auto w-full max-w-[1280px] px-4 sm:px-8 py-8 pb-24`}>
+      <div className={`${styles.dashboardThemeScope} mx-auto w-full max-w-[1280px] px-4 py-6 pb-32 sm:px-8 sm:py-8`}>
         {/* Header banner */}
         <section className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
@@ -105,7 +105,7 @@ const Settings: React.FC = () => {
         <section className="mt-20 border-t border-red-500/10 pt-8">
           <h3 className="mb-1 text-lg font-bold text-red-400">Danger Zone</h3>
           <p className={`mb-6 text-sm ${styles.dashboardGoalMeta}`}>Irreversible actions that affect your data and account access.</p>
-          <div className={`${styles.dashboardPanelCard} flex items-center justify-between rounded-2xl p-5`} style={{ borderColor: 'rgba(239,68,68,0.15)' }}>
+          <div className={`${styles.dashboardPanelCard} flex flex-col items-start gap-4 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between`} style={{ borderColor: 'rgba(239,68,68,0.15)' }}>
             <div>
               <p className={`text-sm font-bold ${styles.dashboardGoalTitle}`}>Delete Account</p>
               <p className={`text-xs ${styles.dashboardGoalMeta}`}>Permanently remove all your tasks and profile data.</p>
@@ -118,16 +118,16 @@ const Settings: React.FC = () => {
       </div>
 
       {/* Save bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-950/90 p-4 backdrop-blur-md transition-[left] duration-300 md:[left:var(--ff-sidebar-width)]">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 bg-white/90 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-md transition-[left] duration-300 dark:border-slate-800 dark:bg-slate-950/90 sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))] lg:[left:var(--ff-sidebar-width)]">
+        <div className="mx-auto flex max-w-[1280px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             {hasUnsavedChanges && (
               <span className={`${styles.dashboardStatusChip} ${styles.dashboardStatusChipFocus}`}>Unsaved changes</span>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button variant="secondary" onClick={handleReset} disabled={!hasUnsavedChanges || loading}>Reset</Button>
-            <Button variant="primary" onClick={handleSave} disabled={!hasUnsavedChanges || loading} loading={loading}>
+          <div className="flex w-full gap-3 sm:w-auto">
+            <Button variant="secondary" className="flex-1 sm:flex-none" onClick={handleReset} disabled={!hasUnsavedChanges || loading}>Reset</Button>
+            <Button variant="primary" className="flex-1 sm:flex-none" onClick={handleSave} disabled={!hasUnsavedChanges || loading} loading={loading}>
               Save Changes
             </Button>
           </div>

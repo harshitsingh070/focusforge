@@ -5,9 +5,10 @@ import BadgeCard from './BadgeCard';
 interface BadgeGridProps {
   badges: Badge[];
   emptyMessage?: string;
+  onBadgeClick?: (badge: Badge) => void;
 }
 
-const BadgeGrid: React.FC<BadgeGridProps> = ({ badges, emptyMessage = 'No badges found for this filter.' }) => {
+const BadgeGrid: React.FC<BadgeGridProps> = ({ badges, emptyMessage = 'No badges found for this filter.', onBadgeClick }) => {
   if (badges.length === 0) {
     return (
       <div className="card ff-glow-surface-soft text-center">
@@ -19,7 +20,11 @@ const BadgeGrid: React.FC<BadgeGridProps> = ({ badges, emptyMessage = 'No badges
   return (
     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {badges.map((badge, index) => (
-        <BadgeCard key={`${badge.id || badge.name}-${index}`} badge={badge} />
+        <BadgeCard 
+          key={`${badge.id || badge.name}-${index}`} 
+          badge={badge} 
+          onClick={() => onBadgeClick?.(badge)}
+        />
       ))}
     </section>
   );

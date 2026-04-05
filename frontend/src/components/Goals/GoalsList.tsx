@@ -155,20 +155,20 @@ const GoalsList: React.FC = () => {
   return (
     <>
       {/* ── Content area ── */}
-      <div className={`${styles.dashboardThemeScope} mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-6 sm:p-8`}>
+      <div className={`${styles.dashboardThemeScope} mx-auto flex w-full max-w-[1280px] flex-col gap-6 p-4 sm:p-8`}>
         {/* ── Hero / Header banner ── */}
         <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-50 via-white to-indigo-50 p-5 shadow-[0_16px_36px_rgba(99,102,241,0.16)] dark:from-slate-900 dark:via-slate-900 dark:to-violet-950 dark:shadow-[0_24px_48px_rgba(2,6,23,0.35)] sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-violet-400/25 blur-3xl dark:bg-violet-500/20" />
 
           {/* Row 1: title + actions */}
-          <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex-1 min-w-0">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">My Goals</h2>
               <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-300">Track your progress and crush your targets.</p>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap lg:w-auto">
+              <div className="relative w-full sm:w-auto">
                 <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-[var(--ff-text-500)]">
                   search
                 </span>
@@ -178,13 +178,13 @@ const GoalsList: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search goals..."
-                  className="w-52 rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-all duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)] focus:w-64"
+                  className="w-full rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-2 pl-10 pr-3 text-sm text-[var(--ff-text-900)] outline-none transition-all duration-fast ease-premium placeholder:text-[var(--ff-text-500)] focus:border-[rgba(var(--ff-primary-rgb),0.55)] sm:w-52 sm:focus:w-64"
                 />
               </div>
               <button
                 type="button"
                 onClick={openGoalComposer}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/30 transition-all duration-200 hover:from-violet-500 hover:to-purple-500 hover:scale-[1.02] sm:w-auto"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 New Goal
@@ -193,14 +193,14 @@ const GoalsList: React.FC = () => {
           </div>
 
           {/* Row 2: Filter tabs + category dropdown */}
-          <div className="relative mt-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
+          <div className="relative mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
               {TAB_ITEMS.map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${activeTab === tab.id
+                  className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-150 ${activeTab === tab.id
                     ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-sm'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                     }`}
@@ -210,7 +210,7 @@ const GoalsList: React.FC = () => {
               ))}
             </div>
 
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-[var(--ff-text-500)]">
                 category
               </span>
@@ -218,7 +218,7 @@ const GoalsList: React.FC = () => {
                 id="goals-category-filter"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="appearance-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-1.5 pl-9 pr-8 text-sm font-medium text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium focus:border-[rgba(var(--ff-primary-rgb),0.55)] cursor-pointer"
+                className="w-full appearance-none rounded-[10px] border border-[var(--ff-border)] bg-[var(--ff-surface-soft)] py-1.5 pl-9 pr-8 text-sm font-medium text-[var(--ff-text-900)] outline-none transition-colors duration-fast ease-premium focus:border-[rgba(var(--ff-primary-rgb),0.55)] cursor-pointer sm:w-auto"
               >
                 <option value="ALL">All Categories</option>
                 {categoryOptions.map((cat) => (
@@ -453,7 +453,7 @@ const GoalsList: React.FC = () => {
               <h3 className={`${styles.dashboardSummaryTitle} mt-3`}>{overlay.goal.title}</h3>
               <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--ff-dashboard-text-soft, var(--ff-text-700))' }}>{overlay.goal.description || 'No description provided.'}</p>
               {/* Stat grid */}
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {[
                   { label: 'Difficulty', value: `${overlay.goal.difficulty}/5`, icon: 'signal_cellular_alt', accent: 'var(--ff-primary)' },
                   { label: 'Daily Target', value: `${overlay.goal.dailyMinimumMinutes} min`, icon: 'timer', accent: '#0ea5e9' },
@@ -587,7 +587,7 @@ const GoalsList: React.FC = () => {
                         className="w-full resize-none rounded-xl border border-[var(--ff-dashboard-card-border,var(--ff-border))] bg-[var(--ff-dashboard-card-bottom,var(--ff-surface-soft))] px-3 py-2 text-sm text-[var(--ff-dashboard-text,var(--ff-text-900))] outline-none transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20" />
                     </div>
                     {/* Difficulty + Minutes + Dates */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                       <div>
                         <label className={`mb-1 block text-[10px] font-semibold uppercase tracking-wider ${styles.dashboardStatLabel}`}>Difficulty (1–5)</label>
                         <input name="difficulty" type="number" min={1} max={5} defaultValue={g.difficulty}

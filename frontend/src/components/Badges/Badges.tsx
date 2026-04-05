@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store';
+import { Badge } from '../../types';
 import { fetchProgress } from '../../store/badgesSlice';
 import BadgeGrid from './BadgeGrid';
+import BadgeDetailModal from './BadgeDetailModal';
 import EarnedBadges from './EarnedBadges';
 import Progress from './Progress';
 import Button from '../ui/Button';
@@ -20,6 +22,7 @@ const Badges: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedView, setSelectedView] = useState<'ALL' | 'EARNED' | 'LOCKED'>('ALL');
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
   useEffect(() => { dispatch(fetchProgress()); }, [dispatch]);
 
@@ -131,12 +134,20 @@ const Badges: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && <BadgeGrid badges={filteredBadges} />}
+        {!loading && !error && <BadgeGrid badges={filteredBadges} onBadgeClick={setSelectedBadge} />}
 
         <section>
-          <EarnedBadges badges={earnedBadges} />
+          <EarnedBadges badges={earnedBadges} onBadgeClick={setSelectedBadge} />
         </section>
       </div>
+
+      {selectedBadge && (
+        <BadgeDetailModal 
+          badge={selectedBadge} 
+          isOpen={!!selectedBadge} 
+          onClose={() => setSelectedBadge(null)} 
+        />
+      )}
     </>
   );
 };

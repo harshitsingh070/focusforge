@@ -23,6 +23,7 @@ import PrivateRoute from './components/Layout/PrivateRoute';
 import AdminRoute from './components/Layout/AdminRoute';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import AppLayout from './components/Layout/AppLayout';
+import { FeedbackProvider } from './contexts/FeedbackContext';
 import { isAdminEmail } from './constants/admin';
 import NavProgress from './components/ui/NavProgress';
 
@@ -92,9 +93,11 @@ const App: React.FC = () => {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <AnimatedRoutes />
-        </Router>
+        <FeedbackProvider>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <AnimatedRoutes />
+          </Router>
+        </FeedbackProvider>
       </ThemeProvider>
     </Provider>
   );

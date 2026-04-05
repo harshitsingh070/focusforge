@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { format, formatDistanceToNowStrict } from 'date-fns';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import { fetchDashboard } from '../../store/dashboardSlice';
 import { fetchNotifications, markNotificationRead } from '../../store/notificationsSlice';
 import { fetchSettings } from '../../store/settingsSlice';
 import { useGoalComposer } from '../../contexts/GoalComposerContext';
-import { Badge, GoalProgress, NotificationItem } from '../../types';
+import { Badge, DashboardData, GoalProgress, NotificationItem } from '../../types';
 import LogActivityModal from '../Activity/LogActivityModal';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
@@ -120,6 +120,10 @@ const Dashboard: React.FC = () => {
   const [hoveredWeeklyId, setHoveredWeeklyId] = useState<DayLabel | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [markingNotificationId, setMarkingNotificationId] = useState<number | null>(null);
+  const [highlightedStats, setHighlightedStats] = useState<string[]>([]);
+  const [highlightedGoalIds, setHighlightedGoalIds] = useState<number[]>([]);
+  const [badgeMomentumLive, setBadgeMomentumLive] = useState(false);
+  const previousDashboardRef = useRef<DashboardData | null>(null);
 
   const refreshDashboard = useCallback(() => {
     dispatch(fetchDashboard());
@@ -172,6 +176,75 @@ const Dashboard: React.FC = () => {
       finally { setMarkingNotificationId(null); }
     }, [dispatch]
   );
+
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    const previousData = previousDashboardRef.current;
+    if (previousData) {
+      const nextHighlightedStats: string[] = [];
+      const previousGoalsById = new Map(previousData.activeGoals.map((goal) => [goal.goalId, goal]));
+      const changedGoalIds = data.activeGoals
+        .filter((goal) => {
+          const previousGoal = previousGoalsById.get(goal.goalId);
+          if (!previousGoal) return true;
+          return (
+            previousGoal.todayProgress !== goal.todayProgress ||
+            previousGoal.completedToday !== goal.completedToday
+          );
+        })
+        .map((goal) => goal.goalId);
+
+      if (data.totalPoints !== previousData.totalPoints) {
+        nextHighlightedStats.push('points');
+      }
+
+      if (data.globalStreak !== previousData.globalStreak) {
+        nextHighlightedStats.push('streak');
+      }
+
+      if (data.activeGoals.length !== previousData.activeGoals.length || changedGoalIds.length > 0) {
+        nextHighlightedStats.push('goals');
+      }
+
+      if (nextHighlightedStats.length > 0) {
+        setHighlightedStats(nextHighlightedStats);
+      }
+
+      if (changedGoalIds.length > 0) {
+        setHighlightedGoalIds(changedGoalIds);
+      }
+
+      const previousBadge = previousData.recentBadges[0];
+      const nextBadge = data.recentBadges[0];
+      const badgeIdentifierChanged =
+        (previousBadge?.id || previousBadge?.name) !== (nextBadge?.id || nextBadge?.name);
+      const badgeProgressChanged =
+        getBadgeProgressPercent(previousBadge) !== getBadgeProgressPercent(nextBadge);
+
+      if (badgeIdentifierChanged || badgeProgressChanged) {
+        setBadgeMomentumLive(true);
+      }
+    }
+
+    previousDashboardRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    if (highlightedStats.length === 0 && highlightedGoalIds.length === 0 && !badgeMomentumLive) {
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setHighlightedStats([]);
+      setHighlightedGoalIds([]);
+      setBadgeMomentumLive(false);
+    }, 1500);
+
+    return () => window.clearTimeout(timerId);
+  }, [badgeMomentumLive, highlightedGoalIds, highlightedStats]);
 
   // Loading state with skeleton
   if (!data && !error) {
@@ -278,6 +351,7 @@ const Dashboard: React.FC = () => {
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             {
+              key: 'points',
               label: 'Total Points', value: data.totalPoints.toLocaleString(), icon: 'stars',
               cardClass: styles.dashboardStatCardViolet,
               iconClass: styles.dashboardStatIconViolet,
@@ -285,19 +359,28 @@ const Dashboard: React.FC = () => {
               subColor: statDelta >= 0 ? styles.dashboardStatSubPositive : styles.dashboardStatSubNegative,
             },
             {
+              key: 'streak',
               label: 'Global Streak', value: `${data.globalStreak} days`, icon: 'local_fire_department',
               cardClass: styles.dashboardStatCardAmber,
               iconClass: styles.dashboardStatIconAmber,
               sub: streakStatus, subColor: styles.dashboardStatSubWarm,
             },
             {
+              key: 'goals',
               label: 'Active Goals', value: String(data.activeGoals.length), icon: 'flag',
               cardClass: styles.dashboardStatCardEmerald,
               iconClass: styles.dashboardStatIconEmerald,
               sub: 'In progress', subColor: styles.dashboardStatSubPositive,
             },
           ].map((stat) => (
-            <Card key={stat.label} className={`${styles.dashboardStatCard} ${stat.cardClass}`}>
+            <Card
+              key={stat.label}
+              className={`${styles.dashboardStatCard} ${stat.cardClass} ${
+                highlightedStats.includes(stat.key)
+                  ? `ff-kpi-bump ${stat.key === 'streak' ? 'ff-streak-live' : ''}`
+                  : ''
+              }`}
+            >
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className={styles.dashboardStatLabel}>{stat.label}</p>
@@ -396,7 +479,12 @@ const Dashboard: React.FC = () => {
                     const remainingMinutes = Math.max(goal.dailyTarget - goal.todayProgress, 0);
 
                     return (
-                      <Card key={goal.goalId} className={styles.dashboardGoalCard}>
+                      <Card
+                        key={goal.goalId}
+                        className={`${styles.dashboardGoalCard} ${
+                          highlightedGoalIds.includes(goal.goalId) ? 'ff-progress-live' : ''
+                        }`}
+                      >
                         <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
@@ -417,7 +505,9 @@ const Dashboard: React.FC = () => {
 
                         <div className={styles.dashboardGoalTrack}>
                           <div
-                            className={styles.dashboardGoalFill}
+                            className={`${styles.dashboardGoalFill} ${
+                              highlightedGoalIds.includes(goal.goalId) ? 'ff-progress-live-bar' : ''
+                            }`}
                             style={{ width: `${Math.max(progressPercent, 8)}%`, background: categoryColor }}
                           />
                         </div>
@@ -449,7 +539,7 @@ const Dashboard: React.FC = () => {
           {/* Right sidebar */}
           <aside className="flex flex-col gap-5">
             {/* Badge Momentum */}
-            <Card className={styles.dashboardPanelCard}>
+            <Card className={`${styles.dashboardPanelCard} ${badgeMomentumLive ? 'ff-progress-live' : ''}`}>
               <div className="relative z-10">
                 <h3 className={styles.dashboardPanelTitle}>Badge Momentum</h3>
                 <div className="mt-5 flex justify-center">
@@ -463,7 +553,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className={styles.dashboardGoalTrack}>
                   <div
-                    className={styles.dashboardGoalFill}
+                    className={`${styles.dashboardGoalFill} ${badgeMomentumLive ? 'ff-progress-live-bar' : ''}`}
                     style={{ width: `${badgeProgress}%` }}
                   />
                 </div>

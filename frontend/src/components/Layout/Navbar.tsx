@@ -6,6 +6,7 @@ import { logout } from '../../store/authSlice';
 import { isAdminEmail } from '../../constants/admin';
 import { NAV_ITEMS, ADMIN_NAV_ITEM, isActiveNav } from '../../constants/navigation';
 import { useTheme } from '../../contexts/ThemeContext';
+import CircularLogo from '../ui/CircularLogo';
 
 interface NavbarProps {
   onToggleMobileSidebar?: () => void;
@@ -47,20 +48,18 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
       className={`
         sticky top-0 z-40 w-full transition-all duration-300
         ${scrolled
-          ? 'border-b border-slate-200/60 dark:border-slate-800/60 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-sm'
-          : 'border-b border-slate-200/40 dark:border-slate-800/40 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md'
+          ? 'border-b border-slate-200/60 bg-white/90 shadow-sm backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-950/90'
+          : 'border-b border-slate-200/40 bg-white/70 backdrop-blur-md dark:border-slate-800/40 dark:bg-slate-950/70'
         }
       `}
     >
-      <div className="mx-auto flex h-[72px] items-center justify-between px-4 sm:px-6 lg:px-8 max-w-[1600px]">
-        {/* Left: Mobile menu + Logo */}
+      <div className="mx-auto flex h-[72px] max-w-[1600px] items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          {/* Mobile hamburger — only shown when onToggleMobileSidebar is provided */}
           {onToggleMobileSidebar && (
             <button
               type="button"
               onClick={onToggleMobileSidebar}
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors md:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white lg:hidden"
               aria-label="Toggle sidebar"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -71,23 +70,19 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
             </button>
           )}
 
-          {/* Logo */}
           <Link
             to={isAuthenticated ? '/dashboard' : '/'}
-            className={`items-center gap-2.5 group ${showDesktopBrand ? 'flex' : 'flex md:hidden'}`}
+            className={`items-center gap-2.5 group ${showDesktopBrand ? 'flex' : 'flex lg:hidden'}`}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 text-sm font-bold text-white shadow-lg shadow-violet-500/30 transition-transform duration-300 group-hover:scale-105">
-              FF
-            </div>
+            <CircularLogo size="md" />
             <span className="hidden text-lg font-bold tracking-tight text-slate-900 dark:text-white sm:block">
-              FocusForge
+              Discipify
             </span>
           </Link>
         </div>
 
-        {/* Center: Desktop nav links (only when authenticated and no sidebar) */}
         {isAuthenticated && !onToggleMobileSidebar && (
-          <div className="hidden lg:flex flex-1 justify-center">
+          <div className="hidden flex-1 justify-center lg:flex">
             <div className="flex items-center gap-1">
               {navItems.map((item) => {
                 const active = isActiveNav(location.pathname, item.to);
@@ -98,8 +93,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
                     className={`
                       rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200
                       ${active
-                        ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-400 shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-violet-50 text-violet-700 shadow-sm dark:bg-violet-500/10 dark:text-violet-400'
+                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white'
                       }
                     `}
                   >
@@ -111,14 +106,12 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
           </div>
         )}
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2.5">
-          {/* Theme Toggle */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 dark:text-slate-400 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+            className="relative flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <span
               className="absolute transition-all duration-500"
@@ -152,10 +145,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
             </span>
           </button>
 
-          {/* User pill & Logout — desktop */}
-          {isAuthenticated ? (
+          {isAuthenticated && !location.pathname.startsWith('/admin') ? (
             <>
-              <div className="hidden items-center gap-2.5 rounded-full bg-slate-100 dark:bg-slate-800/60 p-1.5 pr-4 border border-slate-200/80 dark:border-slate-700/50 sm:flex">
+              <div className="hidden items-center gap-2.5 rounded-full border border-slate-200/80 bg-slate-100 p-1.5 pr-4 dark:border-slate-700/50 dark:bg-slate-800/60 sm:flex">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[11px] font-bold text-white shadow-sm">
                   {initials}
                 </div>
@@ -166,11 +158,20 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleMobileSidebar }) => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="hidden items-center justify-center text-sm font-semibold text-slate-500 dark:text-slate-400 transition-colors hover:text-slate-900 dark:hover:text-white sm:flex"
+                className="hidden items-center justify-center text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white sm:flex"
               >
                 Logout
               </button>
             </>
+          ) : isAuthenticated && location.pathname.startsWith('/admin') ? (
+            <div className="hidden items-center gap-2.5 rounded-full border border-slate-200/60 bg-slate-100/50 p-1.5 pr-4 dark:border-slate-700/30 dark:bg-slate-800/30 sm:flex">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-[11px] font-bold text-white shadow-sm">
+                {initials}
+              </div>
+              <span className="max-w-[120px] truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+                {displayName}
+              </span>
+            </div>
           ) : (
             <button
               type="button"

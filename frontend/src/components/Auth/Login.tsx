@@ -4,11 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../store';
 import { clearError, login } from '../../store/authSlice';
 import { isAdminEmail } from '../../constants/admin';
+import CircularLogo from '../ui/CircularLogo';
 
 const features = [
-  { icon: '🎯', title: 'Daily Clarity', desc: 'Goal cards, reminders & streak protection' },
-  { icon: '🏆', title: 'Motivation Loop', desc: 'Badges, streaks & milestone scoring' },
-  { icon: '📊', title: 'Smart Leaderboards', desc: 'Compete globally or within your circles' },
+  { icon: '⚡', title: 'Earn XP', desc: 'Every habit completed earns you experience points' },
+  { icon: '🔥', title: 'Build Streaks', desc: 'Maintain daily consistency & unlock achievements' },
+  { icon: '🏆', title: 'Climb Leaderboards', desc: 'Compete with others and prove your discipline' },
 ];
 
 const EyeIcon = ({ show }: { show: boolean }) =>
@@ -41,7 +42,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
+    <div className="flex min-h-screen min-h-[100dvh] bg-slate-50 dark:bg-slate-950">
 
       {/* ── Left panel: ambient visual ── */}
       <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 flex-col">
@@ -63,20 +64,18 @@ const Login: React.FC = () => {
         <div className="relative z-10 flex flex-col h-full p-12">
           {/* Logo */}
           <Link to="/" className="inline-flex items-center gap-2.5 group mb-auto">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/40 transition-transform duration-200 group-hover:scale-105">
-              <span className="text-sm font-bold text-white">FF</span>
-            </div>
-            <span className="text-lg font-bold text-white">FocusForge</span>
+            <CircularLogo size="lg" />
+            <span className="text-lg font-bold text-white">Discipify</span>
           </Link>
 
           {/* Hero text */}
           <div className="my-auto">
-            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-4">Productivity Platform</p>
+            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-4">Gamify Your Discipline</p>
             <h1 className="text-4xl xl:text-5xl font-bold text-white leading-tight mb-4">
-              Focus on<br />what matters.
+              Start your<br />discipline journey.
             </h1>
             <p className="text-slate-400 text-base leading-relaxed max-w-sm">
-              Track daily effort, protect your streaks, and compete on transparent leaderboards.
+              Track habits as quests, earn XP like an RPG, and climb the leaderboards.
             </p>
 
             {/* Features */}
@@ -109,26 +108,24 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-slate-600 text-xs mt-auto">© 2025 FocusForge. Build habits every day.</p>
+          <p className="text-slate-600 text-xs mt-auto">© 2025 Discipify. Gamify your discipline.</p>
         </div>
       </div>
 
       {/* ── Right panel: sign-in form ── */}
-      <div className="flex flex-1 items-center justify-center p-8 lg:p-12">
+      <div className="flex flex-1 items-start justify-center p-5 py-8 sm:p-8 sm:py-10 lg:items-center lg:p-12">
         <div className="w-full max-w-md">
 
           {/* Mobile logo */}
           <Link to="/" className="inline-flex items-center gap-2.5 mb-8 lg:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
-              <span className="text-sm font-bold text-white">FF</span>
-            </div>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">FocusForge</span>
+            <CircularLogo size="md" />
+            <span className="text-lg font-bold text-slate-900 dark:text-white">Discipify</span>
           </Link>
 
           <div className="mb-8">
             <p className="text-xs font-semibold text-violet-600 dark:text-violet-400 tracking-widest uppercase mb-2">Welcome back</p>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Sign in to continue</h2>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Build habits. Track progress. Achieve goals.</p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Build your streak. Earn XP. Dominate the leaderboards.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

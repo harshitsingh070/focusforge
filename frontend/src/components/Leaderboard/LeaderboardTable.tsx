@@ -66,7 +66,14 @@ const getBadgeMeta = (entry: LeaderboardEntry) => {
   };
 };
 
-const movementMeta = (movement?: number) => {
+const movementMeta = (movement?: number, isNew?: boolean) => {
+  if (isNew) {
+    return {
+      label: 'New',
+      icon: 'auto_awesome',
+      className: 'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
+    };
+  }
   if (!movement || movement === 0) {
     return {
       label: '0',
@@ -104,8 +111,8 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
 
   return (
     <>
-      <div className="hidden overflow-x-auto lg:block">
-        <table className="min-w-[960px] w-full border-separate border-spacing-0">
+      <div className="w-full">
+        <table className="w-full border-separate border-spacing-0">
           <thead>
             <tr className="rounded-xl text-xs uppercase tracking-[0.08em]" style={{ background: 'var(--ff-dashboard-card-bottom, var(--ff-surface-soft))', color: 'var(--ff-dashboard-text-muted, var(--ff-text-500))' }}>
               <th className="px-4 py-3 text-center font-bold">Rank</th>
@@ -120,14 +127,21 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
             {entries.map((entry) => {
               const isSelf = highlightedUserId === entry.userId;
               const badge = getBadgeMeta(entry);
-              const trend = movementMeta(entry.rankMovement);
+              const trend = movementMeta(entry.rankMovement, entry.isNew);
               const score = Number(entry.score || 0);
               const progressPercent = Math.max(8, Math.round((score / maxScore) * 100));
+              const rowMotionClass = entry.isNew
+                ? 'ff-leaderboard-row--new'
+                : (entry.rankMovement || 0) > 0
+                  ? 'ff-leaderboard-row--rise'
+                  : (entry.rankMovement || 0) < 0
+                    ? 'ff-leaderboard-row--drop'
+                    : '';
 
               return (
                 <tr
                   key={`${entry.userId}-${entry.rank}`}
-                  className={`transition-colors ${isSelf ? 'bg-violet-50/80 dark:bg-violet-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
+                  className={`ff-leaderboard-row transition-colors ${rowMotionClass} ${isSelf ? 'bg-violet-50/80 dark:bg-violet-500/10' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'}`}
                 >
                   <td className="border-b border-slate-200/80 px-4 py-4 text-center dark:border-slate-800">
                     <span className={`inline-flex min-w-8 items-center justify-center rounded-full px-2 py-1 text-sm font-black ${entry.rank === 1
@@ -169,7 +183,11 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
                   <td className="border-b border-slate-200/80 px-4 py-4 dark:border-slate-800">
                     <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                       <div
-                        className={`h-full rounded-full ${isSelf ? 'bg-gradient-to-r from-violet-600 to-purple-500 shadow-[0_0_14px_rgba(124,58,237,0.45)]' : 'bg-gradient-to-r from-sky-500 to-blue-500'}`}
+                        className={`h-full rounded-full transition-[width,box-shadow,filter] duration-700 ease-out ${
+                          isSelf
+                            ? 'bg-gradient-to-r from-violet-600 to-purple-500 shadow-[0_0_14px_rgba(124,58,237,0.45)]'
+                            : 'bg-gradient-to-r from-sky-500 to-blue-500'
+                        } ${rowMotionClass ? 'ff-progress-live-bar' : ''}`}
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -183,7 +201,10 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
                   </td>
 
                   <td className="border-b border-slate-200/80 px-4 py-4 dark:border-slate-800">
-                    <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold ${badge.className}`}>
+                    <span 
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold ${badge.className}`}
+                      title={`${badge.label} - Special achievement badge`}
+                    >
                       <span className="material-symbols-outlined text-[15px]">{badge.icon}</span>
                       {badge.label}
                     </span>
@@ -202,22 +223,29 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
         </table>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:hidden">
+      <div className="mt-4 grid gap-3 xl:hidden">
         {entries.map((entry) => {
           const isSelf = highlightedUserId === entry.userId;
           const badge = getBadgeMeta(entry);
-          const trend = movementMeta(entry.rankMovement);
+          const trend = movementMeta(entry.rankMovement, entry.isNew);
           const score = Number(entry.score || 0);
           const progressPercent = Math.max(8, Math.round((score / maxScore) * 100));
+          const rowMotionClass = entry.isNew
+            ? 'ff-leaderboard-row--new'
+            : (entry.rankMovement || 0) > 0
+              ? 'ff-leaderboard-row--rise'
+              : (entry.rankMovement || 0) < 0
+                ? 'ff-leaderboard-row--drop'
+                : '';
 
           return (
             <article
               key={`mobile-${entry.userId}-${entry.rank}`}
-              className={`${styles.dashboardGoalCard} rounded-xl p-4 ${isSelf ? 'border-violet-300 dark:border-violet-500/40' : ''}`}
+              className={`${styles.dashboardGoalCard} ff-leaderboard-row ${rowMotionClass} rounded-xl p-4 ${isSelf ? 'border-violet-300 dark:border-violet-500/40' : ''}`}
               style={isSelf ? { background: 'rgba(139,92,246,0.08)' } : {}}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-black text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                     {getRankLabel(entry.rank)}
                   </span>
@@ -240,13 +268,13 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({ entries, highlighte
 
               <div className={`${styles.dashboardGoalTrack} mt-3`}>
                 <div
-                  className={styles.dashboardGoalFill}
+                  className={`${styles.dashboardGoalFill} ${rowMotionClass ? 'ff-progress-live-bar' : ''}`}
                   style={{ width: `${progressPercent}%`, background: isSelf ? 'linear-gradient(90deg,#7c3aed,#a78bfa)' : '' }}
                 />
               </div>
 
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold ${badge.className}`}>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span className={`inline-flex self-start items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-bold ${badge.className}`}>
                   <span className="material-symbols-outlined text-[15px]">{badge.icon}</span>
                   {badge.label}
                 </span>
