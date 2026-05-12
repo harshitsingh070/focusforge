@@ -20,7 +20,7 @@ public class CorsConfig {
         // 🔥 IMPORTANT — add both frontend URLs
         config.setAllowedOriginPatterns(Arrays.asList(
     "http://localhost:3000",
-    "https://focusforge-frontend.vercel.app"
+    "https://discipify.vercel.app"
      ));
 
         config.addAllowedHeader("*");
