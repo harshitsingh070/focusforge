@@ -55,42 +55,54 @@ const ActivityIcon = () => (
 const features = [
   {
     icon: DashboardIcon,
-    theme: 'violet',
+    iconBox: 'bg-violet-600/15 border-violet-500/20 text-violet-400',
+    labelColor: 'text-violet-400',
+    bar: 'from-violet-500',
     label: 'Daily Dashboard',
     title: 'Track every active goal from one screen',
     desc: 'Monitor streak safety, completion pace, and effort logs without switching views or losing context.',
   },
   {
     icon: ChartIcon,
-    theme: 'blue',
+    iconBox: 'bg-blue-600/15 border-blue-500/20 text-blue-400',
+    labelColor: 'text-blue-400',
+    bar: 'from-blue-500',
     label: 'Activity Intelligence',
     title: 'Catch streak risk before momentum drops',
     desc: 'Understand weekly rhythm, low-output windows, and completion trends so adjustments happen early.',
   },
   {
     icon: LeaderboardIcon,
-    theme: 'amber',
+    iconBox: 'bg-amber-600/15 border-amber-500/20 text-amber-400',
+    labelColor: 'text-amber-400',
+    bar: 'from-amber-500',
     label: 'Fair Leaderboards',
     title: 'Compete on consistency, not noisy activity',
     desc: 'Rankings reward meaningful progress and protect high-quality effort across goal categories.',
   },
   {
     icon: FlameIcon,
-    theme: 'orange',
+    iconBox: 'bg-orange-600/15 border-orange-500/20 text-orange-400',
+    labelColor: 'text-orange-400',
+    bar: 'from-orange-500',
     label: 'Streak Protection',
     title: 'Never lose momentum unintentionally',
     desc: 'Smart alerts and daily check-ins protect the streaks that matter most to your progress.',
   },
   {
     icon: AwardIcon,
-    theme: 'emerald',
+    iconBox: 'bg-emerald-600/15 border-emerald-500/20 text-emerald-400',
+    labelColor: 'text-emerald-400',
+    bar: 'from-emerald-500',
     label: 'Milestone Badges',
     title: 'Unlock recognition as you level up',
     desc: 'Visual badges and milestone scoring keep motivation high across weeks and months.',
   },
   {
     icon: ActivityIcon,
-    theme: 'cyan',
+    iconBox: 'bg-cyan-600/15 border-cyan-500/20 text-cyan-400',
+    labelColor: 'text-cyan-400',
+    bar: 'from-cyan-500',
     label: 'Instant Visibility',
     title: 'Know exactly where you stand daily',
     desc: 'One unified view for goals, rankings, and streaks — stop switching between tools.',
@@ -164,7 +176,7 @@ const LandingPage: React.FC = () => {
             </h1>
 
             <p className="mx-auto mb-10 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-xl">
-              Track habits, earn XP, build streaks & compete on leaderboards.
+              Track habits, earn XP, build streaks &amp; compete on leaderboards.
               Discipify turns your discipline into an engaging game where every day counts.
             </p>
 
@@ -219,17 +231,17 @@ const LandingPage: React.FC = () => {
                     className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-6 sm:p-8 transition-all duration-300 hover:border-violet-500/30 hover:bg-white/[0.07] hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-500/10"
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-violet-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                    
+
                     <div className="relative z-10">
-                      <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-${f.theme}-600/20 to-${f.theme}-600/5 border border-${f.theme}-500/20 text-${f.theme}-400 transition-transform duration-300 group-hover:scale-110`}>
+                      <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl border ${f.iconBox} transition-transform duration-300 group-hover:scale-110`}>
                         <Icon />
                       </div>
-                      
-                      <p className={`text-xs font-bold tracking-widest uppercase mb-3 text-${f.theme}-400`}>{f.label}</p>
+
+                      <p className={`text-xs font-bold tracking-widest uppercase mb-3 ${f.labelColor}`}>{f.label}</p>
                       <h3 className="text-xl font-bold text-white mb-3 leading-snug">{f.title}</h3>
                       <p className="text-sm text-slate-400 leading-relaxed">{f.desc}</p>
-                      
-                      <div className={`absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r from-${f.theme}-500 to-transparent transition-all duration-500 group-hover:w-full opacity-60`} />
+
+                      <div className={`absolute bottom-0 left-0 h-[2px] w-0 bg-gradient-to-r ${f.bar} to-transparent transition-all duration-500 group-hover:w-full opacity-60`} />
                     </div>
                   </div>
                 );
@@ -250,7 +262,7 @@ const LandingPage: React.FC = () => {
                 <p className="text-slate-400 text-lg mb-10">A simple, repeatable system that builds compound progress over time.</p>
 
                 <div className="space-y-6">
-                  {steps.map((s, i) => (
+                  {steps.map((s) => (
                     <div key={s.step} className="flex gap-5">
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-purple-600 text-sm font-bold text-white shadow-lg shadow-violet-500/25">
                         {s.step}
