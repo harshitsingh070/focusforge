@@ -58,6 +58,9 @@ yarn-error.log*
 CONTRIBUTING.md
 DETAILED_README.md
 DetailedReadme.md
+
+# Local scripts (with credentials/configs)
+focusforge-backend/run-backend.ps1
 githubui.md
 temp_ref/
 temp_lb_ref/
@@ -74,3 +77,6 @@ que and ans.md
 que and ans.pdf
 make_qa_pdf.py
 focusforge-backend\.m2/
+.github
+.vscode
+.vscode/

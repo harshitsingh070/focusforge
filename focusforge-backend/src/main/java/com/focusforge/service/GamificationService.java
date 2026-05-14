@@ -1,23 +1,25 @@
 package com.focusforge.service;
 
-import com.focusforge.model.ActivityLog;
-import com.focusforge.model.Goal;
-import com.focusforge.model.PointLedger;
-import com.focusforge.model.User;
-import com.focusforge.repository.ActivityLogRepository;
-import com.focusforge.repository.PointLedgerRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.focusforge.model.ActivityLog;
+import com.focusforge.model.Goal;
+import com.focusforge.model.PointLedger;
+import com.focusforge.model.User;
+import com.focusforge.repository.ActivityLogRepository;
+import com.focusforge.repository.PointLedgerRepository;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -54,8 +56,8 @@ public class GamificationService {
 
         int difficultyPoints = (int) Math.round(basePoints * getDifficultyMultiplier(goal.getDifficulty()));
         int extraMinutes = Math.max(0, minutesSpent - timeBonusThresholdMinutes);
-        int timeBonus = timeBonusStepMinutes > 0 ? (extraMinutes / timeBonusStepMinutes) : 0;
-        int streakBonus = Math.min(Math.max(streakCount, 0), 21) * 2;
+        int timeBonus = Math.min(timeBonusStepMinutes > 0 ? (extraMinutes / timeBonusStepMinutes) : 0, 3); // Cap at 3 points
+        int streakBonus = (int) (Math.min(Math.max(streakCount, 0), 7) * 0.5); // Cap at 7 days, 0.5 points per day
         int dailyPoints = difficultyPoints + timeBonus + streakBonus;
 
         double diminishingMultiplier = getDiminishingMultiplier(user.getId(), goal.getId(), minutesSpent, activityDate);
